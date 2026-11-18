@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ink-before-dark",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8471", "--directory", "/Users/jeffersonandkatherine/code/ink-before-dark"],
+      "port": 8471
+    }
+  ]
+}
