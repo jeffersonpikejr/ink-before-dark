@@ -12,9 +12,9 @@ html,body{margin:0;height:100%;background:#0b0e13;overflow:hidden;color:var(--fg
 body.light{--fg:#1c2430;--bg:#e9e0cc}
 canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
 #hud{position:fixed;left:0;right:0;top:0;padding:12px 16px;display:flex;gap:16px;align-items:center;
-  font-size:11px;letter-spacing:.16em;text-transform:uppercase;pointer-events:none;color:var(--fg);transition:color .6s}
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;pointer-events:none;color:var(--fg);transition:color .6s;white-space:nowrap}
 #hud .sp{flex:1}
-.bar{width:132px;height:7px;border:1px solid var(--fg);position:relative;opacity:.9;transition:opacity .4s}
+.bar{width:min(132px,26vw);height:7px;border:1px solid var(--fg);position:relative;opacity:.9;transition:opacity .4s}
 .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--fg);width:100%}
 .bar.low i{background:var(--red)} .bar.low{border-color:var(--red)}
 .meter{display:flex;gap:8px;align-items:center;transition:opacity .5s}
@@ -22,10 +22,10 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 body.still *{transition:none !important}
 #cap{position:fixed;left:0;right:0;top:9%;text-align:center;pointer-events:none;color:var(--fg);transition:opacity .9s,color .6s;padding:0 18px;
   text-shadow:0 0 3px var(--bg),0 0 7px var(--bg),0 0 12px var(--bg),0 0 20px var(--bg),0 0 28px var(--bg)}
-#cap b{display:block;font-weight:400;font-style:italic;font-size:clamp(22px,3.6vw,34px);letter-spacing:.02em;line-height:1.15}
-#cap span{display:block;margin-top:5px;font-size:clamp(13px,2vw,17px);line-height:1.42;opacity:.94}
+#cap b{display:block;font-weight:400;font-style:italic;font-size:clamp(21px,3.2vw,30px);letter-spacing:.02em;line-height:1.15}
+#cap span{display:block;margin-top:4px;font-size:clamp(13px,1.9vw,16px);line-height:1.38;opacity:.94}
 #cap span i{font-style:normal;opacity:.66}
-body.band #cap{top:30px}
+body.band #cap{top:40px}
 #btns{position:fixed;left:0;right:0;bottom:calc(12px + env(safe-area-inset-bottom));display:flex;gap:12px;justify-content:center;flex-wrap:wrap;transition:opacity .5s;padding:0 12px}
 button{font:inherit;font-size:15px;letter-spacing:.06em;color:var(--fg);background:transparent;border:1px solid var(--fg);
   padding:10px 20px;min-height:44px;cursor:pointer;border-radius:2px;transition:color .6s,border-color .6s,background .2s}
@@ -76,15 +76,15 @@ const W=1000,H=640,CELL=8,GW=W/CELL|0,GH=H/CELL|0,NC=GW*GH;
 const CFG={
   DUSK:20,          // seconds of failing light
   GRACE:3,          // seconds of full light before it starts to go
-  V:95,             // boat speed, world units / s
-  STRIKE_T:2.4,     // seconds a strike costs her
+  V:110,            // boat speed, world units / s
+  STRIKE_T:2.073,   // seconds a strike costs her
   CLR:14,           // how far she keeps from your ink
   INKC:45,          // cost of crossing a cell of ink (she will, if walled in)
   BLOT:12,          // ink a pen-down costs before any line
   RATION:[0.54,0.44,0.38],   // ink per dusk, as a share of summed rock widths (a fresh bottle each dusk)
   LEG_ROCK:1.0,     // chance that any one lamp-to-lamp course is given a rock (most fail to fit; ~19 land)
   TIDE_K:[1.15,1.13,1.11],   // tide limit = K x best possible time + PAD
-  TIDE_PAD:2.0,     // she can find one thing and still make the tide; not two
+  TIDE_PAD:1.727,   // she can find one thing and still make the tide; not two
   REVEAL_R:56       // half-width of the wake that dawn shows
 };
 const PILOT='Odile';
@@ -394,7 +394,7 @@ function startDawn(){
   if(N.made&&found===0)line1=PILOT+' is home dry, '+margin.toFixed(1)+' seconds ahead of the tide.';
   else if(N.made)line1=PILOT+' is home, '+margin.toFixed(1)+' seconds ahead of the tide.';
   else line1='The tide went out '+(short===1?'one lamp':num(short)+' lamps')+' short. '+PILOT+' waited the night on the bar.';
-  const tally='Your chart: '+num(marked)+' in your hand, '+(red?num(red):'none')+' in red, of '+nR+'.';
+  const cnt=n=>n?num(n):'none',tally='Your chart: '+cnt(marked)+' in your hand, '+cnt(red)+' in red, of '+nR+'.';
   let line2='<br><i>'+(found?'She found '+rocks+' you left off. ':(N.made?'':'She struck nothing; your ink sent her the long way round. '))+tally+'</i>';
   if(!N.made&&!S.toldTip&&S.ni<2){S.toldTip=true;line2+='<br>A stroke across her course is enough. She keeps clear of your ink.';}
   el.mTide.classList.add('hide');hint('');setSea(0.02);
@@ -407,7 +407,8 @@ function finish(){
   const home=S.results.filter(r=>r.made).length,strikes=S.results.reduce((a,r)=>a+r.strikes,0);
   S.share='Ink Before Dark · bay '+S.label+' · home '+home+'/3 · '+S.results.map(r=>r.made?'●':'○').join('')+' · '+strikes+' found in the dark';
   META.bays++;if(S.daily&&!META.daily[S.dayKey])META.daily[S.dayKey]={home,strikes};saveMeta();
-  el.cap.lastElementChild.innerHTML+='<br>Home '+home+' of 3 nights. This is the whole bay.';
+  const VERDICT=['Odile has taken work ashore.','Odile is drawing her own chart.','Odile will take yours, and a lantern.','Odile would sail it blind.'];
+  el.cap.lastElementChild.innerHTML+='<br>Home '+home+' of 3 nights. '+VERDICT[home];
   buttons([['Another bay',()=>startBay(false)],['Copy result',()=>{const b=el.btns.lastElementChild;try{navigator.clipboard.writeText(S.share).then(()=>{b.textContent='Copied';},()=>{b.textContent=S.share;});}catch(e){b.textContent=S.share;}}]]);
   S.phase='final';}
 
@@ -447,7 +448,7 @@ function update(dt){
 let VIEW={s:1,ox:0,oy:0,rot:false,dpr:1};
 function resize(){const dpr=Math.min(window.devicePixelRatio||1,2),w=Math.max(1,innerWidth),h=Math.max(1,innerHeight);
   cv.width=Math.max(1,(w*dpr)|0);cv.height=Math.max(1,(h*dpr)|0);
-  const rot=h>w*1.08,band=h>=540,top=band?Math.round(clamp(h*0.155,100,132)):0,bot=band?68:0,ah=h-top-bot;
+  const rot=h>w*1.08,band=h>=540,top=band?Math.round(clamp(h*0.2,126,150)):0,bot=band?68:0,ah=h-top-bot;
   const s=rot?Math.min(w/H,ah/W):Math.min(w/W,ah/H);
   VIEW={s,rot,dpr,ox:rot?(w-H*s)/2:(w-W*s)/2,oy:top+(rot?(ah-W*s)/2:(ah-H*s)/2)};
   document.body.classList.toggle('band',band);}
