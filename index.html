@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>Ink Before Dark</title>
 <style>
-:root{--fg:#efe6d0;--red:#b3261e}
+:root{--fg:#efe6d0;--bg:#0b0e13;--red:#b3261e}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:#0b0e13;overflow:hidden;color:var(--fg);
   font-family:Georgia,'Iowan Old Style','Palatino Linotype','Times New Roman',serif;-webkit-user-select:none;user-select:none}
-body.light{--fg:#1c2430}
+body.light{--fg:#1c2430;--bg:#e9e0cc}
 canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
 #hud{position:fixed;left:0;right:0;top:0;padding:12px 16px;display:flex;gap:16px;align-items:center;
   font-size:11px;letter-spacing:.16em;text-transform:uppercase;pointer-events:none;color:var(--fg);transition:color .6s}
@@ -19,15 +19,19 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .bar.low i{background:var(--red)} .bar.low{border-color:var(--red)}
 .meter{display:flex;gap:8px;align-items:center;transition:opacity .5s}
 .hide{opacity:0 !important;pointer-events:none !important}
-#cap{position:fixed;left:0;right:0;top:11%;text-align:center;pointer-events:none;color:var(--fg);transition:opacity .9s,color .6s;padding:0 18px}
-#cap b{display:block;font-weight:400;font-style:italic;font-size:clamp(26px,5vw,44px);letter-spacing:.02em}
-#cap span{display:block;margin-top:8px;font-size:clamp(14px,2.3vw,19px);line-height:1.45;opacity:.92}
-#btns{position:fixed;left:0;right:0;bottom:calc(18px + env(safe-area-inset-bottom));display:flex;gap:12px;justify-content:center;flex-wrap:wrap;transition:opacity .5s;padding:0 12px}
+body.still *{transition:none !important}
+#cap{position:fixed;left:0;right:0;top:9%;text-align:center;pointer-events:none;color:var(--fg);transition:opacity .9s,color .6s;padding:0 18px;
+  text-shadow:0 0 3px var(--bg),0 0 7px var(--bg),0 0 12px var(--bg),0 0 20px var(--bg),0 0 28px var(--bg)}
+#cap b{display:block;font-weight:400;font-style:italic;font-size:clamp(22px,3.6vw,34px);letter-spacing:.02em;line-height:1.15}
+#cap span{display:block;margin-top:5px;font-size:clamp(13px,2vw,17px);line-height:1.42;opacity:.94}
+#cap span i{font-style:normal;opacity:.66}
+body.band #cap{top:30px}
+#btns{position:fixed;left:0;right:0;bottom:calc(12px + env(safe-area-inset-bottom));display:flex;gap:12px;justify-content:center;flex-wrap:wrap;transition:opacity .5s;padding:0 12px}
 button{font:inherit;font-size:15px;letter-spacing:.06em;color:var(--fg);background:transparent;border:1px solid var(--fg);
   padding:10px 20px;min-height:44px;cursor:pointer;border-radius:2px;transition:color .6s,border-color .6s,background .2s}
 button:hover{background:rgba(128,128,128,.16)}
 button.pri{border-width:2px}
-#hint{position:fixed;left:0;right:0;bottom:calc(74px + env(safe-area-inset-bottom));text-align:center;font-size:12px;letter-spacing:.12em;
+#hint{position:fixed;left:0;right:0;bottom:calc(26px + env(safe-area-inset-bottom));text-align:center;font-size:12px;letter-spacing:.12em;
   text-transform:uppercase;opacity:.55;pointer-events:none;color:var(--fg);transition:opacity .6s}
 #title{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:10px;
   background:radial-gradient(ellipse at 50% 38%,#151b24 0%,#0b0e13 62%);transition:opacity .7s}
@@ -77,7 +81,7 @@ const CFG={
   CLR:14,           // how far she keeps from your ink
   INKC:45,          // cost of crossing a cell of ink (she will, if walled in)
   BLOT:12,          // ink a pen-down costs before any line
-  RATION:[0.54,0.44,0.40],   // ink per dusk, as a share of summed rock widths (a fresh bottle each dusk)
+  RATION:[0.54,0.44,0.38],   // ink per dusk, as a share of summed rock widths (a fresh bottle each dusk)
   LEG_ROCK:1.0,     // chance that any one lamp-to-lamp course is given a rock (most fail to fit; ~19 land)
   TIDE_K:[1.15,1.13,1.11],   // tide limit = K x best possible time + PAD
   TIDE_PAD:2.0,     // she can find one thing and still make the tide; not two
@@ -266,11 +270,18 @@ function botSlash(bay,c,ni){const S0=bay.tours[ni].start,L=bay.tours[ni].stops;
   for(const j of jobs){if(done.has(j.k))continue;const ux=j.b.x-j.a.x,uy=j.b.y-j.a.y,n=Math.hypot(ux,uy)||1,px=-uy/n,py=ux/n,h=j.q.r*1.18+4;
     if(botLine(c,j.q.x-px*h,j.q.y-py*h,j.q.x+px*h,j.q.y+py*h))done.add(j.k);}}
 // "Omni": knows tonight's order. Finds what she would strike and marks exactly that, until the ink is gone.
+// Where the course clips a rock off-centre it uses a shorter stroke centred on the course, long on the thick side,
+// so she rounds the thin end. An honest upper bound has to draw as cheaply as a good player could.
 function botOmni(bay,c,ni){for(let g=0;g<30;g++){const cc=cloneChart(c),N=nightNew(bay,cc,ni);let hit=null,n=0;
     while(!N.done&&n++<20000){nightStep(N,bay,cc,1/30);hit=N.events.find(e=>e.k==='strike');if(hit)break;}
-    if(!hit)break;const dx=Math.cos(hit.hdg),dy=Math.sin(hit.hdg),px=-dy,py=dx;let okk;
-    if(hit.rock!=null){const q=bay.rocks[hit.rock],h=q.r*1.18+4;okk=botLine(c,q.x-px*h,q.y-py*h,q.x+px*h,q.y+py*h);}
-    else{const h=36,bx=hit.x-dx*4,by=hit.y-dy*4;okk=botLine(c,bx-px*h,by-py*h,bx+px*h,by+py*h);}
+    if(!hit||hit.rock==null)break;
+    const dx=Math.cos(hit.hdg),dy=Math.sin(hit.hdg),px=-dy,py=dx,q=bay.rocks[hit.rock],R=q.r*1.18;
+    const along=(q.x-hit.x)*dx+(q.y-hit.y)*dy,lat=(q.x-hit.x)*px+(q.y-hit.y)*py,e=Math.abs(lat),sg=lat>=0?1:-1; // centre lies on side sg
+    const full=()=>botLine(c,q.x-px*(R+4),q.y-py*(R+4),q.x+px*(R+4),q.y+py*(R+4));
+    const ax=hit.x+dx*along,ay=hit.y+dy*along,thin=Math.max(6,R-e+6),thick=thin+14;
+    const short=()=>botLine(c,ax-px*sg*thin,ay-py*sg*thin,ax+px*sg*thick,ay+py*sg*thick);
+    const shortLen=thin+thick,fullLen=2*(R+4);
+    let okk=(e>q.r*0.35&&shortLen<fullLen-6)?(short()||full()):(full()||short());
     if(!okk)break;}}
 function bench(n,seed0){n=n||100;seed0=seed0||1;const names=['blank','slash','omni'],res={};
   for(const nm of names)res[nm]={home:[0,0,0],strikes:[0,0,0],margin:[0,0,0],all3:0,any:0};
@@ -335,10 +346,14 @@ for(const c of[truthCv,wakeCv,landCv]){c.width=W*TS;c.height=H*TS;}
 const tctx=truthCv.getContext('2d'),wctx=wakeCv.getContext('2d'),lctx=landCv.getContext('2d');
 const $=id=>document.getElementById(id);
 const el={hud:$('hud'),hNight:$('hNight'),mInk:$('mInk'),bInk:$('bInk'),mTide:$('mTide'),bTide:$('bTide'),cap:$('cap'),btns:$('btns'),hint:$('hint'),title:$('title')};
-function caption(big,small){el.cap.firstElementChild.textContent=big||'';el.cap.lastElementChild.innerHTML=small||'';el.cap.classList.toggle('hide',!big&&!small);}
+let capId=0;
+function caption(big,small,hold){el.cap.firstElementChild.textContent=big||'';el.cap.lastElementChild.innerHTML=small||'';el.cap.classList.toggle('hide',!big&&!small);
+  const id=++capId;if(hold)after(hold,()=>{if(capId===id)caption('','');});}
 function buttons(list){el.btns.innerHTML='';list.forEach((b,i)=>{const e=document.createElement('button');e.textContent=b[0];if(i===0)e.className='pri';e.onclick=ev=>{ev.stopPropagation();audio();b[1]();};el.btns.appendChild(e);});}
 function hint(t){el.hint.textContent=t||'';el.hint.classList.toggle('hide',!t);}
 const ORD=['First','Second','Third'];
+// timed captions ride the game clock, not setTimeout, so a backgrounded tab or a manual step() stays in sync
+const timers=[];function after(sec,fn){timers.push({t:sec,fn});}
 
 function dayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function startBay(daily,seed){
@@ -347,24 +362,24 @@ function startBay(daily,seed){
   S.bay=genBay(sd);S.label=daily?S.dayKey:sd.toString(36);
   S.chart=newChart(S.bay);S.ni=0;S.results=[];S.full=false;S.toldBlank=false;S.toldRed=false;
   paintTruth(S.bay);
-  el.title.classList.add('hide');el.hud.classList.remove('hide');
+  el.title.style.display='none';el.hud.classList.remove('hide');
   startDusk();}
 function startDusk(){
-  S.phase='dusk';S.duskT=0;S.began=false;S.wait=0;S.dark=0;S.N=null;S.full=false;S.rings.length=0;
+  S.phase='dusk';S.duskT=0;S.began=false;S.wait=0;S.dark=0;S.N=null;S.full=false;S.rings.length=0;S.capFade=false;S.toldDry=false;timers.length=0;
   S.chart.ink=S.bay.sumW*CFG.RATION[S.ni];S.inkCap=Math.max(S.chart.ink,1);
   el.hNight.textContent='Night '+(S.ni+1)+' of 3';
   el.mInk.classList.remove('hide');el.mTide.classList.add('hide');
-  caption('Dusk',S.ni===0?PILOT+' has the mail boat tonight: three lamps, in an order you are not told.<br>Draw the rocks. She sails by your chart alone.':(S.ni===1?'Same bay, same chart. Three other lamps.':'Last night. What does the chart still owe her?'));
+  caption('Dusk',S.ni===0?'Draw the rocks between the lamps.':(S.ni===1?'Same bay, same chart. Three other lamps.':'Last night. What does the chart still owe her?'));
   buttons([['Cast off',()=>{if(S.phase==='dusk')startNight();}]]);hint('');
   SFX.dusk();setSea(0.012);}
 function startNight(){
   S.phase='night';S.dark=1;S.stroke=null;setPen(0);
   S.N=nightNew(S.bay,S.chart,S.ni);S.ff=false;
   el.mInk.classList.add('hide');el.mTide.classList.remove('hide');
-  caption('Night',S.ni===0?'She trusts blank paper.':'');
+  caption('Night',S.ni===0?'She trusts blank paper.':'',2.6);
   buttons([]);hint('hold to hurry');
   SFX.cast();setSea(0.05);
-  setTimeout(()=>{if(S.phase==='night')caption('','');},2600);}
+  after(3.5,()=>{if(S.phase==='night')hint('');});}
 function startDawn(){
   const N=S.N,c=S.chart,bay=S.bay;
   S.phase='dawn';S.dawnT=0;S.full=(S.ni===2);
@@ -373,45 +388,47 @@ function startDawn(){
   S.results.push({made:N.made,margin,strikes:found});
   META.nights++;if(N.made)META.nightsHome++;
   const marked=rocksMarked(bay,c),nR=bay.rocks.length,red=c.reds.size;
-  const things=found===1?'one thing':found+' things';
+  const NUM=['no','one','two','three','four','five','six','seven','eight','nine'],num=n=>n<10?NUM[n]:String(n);
+  const rocks=found===1?'one rock':num(found)+' rocks',short=N.stops.length-N.stop;
   let line1;
   if(N.made&&found===0)line1=PILOT+' is home dry, '+margin.toFixed(1)+' seconds ahead of the tide.';
-  else if(N.made)line1=PILOT+' is home, '+margin.toFixed(1)+' seconds ahead of the tide.<br>She found '+things+' you left off.';
-  else line1='The tide went out under her. '+PILOT+' waited the night on the bar.'+(found?'<br>She found '+things+' you left off.':'');
-  const line2='<br><span style="opacity:.7">Of '+nR+' rocks: '+marked+' in your hand, '+red+' in red.</span>';
+  else if(N.made)line1=PILOT+' is home, '+margin.toFixed(1)+' seconds ahead of the tide.';
+  else line1='The tide went out '+(short===1?'one lamp':num(short)+' lamps')+' short. '+PILOT+' waited the night on the bar.';
+  const tally='Your chart: '+num(marked)+' in your hand, '+(red?num(red):'none')+' in red, of '+nR+'.';
+  let line2='<br><i>'+(found?'She found '+rocks+' you left off. ':(N.made?'':'She struck nothing; your ink sent her the long way round. '))+tally+'</i>';
+  if(!N.made&&!S.toldTip&&S.ni<2){S.toldTip=true;line2+='<br>A stroke across her course is enough. She keeps clear of your ink.';}
   el.mTide.classList.add('hide');hint('');setSea(0.02);
   if(N.made)SFX.home();else SFX.late();
-  setTimeout(()=>{if(S.phase!=='dawn')return;caption('Dawn',line1+line2);
+  after(1.7,()=>{if(S.phase!=='dawn')return;caption('Dawn',line1+line2);
     if(S.ni<2)buttons([[ORD[S.ni+1]+' dusk',()=>{S.ni++;startDusk();}]]);
-    else finish();},1700);
+    else finish();});
   buttons([]);caption('','');}
 function finish(){
   const home=S.results.filter(r=>r.made).length,strikes=S.results.reduce((a,r)=>a+r.strikes,0);
-  const left=Math.round(100*S.chart.ink/Math.max(1,S.chart.ink+S.chart.spent));
-  S.share='Ink Before Dark · bay '+S.label+' · home '+home+'/3 · '+S.results.map(r=>r.made?'●':'○').join('')+' · '+strikes+' found in the dark · '+left+'% ink unspent';
+  S.share='Ink Before Dark · bay '+S.label+' · home '+home+'/3 · '+S.results.map(r=>r.made?'●':'○').join('')+' · '+strikes+' found in the dark';
   META.bays++;if(S.daily&&!META.daily[S.dayKey])META.daily[S.dayKey]={home,strikes};saveMeta();
-  const prev=el.cap.lastElementChild.innerHTML;
-  el.cap.lastElementChild.innerHTML=prev+'<br><br><b style="font-size:1.15em;font-style:normal">Home '+home+' of 3 nights.</b> This is the whole bay.';
-  buttons([['Another bay',()=>startBay(false)],['Copy result',()=>{try{navigator.clipboard.writeText(S.share);hint('copied');}catch(e){hint(S.share);}}]]);
+  el.cap.lastElementChild.innerHTML+='<br>Home '+home+' of 3 nights. This is the whole bay.';
+  buttons([['Another bay',()=>startBay(false)],['Copy result',()=>{const b=el.btns.lastElementChild;try{navigator.clipboard.writeText(S.share).then(()=>{b.textContent='Copied';},()=>{b.textContent=S.share;});}catch(e){b.textContent=S.share;}}]]);
   S.phase='final';}
 
 /* ---------- update ---------- */
 let lastTide=-1;
 function update(dt){
+  for(let i=timers.length-1;i>=0;i--){const tm=timers[i];tm.t-=dt;if(tm.t<=0){timers.splice(i,1);tm.fn();}}
   if(S.shake>0)S.shake=Math.max(0,S.shake-dt*22);
   for(const r of S.rings)r.t+=dt;while(S.rings.length&&S.rings[0].t>1.2)S.rings.shift();
   if(S.phase==='dusk'){
     if(!S.began){S.wait+=dt;if(S.wait>(S.ni===0?3.5:0.6))S.began=true;}
     if(S.began)S.duskT+=dt;
     S.dark=smooth((S.duskT-CFG.GRACE)/(CFG.DUSK-CFG.GRACE))*0.985;
-    if(S.duskT>CFG.DUSK-6&&S.duskT-dt<=CFG.DUSK-6)caption('','The light is going.');
+    if(S.duskT>CFG.DUSK-6&&S.duskT-dt<=CFG.DUSK-6)caption('','The light is going.',4);
     if(S.duskT>=CFG.DUSK)startNight();
   }else if(S.phase==='night'){
     const N=S.N,steps=S.ff?4:1;
     for(let k=0;k<steps&&!N.done;k++)nightStep(N,S.bay,S.chart,dt);
     while(N.events.length){const e=N.events.shift();
       if(e.k==='strike'){SFX.crunch();S.shake=7;S.rings.push({x:e.x,y:e.y,t:0});
-        if(!S.toldRed){S.toldRed=true;caption('','The bay marks what you didn’t.');setTimeout(()=>{if(S.phase==='night')caption('','');},2400);}}
+        if(!S.toldRed){S.toldRed=true;caption('','The bay marks what you didn’t.',2.8);}}
       else if(e.k==='lamp'){SFX.bell();}
     }
     const left=Math.max(0,N.limit-N.t),sec=Math.ceil(left);
@@ -430,8 +447,10 @@ function update(dt){
 let VIEW={s:1,ox:0,oy:0,rot:false,dpr:1};
 function resize(){const dpr=Math.min(window.devicePixelRatio||1,2),w=Math.max(1,innerWidth),h=Math.max(1,innerHeight);
   cv.width=Math.max(1,(w*dpr)|0);cv.height=Math.max(1,(h*dpr)|0);
-  const rot=h>w*1.08,s=rot?Math.min(w/H,h/W):Math.min(w/W,h/H);
-  VIEW={s,rot,dpr,ox:rot?(w-H*s)/2:(w-W*s)/2,oy:rot?(h-W*s)/2:(h-H*s)/2};}
+  const rot=h>w*1.08,band=h>=540,top=band?Math.round(clamp(h*0.155,100,132)):0,bot=band?68:0,ah=h-top-bot;
+  const s=rot?Math.min(w/H,ah/W):Math.min(w/W,ah/H);
+  VIEW={s,rot,dpr,ox:rot?(w-H*s)/2:(w-W*s)/2,oy:top+(rot?(ah-W*s)/2:(ah-H*s)/2)};
+  document.body.classList.toggle('band',band);}
 function applyView(c){const{s,ox,oy,rot,dpr}=VIEW,sh=S.shake,jx=sh?(Math.random()-.5)*sh:0,jy=sh?(Math.random()-.5)*sh:0;
   if(rot)c.setTransform(0,s*dpr,-s*dpr,0,(ox+H*s+jx)*dpr,(oy+jy)*dpr);else c.setTransform(s*dpr,0,0,s*dpr,(ox+jx)*dpr,(oy+jy)*dpr);}
 function toWorld(cx,cy){const{s,ox,oy,rot}=VIEW;return rot?{x:(cy-oy)/s,y:(ox+H*s-cx)/s}:{x:(cx-ox)/s,y:(cy-oy)/s};}
@@ -481,6 +500,8 @@ function render(){
   const c=ctx,d=S.dark;c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;
   c.fillStyle=S.phase==='title'?'rgba(0,0,0,0)':mixc(PAPER,NIGHT,d);c.clearRect(0,0,cv.width,cv.height);if(S.phase==='title')return;c.fillRect(0,0,cv.width,cv.height);
   applyView(c);const bay=S.bay,ch=S.chart;if(!bay)return;
+  // the neatline: a chart has an edge
+  c.strokeStyle=mixc(INK,CREAM,d,0.55);c.lineWidth=1.5;c.strokeRect(0,0,W,H);c.save();c.beginPath();c.rect(0,0,W,H);c.clip();
   // dot-grid paper
   if(d<0.95){c.fillStyle=mixc(INK,INK,0,0.16*(1-d));for(let y=20;y<H;y+=25)for(let x=20;x<W;x+=25)c.fillRect(x-.8,y-.8,1.6,1.6);}
   // the truth: in failing light at dusk, along her wake at dawn
@@ -493,6 +514,10 @@ function render(){
   for(const k of ch.reds){const q=bay.rocks[k];rockPath(c,q);c.save();c.clip();c.strokeStyle=RED;c.globalAlpha=.55;c.lineWidth=1.3;c.beginPath();
     for(let t=-q.r*2;t<q.r*2;t+=6){c.moveTo(q.x+t-q.r,q.y-q.r*1.3);c.lineTo(q.x+t+q.r,q.y+q.r*1.3);}c.stroke();c.restore();c.globalAlpha=1;rockPath(c,q);c.strokeStyle=RED;c.lineWidth=2.8;c.stroke();}
   for(const s of ch.scars){c.strokeStyle=RED;c.lineWidth=2.6;c.beginPath();for(let k=0;k<5;k++){const a=k*1.9+s.x*.01,r=7+k*3.2;c.moveTo(s.x+Math.cos(a)*r,s.y+Math.sin(a)*r);c.lineTo(s.x-Math.cos(a+.6)*r,s.y-Math.sin(a+.6)*r);}c.stroke();}
+  // the water she will keep out of: a faint margin round every stroke, so the ink shows what it covers
+  c.strokeStyle=c.fillStyle=mixc(INK,CREAM,d,S.phase==='night'?0.085:0.05);c.lineWidth=CFG.CLR*2;
+  for(const st of ch.strokes){if(st.length<=2){c.beginPath();c.arc(st[0],st[1],CFG.CLR,0,7);c.fill();continue;}
+    c.beginPath();c.moveTo(st[0],st[1]);for(let i=2;i<st.length;i+=2)c.lineTo(st[i],st[i+1]);c.stroke();}
   // your ink
   c.strokeStyle=c.fillStyle=mixc(INK,CREAM,d);c.lineWidth=3.4;
   for(const st of ch.strokes){if(st.length<=2){c.beginPath();c.arc(st[0],st[1],2.6,0,7);c.fill();continue;}
@@ -519,6 +544,7 @@ function render(){
     for(const h of N.hits){c.strokeStyle=RED;c.lineWidth=2.6;c.beginPath();c.moveTo(h.x-6,h.y-6);c.lineTo(h.x+6,h.y+6);c.moveTo(h.x+6,h.y-6);c.lineTo(h.x-6,h.y+6);c.stroke();}
     drawBoat(c,N.pos.x,N.pos.y,N.hdg,mixc(INK,CREAM,d),false);
   }
+  c.restore();
   for(const r of S.rings){const t=r.t/1.2;c.strokeStyle=RED;c.globalAlpha=1-t;c.lineWidth=3*(1-t)+1;c.beginPath();c.arc(r.x,r.y,8+t*46,0,7);c.stroke();c.globalAlpha=1;}
 }
 
@@ -529,18 +555,18 @@ function penDown(e){
   if(S.phase!=='dusk')return;
   const p=toWorld(e.clientX,e.clientY),c=S.chart;
   if(p.x<0||p.y<0||p.x>W||p.y>H)return;
-  if(c.ink<CFG.BLOT){SFX.dry();return;}
+  if(c.ink<CFG.BLOT){SFX.dry();if(!S.toldDry){S.toldDry=true;caption('','The bottle is dry.',2.2);}return;}
   S.began=true;c.ink-=CFG.BLOT;c.spent+=CFG.BLOT;
   S.stroke=[p.x,p.y];c.strokes.push(S.stroke);inkStamp(c,p.x,p.y);
   try{cv.setPointerCapture(e.pointerId);}catch(_){}
-  if(el.cap.firstElementChild.textContent==='Dusk')setTimeout(()=>{if(S.phase==='dusk'&&S.duskT<CFG.DUSK-7)caption('','');},900);}
+  if(!S.capFade){S.capFade=true;const id=capId;after(1.4,()=>{if(capId===id)caption('','');});}}
 function penMove(e){
   if(S.phase!=='dusk'||!S.stroke)return;
   const c=S.chart,st=S.stroke,p=toWorld(e.clientX,e.clientY);
   p.x=clamp(p.x,0,W);p.y=clamp(p.y,0,H);
   const lx=st[st.length-2],ly=st[st.length-1];let d=Math.hypot(p.x-lx,p.y-ly);
   if(d<2.2)return;
-  if(c.ink<=0){S.stroke=null;setPen(0);SFX.dry();return;}
+  if(c.ink<=0){S.stroke=null;setPen(0);SFX.dry();if(!S.toldDry){S.toldDry=true;caption('','The bottle is dry.',2.2);}return;}
   if(d>c.ink){const t=c.ink/d;p.x=lx+(p.x-lx)*t;p.y=ly+(p.y-ly)*t;d=c.ink;}
   c.ink-=d;c.spent+=d;st.push(p.x,p.y);inkSeg(c,lx,ly,p.x,p.y);
   setPen(Math.min(.16,.04+d*.012));clearTimeout(penMove._t);penMove._t=setTimeout(()=>setPen(0),70);}
@@ -560,7 +586,7 @@ $('bRandom').onclick=()=>{audio();startBay(false);};
 /* ---------- main loop (fixed timestep) ---------- */
 const DT=1/60;let last=performance.now(),acc=0;
 function frame(now){const elp=Math.min(.1,(now-last)/1000);last=now;acc+=elp;
-  while(acc>=DT){acc-=DT;update(DT);}
+  while(acc>=DT){acc-=DT;if(!S.paused)update(DT);}
   render();requestAnimationFrame(frame);}
 
 /* ---------- debug API (headless-safe: step() drives time when rAF is asleep) ---------- */
@@ -570,6 +596,12 @@ window.IBD={
   step(sec){const n=Math.round((sec||1)/DT);for(let i=0;i<n;i++)update(DT);render();return this.info();},
   line(x1,y1,x2,y2){const c=S.chart;if(S.phase!=='dusk')return false;S.began=true;return botLine(c,x1,y1,x2,y2);},
   castOff(){if(S.phase==='dusk')startNight();},
+  pause(on){S.paused=on!==false;return S.paused;},
+  // test pen: drives the real pointer handlers along world points, so freehand code paths are exercised headlessly
+  pen(pts){const{s,ox,oy,rot}=VIEW,cl=(x,y)=>rot?{x:ox+H*s-y*s,y:oy+x*s}:{x:ox+x*s,y:oy+y*s};
+    const ev=(type,q)=>cv.dispatchEvent(new PointerEvent(type,{clientX:q.x,clientY:q.y,pointerId:7,bubbles:true}));
+    pts.forEach((q,i)=>ev(i?'pointermove':'pointerdown',cl(q[0],q[1])));window.dispatchEvent(new PointerEvent('pointerup',{pointerId:7}));return Math.round(S.chart.ink);},
+  still(on){document.body.classList.toggle('still',on!==false);},
   info(){const N=S.N;return{phase:S.phase,night:S.ni+1,dark:+S.dark.toFixed(2),duskT:+S.duskT.toFixed(1),ink:S.chart?Math.round(S.chart.ink):0,
     n:N?{t:+N.t.toFixed(1),limit:+N.limit.toFixed(1),stop:N.stop,strikes:N.strikes,done:N.done,made:N.made}:null,results:S.results};}
 };
