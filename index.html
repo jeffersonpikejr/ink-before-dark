@@ -61,7 +61,7 @@ button.pri{border-width:2px}
   <p class="hook">Whatever you leave off the chart, she finds in the dark.</p>
   <p class="how">Twenty seconds of dusk. One bottle of ink. Then Odile sails the bay by your chart alone.</p>
   <div class="row"><button class="pri" id="bDaily">Tonight's bay</button><button id="bRandom">Another bay</button></div>
-  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes</p>
+  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.4</p>
 </div>
 <script>
 'use strict';
@@ -71,7 +71,7 @@ button.pri{border-width:2px}
    Sections: config · rng · bay generator · chart · pilot · night sim
              · bots & bench · audio · store · game state · render · input · boot
    ============================================================ */
-const VERSION='0.1';
+const VERSION='0.4';
 const W=1000,H=640,CELL=8,GW=W/CELL|0,GH=H/CELL|0,NC=GW*GH;
 const CFG={
   DUSK:20,          // seconds of failing light
@@ -247,7 +247,7 @@ function nightStep(N,bay,chart,dt){
     const ci=cellAt(nx,ny);
     if(bay.solid[ci]){ // something you did not draw
       N.strikes++;N.stun=CFG.STRIKE_T;const what=reveal(bay,chart,nx,ny,ci);
-      N.hits.push({x:nx,y:ny,rock:what.rock});N.events.push({k:'strike',x:nx,y:ny,rock:what.rock,land:!!what.land,hdg:N.hdg});
+      N.hits.push({x:nx,y:ny,rock:what.rock,ti:N.track.length-1});N.events.push({k:'strike',x:nx,y:ny,rock:what.rock,land:!!what.land,hdg:N.hdg});
       // she fends off and backs away along her own wake
       let back=14;for(let i=N.track.length-1;i>=0&&back>0;i--){const q=N.track[i],bd=Math.hypot(q.x-N.pos.x,q.y-N.pos.y);if(bd>=back||i===0){N.pos.x=q.x;N.pos.y=q.y;break;}}
       return;}
@@ -382,8 +382,9 @@ function startNight(){
   after(3.5,()=>{if(S.phase==='night')hint('');});}
 function startDawn(){
   const N=S.N,c=S.chart,bay=S.bay;
-  S.phase='dawn';S.dawnT=0;S.full=(S.ni===2);
-  if(!S.full)composeWake(N.track);
+  S.phase='dawn';S.dawnT=0;S.full=(S.ni===2);S.sweepK=0;S.sweepHits=0;
+  S.sweepDur=clamp(N.track.length*0.011,1.3,2.6);
+  composeWake(N.track);
   const margin=N.limit-N.t,found=N.strikes;
   S.results.push({made:N.made,margin,strikes:found});
   META.nights++;if(N.made)META.nightsHome++;
@@ -399,7 +400,7 @@ function startDawn(){
   if(!N.made&&!S.toldTip&&S.ni<2){S.toldTip=true;line2+='<br>A stroke across her course is enough. She keeps clear of your ink.';}
   el.mTide.classList.add('hide');hint('');setSea(0.02);
   if(N.made)SFX.home();else SFX.late();
-  after(1.7,()=>{if(S.phase!=='dawn')return;caption('Dawn',line1+line2);
+  after(0.6+S.sweepDur+0.35,()=>{if(S.phase!=='dawn')return;caption('Dawn',line1+line2);
     if(S.ni<2)buttons([[ORD[S.ni+1]+' dusk',()=>{S.ni++;startDusk();}]]);
     else finish();});
   buttons([]);caption('','');}
@@ -436,7 +437,10 @@ function update(dt){
     if(left<5&&sec!==lastTide){lastTide=sec;SFX.tick();}
     if(N.done)startDawn();
   }else if(S.phase==='dawn'||S.phase==='final'){
-    S.dawnT+=dt;S.dark=1-smooth(S.dawnT/2.8);
+    S.dawnT+=dt;S.dark=1-smooth(S.dawnT/2.2);
+    // the readback: her night retraced in order, each strike landing as the sweep reaches it
+    const N=S.N,f=clamp((S.dawnT-0.6)/S.sweepDur,0,1);S.sweepK=Math.floor(f*(N.track.length-1));
+    while(S.sweepHits<N.hits.length&&N.hits[S.sweepHits].ti<=S.sweepK){S.sweepHits++;SFX.tick();}
   }
   // HUD
   if(S.chart&&S.phase==='dusk'){el.bInk.firstElementChild.style.width=(100*clamp(S.chart.ink/S.inkCap,0,1)).toFixed(1)+'%';el.bInk.classList.toggle('low',S.chart.ink<S.inkCap*0.15);}
@@ -507,9 +511,12 @@ function render(){
   if(d<0.95){c.fillStyle=mixc(INK,INK,0,0.16*(1-d));for(let y=20;y<H;y+=25)for(let x=20;x<W;x+=25)c.fillRect(x-.8,y-.8,1.6,1.6);}
   // the truth: in failing light at dusk, along her wake at dawn
   if(S.phase==='dusk'){c.globalAlpha=Math.pow(1-d,1.2);c.drawImage(truthCv,0,0,W,H);c.globalAlpha=1;}
-  else if(S.phase==='dawn'||S.phase==='final'){c.globalAlpha=smooth((S.dawnT-0.7)/2.6);c.drawImage(S.full?truthCv:wakeCv,0,0,W,H);c.globalAlpha=1;}
+  else if(S.phase==='dawn'||S.phase==='final'){const tr=S.N.track,k=S.sweepK,rest=S.full?smooth((S.dawnT-0.6-S.sweepDur-0.2)/1.4):0;
+    if(rest<1){c.save();c.beginPath();const R=CFG.REVEAL_R+36;for(let i=0;i<=k;i+=3){c.moveTo(tr[i].x+R,tr[i].y);c.arc(tr[i].x,tr[i].y,R,0,7);}c.clip();c.drawImage(wakeCv,0,0,W,H);c.restore();}
+    if(rest>0){c.globalAlpha=rest;c.drawImage(truthCv,0,0,W,H);c.globalAlpha=1;}}
   // the loom of the land: she can see that much
-  if(S.phase==='night'||((S.phase==='dawn'||S.phase==='final')&&!S.full)){c.globalAlpha=S.phase==='night'?0.13:0.13*d+0.5*(1-d);c.drawImage(landCv,0,0,W,H);c.globalAlpha=1;}
+  if(S.phase==='night'||S.phase==='dawn'||S.phase==='final'){const rest=S.full&&S.phase!=='night'?smooth((S.dawnT-0.6-S.sweepDur-0.2)/1.4):0;
+    if(rest<1){c.globalAlpha=(S.phase==='night'?0.13:0.13*d+0.5*(1-d))*(1-rest);c.drawImage(landCv,0,0,W,H);c.globalAlpha=1;}}
   // what the bay added, in red
   c.lineJoin='round';c.lineCap='round';
   for(const k of ch.reds){const q=bay.rocks[k];rockPath(c,q);c.save();c.clip();c.strokeStyle=RED;c.globalAlpha=.55;c.lineWidth=1.3;c.beginPath();
@@ -539,11 +546,12 @@ function render(){
     const tr=N.track,n0=Math.max(1,tr.length-26);for(let i=n0;i<tr.length;i++){c.strokeStyle='rgba(239,230,208,'+(.05+.3*(i-n0)/26)+')';c.lineWidth=1.4;c.beginPath();c.moveTo(tr[i-1].x,tr[i-1].y);c.lineTo(tr[i].x,tr[i].y);c.stroke();}
     const wob=N.stun>0?Math.sin(performance.now()/60)*.25:0;drawBoat(c,N.pos.x,N.pos.y,N.hdg+wob,'#efe6d0',true);
   }
-  if(N&&(S.phase==='dawn'||S.phase==='final')){
-    c.strokeStyle=mixc(INK,PENCIL,d,.6);c.lineWidth=1.6;c.setLineDash([2,6]);c.beginPath();N.track.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.stroke();c.setLineDash([]);
+  if(N&&(S.phase==='dawn'||S.phase==='final')){const tr=N.track,k=Math.min(S.sweepK,tr.length-1);
+    c.strokeStyle=mixc(INK,PENCIL,d,.6);c.lineWidth=1.6;c.setLineDash([2,6]);c.beginPath();for(let i=0;i<=k;i++)i?c.lineTo(tr[i].x,tr[i].y):c.moveTo(tr[i].x,tr[i].y);c.stroke();c.setLineDash([]);
     for(const L of N.stops)drawLampMark(c,L,mixc(INK,CREAM,d),0);
-    for(const h of N.hits){c.strokeStyle=RED;c.lineWidth=2.6;c.beginPath();c.moveTo(h.x-6,h.y-6);c.lineTo(h.x+6,h.y+6);c.moveTo(h.x+6,h.y-6);c.lineTo(h.x-6,h.y+6);c.stroke();}
-    drawBoat(c,N.pos.x,N.pos.y,N.hdg,mixc(INK,CREAM,d),false);
+    for(let i=0;i<S.sweepHits;i++){const h=N.hits[i];c.strokeStyle=RED;c.lineWidth=2.6;c.beginPath();c.moveTo(h.x-6,h.y-6);c.lineTo(h.x+6,h.y+6);c.moveTo(h.x+6,h.y-6);c.lineTo(h.x-6,h.y+6);c.stroke();}
+    const done=k>=tr.length-1,bp=done?N.pos:tr[k],nx=tr[Math.min(k+1,tr.length-1)];
+    drawBoat(c,bp.x,bp.y,done?N.hdg:Math.atan2(nx.y-bp.y,nx.x-bp.x),mixc(INK,CREAM,d),false);
   }
   c.restore();
   for(const r of S.rings){const t=r.t/1.2;c.strokeStyle=RED;c.globalAlpha=1-t;c.lineWidth=3*(1-t)+1;c.beginPath();c.arc(r.x,r.y,8+t*46,0,7);c.stroke();c.globalAlpha=1;}
@@ -609,7 +617,7 @@ window.IBD={
 
 /* ---------- boot ---------- */
 resize();
-loadMeta().then(()=>{muted=!!META.muted;const k=dayKey();if(META.daily[k])$('fine').textContent='today: home '+META.daily[k].home+'/3 · M mutes';});
+loadMeta().then(()=>{muted=!!META.muted;const k=dayKey();if(META.daily[k])$('fine').textContent='tonight’s bay, first try: home '+META.daily[k].home+'/3 · M mutes · prototype v'+VERSION;});
 requestAnimationFrame(frame);
 </script>
 </body>
