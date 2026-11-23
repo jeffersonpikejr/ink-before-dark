@@ -15,7 +15,7 @@
 html,body{margin:0;height:100%;background:#0b0e13;overflow:hidden;color:var(--fg);
   font-family:Georgia,'Iowan Old Style','Palatino Linotype','Times New Roman',serif;-webkit-user-select:none;user-select:none}
 body.light{--fg:#1c2430;--bg:#e9e0cc}
-canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+canvas{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;display:block;touch-action:none;cursor:crosshair}
 #hud{position:fixed;left:0;right:0;top:0;padding:12px 16px;display:flex;gap:16px;align-items:center;
   font-size:11px;letter-spacing:.16em;text-transform:uppercase;pointer-events:none;color:var(--fg);transition:color .6s;white-space:nowrap}
 #hud .sp{flex:1}
@@ -59,7 +59,16 @@ button.pri{border-width:2px}
 .bay.next{border-width:2.5px;box-shadow:0 0 22px rgba(239,230,208,.28)}
 .bay.locked{opacity:.28;border-style:dashed;cursor:default}
 .bay .dry{color:var(--red);font-size:10px;letter-spacing:.1em;font-style:normal}
-#coast .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+#coast .row,#wheel .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+#wheel{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 16px;gap:10px;background:rgba(11,14,19,.96);color:#efe6d0;z-index:5}
+#wheel h2{margin:0;font-weight:400;font-style:italic;font-size:clamp(26px,5vw,40px)}
+#wheel p{margin:0;min-height:1.5em;font-size:clamp(14px,2.2vw,17px)} #wheel .fine2{font-size:11px;opacity:.45;max-width:30em}
+#wheel button{color:#efe6d0;border-color:#efe6d0}
+#wWrap{position:relative;width:min(62vw,280px);aspect-ratio:1;margin:10px 0 14px}
+#wDisc{position:absolute;inset:0;border-radius:50%;border:2px solid #efe6d0;transition:transform 3.2s cubic-bezier(.12,.72,.14,1);
+  background:conic-gradient(#1c2430 0 60deg,#2a3340 60deg 120deg,#1c2430 120deg 180deg,#2a3340 180deg 240deg,#1c2430 240deg 300deg,#3a2326 300deg 360deg)}
+#wDisc span{position:absolute;left:50%;top:50%;font-size:13px;letter-spacing:.08em;text-transform:uppercase;transform-origin:0 0;white-space:nowrap}
+#wPtr{position:absolute;left:50%;top:-10px;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid var(--red);transform:translateX(-50%);z-index:2}
 #coast button{color:#efe6d0;border-color:#efe6d0}
 .mini{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));font-size:12px;letter-spacing:.08em;padding:8px 12px;min-height:40px;opacity:.72;border-width:1px}
 #bLeave{left:12px} #bOver{right:12px}
@@ -81,9 +90,10 @@ button.pri{border-width:2px}
   <p class="hook">Whatever you leave off the chart, she finds in the dark.</p>
   <p class="how">Twenty seconds of dusk. One bottle of ink. Then Odile sails the bay by your chart alone.</p>
   <div class="row"><button class="pri" id="bCoast">The Coast</button><button id="bDaily">Tonight's bay</button><button id="bRandom">Another bay</button></div>
-  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.6</p>
+  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.7</p>
 </div>
-<div id="coast"><h2>The Coast</h2><p>Ten bays, each harder than the last. Three nights in each; every night she gets home lights a lamp. Two lamps open the next bay.</p><div id="bays"></div><div class="row"><button id="bBack">Back</button><button id="bWipe">Reset coast</button></div></div>
+<div id="coast"><h2>The Coast</h2><p>Ten bays, each harder than the last. Three nights in each; every night she gets home lights a lamp. Two lamps open the next bay.</p><div id="bays"></div><div class="row"><button id="bBack">Back</button><button id="bSpin">Spin for supplies</button><button id="bWipe">Reset coast</button></div><p id="invLine" style="margin-top:10px"></p></div>
+<div id="wheel"><h2>Supplies</h2><p id="wMsg"></p><div id="wWrap"><div id="wPtr"></div><div id="wDisc"></div></div><div class="row"><button class="pri" id="wGo">Watch an ad to spin</button><button id="wClose">Close</button></div><p class="fine2">Ads are a placeholder in this web build. Real rewarded ads arrive with the App Store version.</p></div>
 <button class="mini hide" id="bLeave">&lsaquo; Leave</button><button class="mini hide" id="bOver">&#8634; Start over</button>
 <script>
 'use strict';
@@ -93,7 +103,7 @@ button.pri{border-width:2px}
    Sections: config · rng · bay generator · chart · pilot · night sim
              · bots & bench · audio · store · game state · render · input · boot
    ============================================================ */
-const VERSION='0.6';
+const VERSION='0.7';
 const W=1000,H=640,CELL=8,GW=W/CELL|0,GH=H/CELL|0,NC=GW*GH;
 const CFG={
   DUSK:20,          // seconds of failing light
@@ -111,8 +121,9 @@ const CFG={
 };
 const PILOT='Odile';
 // Difficulty: the daily and random bays use DEF; the coast interpolates from a gentle first bay to a mean tenth.
-const DEF={leg:1,minR:10,maxR:20,ex0:2,ex1:4,ink:1,pad:0,cap:false};let DIFF=DEF;
-function coastDiff(i){const t=i/9,L=(a,b)=>a+(b-a)*t;return{leg:L(.5,1),minR:Math.round(L(7,12)),maxR:Math.round(L(10,22)),ex0:1,ex1:Math.round(L(1,4)),ink:L(1.5,.92),pad:L(.35,0),cap:true};}
+const DEF={leg:1,minR:10,maxR:20,ex0:2,ex1:4,ink:1.12,pad:0,cap:false,isl:1,floor:0};let DIFF=DEF;
+function coastDiff(i){const t=i/9,L=(a,b)=>a+(b-a)*t;return{leg:L(.5,1),minR:Math.round(L(7,12)),maxR:Math.round(L(10,22)),ex0:1,ex1:Math.round(L(1,4)),ink:L(1.5,1.05),pad:L(.35,0),cap:true,isl:i<2?0:i<6?1:2,floor:L(640,600)};}
+const FLOOR_K=[1,.8,.7];function bottle(bay,ni){return Math.max(bay.sumW*CFG.RATION[ni]*bay.inkMul,bay.inkFloor*FLOOR_K[ni]);}
 
 /* ---------- utils ---------- */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v, lerp=(a,b,t)=>a+(b-a)*t;
@@ -179,7 +190,12 @@ function tryBay(seed){
   const topC=x=>{let v=56+44*vn1(x/130,s1)+13*vn1(x/37,s1^77);for(const h of heads)v+=bump(x,h.x,h);return v;};
   const leftC=y=>{let v=40+38*vn1(y/120,s2)+10*vn1(y/33,s2^91);if(side&&side.left)v+=bump(y,side.y,side);return v;};
   const rightC=y=>{let v=40+38*vn1(y/120,s3)+10*vn1(y/33,s3^53);if(side&&!side.left)v+=bump(y,side.y,side);return v;};
-  const isLand=(x,y)=>y<topC(x)||x<leftC(y)||x>W-rightC(y);
+  const coastLand=(x,y)=>y<topC(x)||x<leftC(y)||x>W-rightC(y);
+  const isles=[];
+  for(let k=0;k<DIFF.isl;k++)for(let t=0;t<40;t++){const x=rr(280,720),y=rr(235,415),r=rr(34,46);let okI=isles.every(q=>Math.hypot(q.x-x,q.y-y)>230);
+    for(let a=0;a<12&&okI;a++)if(coastLand(x+Math.cos(a*Math.PI/6)*(r+95),y+Math.sin(a*Math.PI/6)*(r+95)))okI=false;
+    if(okI){const rad=[];for(let j=0;j<RK;j++)rad.push(r*(0.84+0.3*rnd()));isles.push({x,y,r,rad:rad.map((v,j)=>(rad[(j+RK-1)%RK]+2*v+rad[(j+1)%RK])/4),a:rr(0,Math.PI*2)});break;}}
+  const isLand=(x,y)=>coastLand(x,y)||isles.some(q=>inRock(q,x,y));
   // six harbour lamps, each at the end of a short pier; three are lit on any one night
   const clearOf=(v,h)=>!h||Math.abs(v-h.y)>h.wid*2;
   const pickTop=(lo,hi)=>{for(let k=0;k<40;k++){const x=rr(lo,hi);if(heads.every(h=>Math.abs(x-h.x)>h.wid*2))return x;}return null;};
@@ -190,6 +206,9 @@ function tryBay(seed){
   for(const x of tx)lamps.push({x,y:topC(x)+40,px:x,py:topC(x)});
   for(const y of ly)lamps.push({x:leftC(y)+40,y,px:leftC(y),py:y});
   for(const y of ry)lamps.push({x:W-rightC(y)-40,y,px:W-rightC(y),py:y});
+  // an island harbour takes the place of one mainland lamp
+  isles.forEach((q,k)=>{const f=(q.a/(Math.PI*2))*RK,re=q.rad[Math.floor(f)%RK],ca=Math.cos(q.a),sa=Math.sin(q.a),slot=k===0?ri(0,1):2+ri(0,3);
+    lamps[slot]={x:q.x+ca*(q.r*1.16+34),y:q.y+sa*(q.r*1.16+34),px:q.x+ca*re*0.9,py:q.y+sa*re*0.9,isle:q};});
   for(const L of lamps)for(let a=0;a<8;a++){if(isLand(L.x+Math.cos(a*Math.PI/4)*18,L.y+Math.sin(a*Math.PI/4)*18))return null;}
   for(let i=0;i<6;i++)for(let j=i+1;j<6;j++)if(Math.hypot(lamps[i].x-lamps[j].x,lamps[i].y-lamps[j].y)<130)return null;
   const off=rr(-30,30);
@@ -229,7 +248,7 @@ function tryBay(seed){
     tours.push(good?{start,stops,trio:tr,best:d/CFG.V,limit:CFG.TIDE_K[ni]*d/CFG.V+CFG.TIDE_PAD+DIFF.pad}:null);});
   if(tours.some(t=>!t))return null;
   const sumW=rocks.reduce((a,q)=>a+2*q.r,0);
-  return{topC,leftC,rightC,isLand,lamps,starts,rocks,rockCells,solid,rid,hard,tours,sumW,inkMul:DIFF.ink};}
+  return{topC,leftC,rightC,isLand,lamps,starts,rocks,rockCells,solid,rid,hard,tours,sumW,inkMul:DIFF.ink,inkFloor:DIFF.floor,isles};}
 
 /* ---------- the chart (what you drew, and what the bay added in red) ---------- */
 function newChart(bay){const c={ink:0,spent:0,strokes:[],inkNear:new Uint8Array(NC),known:new Uint8Array(NC),knownHard:new Uint8Array(NC),reds:new Set(),scars:[]};
@@ -313,7 +332,7 @@ function bench(n,seed0,level){n=n||100;seed0=seed0||1;DIFF=level!=null?coastDiff
   let rocks=0;
   for(let s=0;s<n;s++){const bay=genBay(seed0+s*101);rocks+=bay.rocks.length;
     for(const nm of names){const c=newChart(bay);let h=0;
-      for(let ni=0;ni<3;ni++){c.ink=bay.sumW*CFG.RATION[ni]*bay.inkMul;if(nm==='slash')botSlash(bay,c,ni);else if(nm==='omni')botOmni(bay,c,ni);
+      for(let ni=0;ni<3;ni++){c.ink=bottle(bay,ni);if(nm==='slash')botSlash(bay,c,ni);else if(nm==='omni')botOmni(bay,c,ni);
         const N=runNight(bay,c,ni);if(N.made){res[nm].home[ni]++;h++;res[nm].margin[ni]+=N.limit-N.t;}res[nm].strikes[ni]+=N.strikes;}
       if(h===3)res[nm].all3++;if(h>0)res[nm].any++;}}
   const out={n,rocksAvg:+(rocks/n).toFixed(1)};
@@ -358,8 +377,8 @@ const Store={backend:'mem',mem:{},
   async set(k,v){try{if(this.backend==='ws'){await window.storage.set(k,v);return;}if(this.backend==='ls'){localStorage.setItem(k,v);return;}}catch(e){}this.mem[k]=v;}};
 Store.init();
 const SAVE_KEY='ibd_save',SCHEMA=1;
-let META={schema:SCHEMA,muted:false,bays:0,nightsHome:0,nights:0,daily:{},coast:{bays:[]}};
-async function loadMeta(){const raw=await Store.get(SAVE_KEY);if(!raw)return;try{const m=JSON.parse(raw);if(m&&m.schema===SCHEMA){META=Object.assign(META,m);META.daily=m.daily||{};META.coast=(m.coast&&Array.isArray(m.coast.bays))?m.coast:{bays:[]};}}catch(e){}}
+let META={schema:SCHEMA,muted:false,bays:0,nightsHome:0,nights:0,daily:{},coast:{bays:[]},inv:{ink:0,light:0,tide:0}};
+async function loadMeta(){const raw=await Store.get(SAVE_KEY);if(!raw)return;try{const m=JSON.parse(raw);if(m&&m.schema===SCHEMA){META=Object.assign(META,m);META.daily=m.daily||{};META.coast=(m.coast&&Array.isArray(m.coast.bays))?m.coast:{bays:[]};META.inv=Object.assign({ink:0,light:0,tide:0},m.inv||{});}}catch(e){}}
 function saveMeta(){Store.set(SAVE_KEY,JSON.stringify(META));}
 
 /* ---------- game state ---------- */
@@ -382,7 +401,7 @@ const timers=[];function after(sec,fn){timers.push({t:sec,fn});}
 
 function dayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 // Coast 1: ten seeds chosen by the bench so that on every bay a blank chart loses and a perfect chart brings her home all three nights.
-const COAST_SEEDS=[3479577439,3937042843,1876064870,495945869,2043009504,2516040380,3145813306,3349122350,4167715274,1922875040];
+const COAST_SEEDS=[837858872,1074723154,2381804971,237630451,1582278239,1802364902,1078245841,1490601268,190820281,3072113338];
 const COAST_N=COAST_SEEDS.length,coastSeed=i=>COAST_SEEDS[i];
 const bayRec=i=>META.coast.bays[i]||{lamps:0,dry:false,tries:0};
 const bayOpen=i=>i===0||bayRec(i-1).lamps>=2;
@@ -406,24 +425,44 @@ function showCoast(){S.phase='title';el.title.style.display='none';$('coast').st
     e.className='bay'+(open?'':' locked')+(i===next?' next':'');
     e.innerHTML=(i+1)+'<small>'+'\u25cf'.repeat(r.lamps)+'\u25cb'.repeat(3-r.lamps)+'</small>'+(r.dry?'<span class="dry">DRY</span>':'');
     if(open)e.onclick=()=>{audio();startBay(false,null,i);};box.appendChild(e);}
-  $('bWipe').textContent='Reset coast';$('bWipe')._armed=false;}
+  $('bWipe').textContent='Reset coast';$('bWipe')._armed=false;$('invLine').textContent=invText();}
 // two-tap guard for anything that throws work away
 function disarm(){const o=$('bOver');o._armed=false;o.innerHTML='&#8634; Start over';}
 $('bOver').onclick=()=>{const o=$('bOver');if(!o._armed){o._armed=true;o.textContent='Tap again: night 1, blank chart';after(3,disarm);return;}audio();restartBay();};
 $('bLeave').onclick=()=>leave();
 $('bWipe').onclick=()=>{const w=$('bWipe');if(!w._armed){w._armed=true;w.textContent='Tap again to erase all lamps';return;}META.coast={bays:[]};saveMeta();showCoast();};
+// The wheel. In this web build the ad is a five-second placeholder; the App Store build swaps in a rewarded ad at the same point.
+const WHEEL=[['ink',1],['tide',1],['light',1],['ink',2],['tide',1],['light',2]];let wSpinning=false,wTurns=0;
+function invText(){const v=META.inv;return'Supplies: ink \u00d7'+v.ink+' \u00b7 light \u00d7'+v.light+' \u00b7 tide \u00d7'+v.tide;}
+function openWheel(){const d=$('wDisc');if(!d.firstChild)WHEEL.forEach((w,i)=>{const e=document.createElement('span');e.textContent=SUP[w[0]].name+(w[1]>1?' \u00d72':'');e.style.transform='rotate('+(i*60+30-90)+'deg) translate(34%,-50%)';e.style.left='50%';e.style.top='50%';e.style.transform='rotate('+(i*60+30-90)+'deg) translateX(46px) translateY(-50%)';d.appendChild(e);});
+  $('wMsg').textContent=invText();$('wGo').textContent='Watch an ad to spin';$('wGo').disabled=false;$('wheel').style.display='flex';}
+function spinWheel(){if(wSpinning)return;wSpinning=true;const go=$('wGo');go.disabled=true;let n=5;
+  const tick=()=>{if(n>0){$('wMsg').textContent='Ad placeholder \u2014 '+n+'\u2026';n--;setTimeout(tick,1000);return;}
+    const i=Math.floor(Math.random()*WHEEL.length),w=WHEEL[i];wTurns+=5;$('wDisc').style.transform='rotate('+(wTurns*360-(i*60+30))+'deg)';$('wMsg').textContent='\u2026';
+    setTimeout(()=>{META.inv[w[0]]+=w[1];saveMeta();$('wMsg').textContent='You won '+SUP[w[0]].name+(w[1]>1?' \u00d72':'')+' ('+SUP[w[0]].tip+'). '+invText();go.textContent='Watch another ad';go.disabled=false;wSpinning=false;
+      if($('invLine'))$('invLine').textContent=invText();if(S.phase==='dusk')duskButtons();},3400);};tick();}
+$('wGo').onclick=()=>{audio();spinWheel();};$('wClose').onclick=()=>{if(!wSpinning)$('wheel').style.display='none';};$('bSpin').onclick=()=>{audio();openWheel();};
 $('bBack').onclick=()=>{$('coast').style.display='none';el.title.style.display='flex';};
+// Supplies won on the wheel. Each is spent at dusk and lasts one night.
+const SUP={ink:{name:'Ink',tip:'+40% bottle'},light:{name:'Light',tip:'+6 s of dusk'},tide:{name:'Tide',tip:'+3 s tonight'}};
+function useSupply(k){if(S.phase!=='dusk'||!(META.inv[k]>0))return;META.inv[k]--;saveMeta();
+  if(k==='ink'){const add=S.inkCap*0.4;S.chart.ink+=add;S.inkCap+=add;S.toldDry=false;}
+  else if(k==='light'){S.duskT=Math.max(0,S.duskT-6);}
+  else if(k==='tide'){S.tideBonus=(S.tideBonus||0)+3;}
+  caption('',SUP[k].name+' used: '+SUP[k].tip.replace('+','')+'.',1.8);SFX.bell();duskButtons();}
+function duskButtons(){const list=[['Cast off',()=>{if(S.phase==='dusk')startNight();}]];
+  for(const k of['ink','light','tide'])if(META.inv[k]>0)list.push(['+'+SUP[k].name+' \u00d7'+META.inv[k],()=>useSupply(k)]);buttons(list);}
 function startDusk(){
   S.phase='dusk';S.duskT=0;S.began=false;S.wait=0;S.dark=0;S.N=null;S.full=false;S.rings.length=0;S.capFade=false;S.toldDry=false;timers.length=0;
-  S.chart.ink=S.bay.sumW*CFG.RATION[S.ni]*S.bay.inkMul;S.inkCap=Math.max(S.chart.ink,1);
+  S.chart.ink=bottle(S.bay,S.ni);S.inkCap=Math.max(S.chart.ink,1);S.tideBonus=0;
   el.hNight.textContent=(S.ci!=null?'Bay '+(S.ci+1)+' \u00b7 ':'')+'Night '+(S.ni+1)+' of 3';
   el.mInk.classList.remove('hide');el.mTide.classList.add('hide');
-  caption('Dusk',S.ni===0?'Draw the rocks between the lamps.':(S.ni===1?'Same bay, same chart. Three other lamps.':'Last night. What does the chart still owe her?'));
-  buttons([['Cast off',()=>{if(S.phase==='dusk')startNight();}]]);hint('');
+  caption('Dusk',S.ni===0?'Draw the rocks between the lamps: 1, 2, 3.':(S.ni===1?'Same bay, same chart. Three other lamps.':'Last night. What does the chart still owe her?'));
+  duskButtons();hint('');
   SFX.dusk();setSea(0.012);}
 function startNight(){
   S.phase='night';S.dark=1;S.stroke=null;setPen(0);
-  S.N=nightNew(S.bay,S.chart,S.ni);S.ff=false;
+  S.N=nightNew(S.bay,S.chart,S.ni);S.N.limit+=(S.tideBonus||0);S.ff=false;
   el.mInk.classList.add('hide');el.mTide.classList.remove('hide');
   caption('Night',S.ni===0?'She trusts blank paper.':'',2.6);
   buttons([]);hint('hold to hurry');
@@ -463,8 +502,8 @@ function finish(){
   if(S.ci!=null){const r=bayRec(S.ci),was=r.lamps;r.tries++;r.lamps=Math.max(r.lamps,home);r.dry=r.dry||(home===3&&strikes===0);META.coast.bays[S.ci]=r;
     for(let i=0;i<S.ci;i++)if(!META.coast.bays[i])META.coast.bays[i]={lamps:0,dry:false,tries:0};saveMeta();
     el.cap.lastElementChild.innerHTML+='<br><i>Lamps lit in this bay: '+'\u25cf'.repeat(r.lamps)+'\u25cb'.repeat(3-r.lamps)+(r.lamps>was?' (new best)':'')+(S.ci<COAST_N-1&&r.lamps<2?' \u00b7 two open the next bay':'')+'</i>';
-    const list=[];if(S.ci<COAST_N-1&&r.lamps>=2)list.push(['Next bay',()=>startBay(false,null,S.ci+1)]);list.push(['Again',()=>restartBay()],['Coast',()=>leave()]);buttons(list);
-  }else buttons([['Another bay',()=>startBay(false)],copy]);
+    const list=[];if(S.ci<COAST_N-1&&r.lamps>=2)list.push(['Next bay',()=>startBay(false,null,S.ci+1)]);list.push(['Again',()=>restartBay()],['Spin for supplies',()=>openWheel()],['Coast',()=>leave()]);buttons(list);
+  }else buttons([['Another bay',()=>startBay(false)],['Spin for supplies',()=>openWheel()],copy]);
   S.phase='final';}
 
 /* ---------- update ---------- */
@@ -504,15 +543,15 @@ function update(dt){
 
 /* ---------- render ---------- */
 let VIEW={s:1,ox:0,oy:0,rot:false,dpr:1};
-function resize(){const dpr=Math.min(window.devicePixelRatio||1,2),w=Math.max(1,innerWidth),h=Math.max(1,innerHeight);
+function resize(){const box=cv.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2),w=Math.max(1,box.width||innerWidth),h=Math.max(1,box.height||innerHeight);
   cv.width=Math.max(1,(w*dpr)|0);cv.height=Math.max(1,(h*dpr)|0);
   const rot=h>w*1.08,band=h>=540,top=band?Math.round(clamp(h*0.2,126,150)):0,bot=band?68:0,ah=h-top-bot;
   const s=rot?Math.min(w/H,ah/W):Math.min(w/W,ah/H);
-  VIEW={s,rot,dpr,ox:rot?(w-H*s)/2:(w-W*s)/2,oy:top+(rot?(ah-W*s)/2:(ah-H*s)/2)};
-  document.body.classList.toggle('band',band);}
+  const was=VIEW.rot;VIEW={s,rot,dpr,ox:rot?(w-H*s)/2:(w-W*s)/2,oy:top+(rot?(ah-W*s)/2:(ah-H*s)/2),left:box.left||0,topPx:box.top||0};
+  document.body.classList.toggle('band',band);if(was!==rot&&S.bay)paintTruth(S.bay);}
 function applyView(c){const{s,ox,oy,rot,dpr}=VIEW,sh=S.shake,jx=sh?(Math.random()-.5)*sh:0,jy=sh?(Math.random()-.5)*sh:0;
   if(rot)c.setTransform(0,s*dpr,-s*dpr,0,(ox+H*s+jx)*dpr,(oy+jy)*dpr);else c.setTransform(s*dpr,0,0,s*dpr,(ox+jx)*dpr,(oy+jy)*dpr);}
-function toWorld(cx,cy){const{s,ox,oy,rot}=VIEW;return rot?{x:(cy-oy)/s,y:(ox+H*s-cx)/s}:{x:(cx-ox)/s,y:(cy-oy)/s};}
+function toWorld(cx,cy){const{s,ox,oy,rot}=VIEW;cx-=VIEW.left||0;cy-=VIEW.topPx||0;return rot?{x:(cy-oy)/s,y:(ox+H*s-cx)/s}:{x:(cx-ox)/s,y:(cy-oy)/s};}
 function rockPath(c,q){const P=[];for(let k=0;k<RK;k++){const a=k/RK*Math.PI*2;P.push([q.x+Math.cos(a)*q.rad[k],q.y+Math.sin(a)*q.rad[k]]);}
   c.beginPath();const m0=[(P[RK-1][0]+P[0][0])/2,(P[RK-1][1]+P[0][1])/2];c.moveTo(m0[0],m0[1]);
   for(let k=0;k<RK;k++){const a=P[k],b=P[(k+1)%RK];c.quadraticCurveTo(a[0],a[1],(a[0]+b[0])/2,(a[1]+b[1])/2);}c.closePath();}
@@ -523,6 +562,7 @@ function paintTruth(bay){
   c.beginPath();c.moveTo(0,0);c.lineTo(W,0);for(let x=W;x>=0;x-=5)c.lineTo(x,bay.topC(x));c.closePath();c.fill();
   c.beginPath();c.moveTo(0,0);for(let y=0;y<=H;y+=5)c.lineTo(bay.leftC(y),y);c.lineTo(0,H);c.closePath();c.fill();
   c.beginPath();c.moveTo(W,0);for(let y=0;y<=H;y+=5)c.lineTo(W-bay.rightC(y),y);c.lineTo(W,H);c.closePath();c.fill();
+  for(const q of bay.isles){rockPath(c,q);c.fill();}
   c.globalCompositeOperation='source-atop';c.strokeStyle='rgba(28,36,48,.26)';c.lineWidth=1;c.beginPath();
   for(let k=-H;k<W;k+=9){c.moveTo(k,0);c.lineTo(k+H,H);}c.stroke();c.globalCompositeOperation='source-over';
   c=tctx;c.setTransform(TS,0,0,TS,0,0);c.clearRect(0,0,W,H);c.lineJoin='round';c.lineCap='round';
@@ -530,10 +570,28 @@ function paintTruth(bay){
   c.beginPath();for(let x=0;x<=W;x+=5){const y=bay.topC(x);x?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();
   c.beginPath();for(let y=0;y<=H;y+=5){const x=bay.leftC(y);y?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();
   c.beginPath();for(let y=0;y<=H;y+=5){const x=W-bay.rightC(y);y?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();
+  for(const q of bay.isles){rockPath(c,q);c.stroke();}
   c.setTransform(1,0,0,1,0,0);c.drawImage(landCv,0,0);c.setTransform(TS,0,0,TS,0,0);
-  // piers (all six); tonight's three lamps are drawn live
-  for(const L of bay.lamps){c.strokeStyle=ink;c.lineWidth=3.5;c.beginPath();c.moveTo(L.px,L.py);c.lineTo(L.x,L.y);c.stroke();
-    c.fillStyle=ink;c.beginPath();c.arc(L.x,L.y,2.6,0,7);c.fill();}
+  // harbours: a planked pier from the shore, and a few roofs behind it
+  const tr=mulberry32(bay.seed^0x70a7),paper='#e9e0cc',up=VIEW.rot?-Math.PI/2:0;
+  bay.lamps.forEach((L,li)=>{const dx=L.x-L.px,dy=L.y-L.py,l=Math.hypot(dx,dy)||1,ux=dx/l,uy=dy/l,nx=-uy,ny=ux;
+    // the town sits inland of the pier foot (on an island, toward its middle)
+    const n=L.isle?3:4+Math.floor(tr()*3),tall=Math.floor(tr()*n),kind=tr()<0.5;
+    for(let h=0;h<n;h++){const off=(h-(n-1)/2)*13+(tr()-.5)*3,back=(L.isle?9:13)+tr()*7+(Math.abs(h-(n-1)/2)*2.5);
+      const hx=L.px-ux*back+nx*off,hy=L.py-uy*back+ny*off,w=7+tr()*3,ht=6+tr()*3;
+      if(!bay.isLand(hx,hy))continue;
+      c.save();c.translate(hx,hy);c.rotate(up);c.lineWidth=1.5;c.strokeStyle=ink;c.fillStyle=paper;
+      if(h===tall){ // a spire or a lighthouse gives each town its own outline
+        if(kind){c.beginPath();c.rect(-3,-ht-6,6,ht+6);c.fill();c.stroke();c.beginPath();c.moveTo(-4,-ht-6);c.lineTo(0,-ht-17);c.lineTo(4,-ht-6);c.closePath();c.fill();c.stroke();c.beginPath();c.moveTo(0,-ht-17);c.lineTo(0,-ht-22);c.moveTo(-2,-ht-20);c.lineTo(2,-ht-20);c.stroke();}
+        else{c.beginPath();c.moveTo(-4,0);c.lineTo(-2.6,-ht-10);c.lineTo(2.6,-ht-10);c.lineTo(4,0);c.closePath();c.fill();c.stroke();c.beginPath();c.rect(-3.6,-ht-14,7.2,4);c.fill();c.stroke();c.beginPath();c.moveTo(-3,-ht-14);c.lineTo(0,-ht-18);c.lineTo(3,-ht-14);c.stroke();c.fillStyle='#b3261e';c.fillRect(-3.1,-ht-4,6.2,2.2);}
+      }else{c.beginPath();c.rect(-w/2,-ht,w,ht);c.fill();c.stroke();c.beginPath();c.moveTo(-w/2-1.5,-ht);c.lineTo(0,-ht-5-tr()*2);c.lineTo(w/2+1.5,-ht);c.closePath();c.fillStyle=ink;c.globalAlpha=.8;c.fill();c.globalAlpha=1;
+        if(tr()<.5){c.fillStyle=ink;c.fillRect(-1,-ht*.6,2,2.4);}}
+      c.restore();}
+    // quay wall along the shore, then the pier with its planks
+    c.strokeStyle=ink;c.lineWidth=3;c.beginPath();c.moveTo(L.px+nx*14-ux*1,L.py+ny*14-uy*1);c.lineTo(L.px-nx*14-ux*1,L.py-ny*14-uy*1);c.stroke();
+    c.lineWidth=5.5;c.beginPath();c.moveTo(L.px-ux*3,L.py-uy*3);c.lineTo(L.x-ux*4,L.y-uy*4);c.stroke();
+    c.strokeStyle=paper;c.lineWidth=1;for(let d=4;d<l-6;d+=5){c.beginPath();c.moveTo(L.px+ux*d+nx*2.6,L.py+uy*d+ny*2.6);c.lineTo(L.px+ux*d-nx*2.6,L.py+uy*d-ny*2.6);c.stroke();}
+    c.fillStyle=ink;c.beginPath();c.arc(L.x,L.y,3,0,7);c.fill();});
   // rocks
   const r2=mulberry32(bay.seed^0x51ab);
   for(const q of bay.rocks){rockPath(c,q);c.fillStyle=land;c.fill();c.strokeStyle=ink;c.lineWidth=2.4;c.stroke();
@@ -547,7 +605,8 @@ function composeWake(track){const c=wctx;c.setTransform(1,0,0,1,0,0);c.globalCom
   c.strokeStyle='rgba(0,0,0,.45)';c.lineWidth=CFG.REVEAL_R*2+26;path();c.stroke();
   c.strokeStyle='#000';c.lineWidth=CFG.REVEAL_R*2;path();c.stroke();
   c.setTransform(1,0,0,1,0,0);c.globalCompositeOperation='source-in';c.drawImage(truthCv,0,0);c.globalCompositeOperation='source-over';}
-function drawLampMark(c,L,col,pulse){c.strokeStyle=col;c.fillStyle=col;c.lineWidth=2.2;
+function drawLampMark(c,L,col,pulse,num){c.strokeStyle=col;c.fillStyle=col;c.lineWidth=2.2;
+  if(num){const dx=L.x-L.px,dy=L.y-L.py,l=Math.hypot(dx,dy)||1;c.save();c.translate(L.x+dx/l*27,L.y+dy/l*27);if(VIEW.rot)c.rotate(-Math.PI/2);c.font='italic bold 22px Georgia,serif';c.textAlign='center';c.textBaseline='middle';c.fillText(String(num),0,1);c.restore();}
   c.beginPath();c.arc(L.x,L.y,6.5,0,7);c.stroke();c.beginPath();c.arc(L.x,L.y,2.6,0,7);c.fill();
   c.lineWidth=1.7;for(let a=0;a<8;a++){const an=a*Math.PI/4;c.beginPath();c.moveTo(L.x+Math.cos(an)*10,L.y+Math.sin(an)*10);c.lineTo(L.x+Math.cos(an)*15,L.y+Math.sin(an)*15);c.stroke();}
   if(pulse>0){c.globalAlpha=.5*(1-pulse);c.lineWidth=1.6;c.beginPath();c.arc(L.x,L.y,16+pulse*22,0,7);c.stroke();c.globalAlpha=1;}}
@@ -585,7 +644,7 @@ function render(){
   for(const st of ch.strokes){if(st.length<=2){c.beginPath();c.arc(st[0],st[1],2.6,0,7);c.fill();continue;}
     c.beginPath();c.moveTo(st[0],st[1]);for(let i=2;i<st.length;i+=2)c.lineTo(st[i],st[i+1]);c.stroke();}
   if(S.phase==='dusk'){const t=bay.tours[S.ni],col=mixc(INK,CREAM,d,Math.max(.25,1-d*.8)),pl=(performance.now()/1400)%1;
-    for(const L of t.stops)drawLampMark(c,L,col,S.duskT<9?pl:0);
+    t.stops.forEach((L,i)=>drawLampMark(c,L,col,S.duskT<9?pl:0,i+1));
     drawBoat(c,t.start.x,t.start.y,-Math.PI/2,mixc(INK,CREAM,d),false);}
   const N=S.N;
   if(N&&S.phase==='night'){
@@ -602,7 +661,7 @@ function render(){
   }
   if(N&&(S.phase==='dawn'||S.phase==='final')){const tr=N.track,k=Math.min(S.sweepK,tr.length-1);
     c.strokeStyle=mixc(INK,PENCIL,d,.6);c.lineWidth=1.6;c.setLineDash([2,6]);c.beginPath();for(let i=0;i<=k;i++)i?c.lineTo(tr[i].x,tr[i].y):c.moveTo(tr[i].x,tr[i].y);c.stroke();c.setLineDash([]);
-    for(const L of N.stops)drawLampMark(c,L,mixc(INK,CREAM,d),0);
+    N.stops.forEach((L,i)=>drawLampMark(c,L,mixc(INK,CREAM,d),0,i+1));
     for(let i=0;i<S.sweepHits;i++){const h=N.hits[i];c.strokeStyle=RED;c.lineWidth=2.6;c.beginPath();c.moveTo(h.x-6,h.y-6);c.lineTo(h.x+6,h.y+6);c.moveTo(h.x+6,h.y-6);c.lineTo(h.x-6,h.y+6);c.stroke();}
     const done=k>=tr.length-1,bp=done?N.pos:tr[k],nx=tr[Math.min(k+1,tr.length-1)];
     drawBoat(c,bp.x,bp.y,done?N.hdg:Math.atan2(nx.y-bp.y,nx.x-bp.x),mixc(INK,CREAM,d),false);
@@ -623,8 +682,11 @@ function penDown(e){
   S.stroke=[p.x,p.y];c.strokes.push(S.stroke);inkStamp(c,p.x,p.y);
   try{cv.setPointerCapture(e.pointerId);}catch(_){}
   if(!S.capFade){S.capFade=true;const id=capId;after(1.4,()=>{if(capId===id)caption('','');});}}
-function penMove(e){
+function penMove(ev){
   if(S.phase!=='dusk'||!S.stroke)return;
+  const list=ev.getCoalescedEvents?ev.getCoalescedEvents():null;for(const e of(list&&list.length?list:[ev]))penPoint(e);}
+function penPoint(e){
+  if(!S.stroke)return;
   const c=S.chart,st=S.stroke,p=toWorld(e.clientX,e.clientY);
   p.x=clamp(p.x,0,W);p.y=clamp(p.y,0,H);
   const lx=st[st.length-2],ly=st[st.length-1];let d=Math.hypot(p.x-lx,p.y-ly);
@@ -632,7 +694,7 @@ function penMove(e){
   if(c.ink<=0){S.stroke=null;setPen(0);SFX.dry();if(!S.toldDry){S.toldDry=true;caption('','The bottle is dry.',2.2);}return;}
   if(d>c.ink){const t=c.ink/d;p.x=lx+(p.x-lx)*t;p.y=ly+(p.y-ly)*t;d=c.ink;}
   c.ink-=d;c.spent+=d;st.push(p.x,p.y);inkSeg(c,lx,ly,p.x,p.y);
-  setPen(Math.min(.16,.04+d*.012));clearTimeout(penMove._t);penMove._t=setTimeout(()=>setPen(0),70);}
+  setPen(Math.min(.16,.04+d*.012));clearTimeout(penPoint._t);penPoint._t=setTimeout(()=>setPen(0),70);}
 function penUp(){S.stroke=null;S.ff=false;setPen(0);}
 cv.addEventListener('pointerdown',penDown);cv.addEventListener('pointermove',penMove);
 addEventListener('pointerup',penUp);addEventListener('pointercancel',penUp);
@@ -642,7 +704,7 @@ addEventListener('keydown',e=>{
     if(S.phase==='night'){S.ff=true;return;}
     const b=el.btns.querySelector('button');if(S.phase==='title'){if(el.title.style.display!=='none')$('bCoast').click();}else if(b&&!e.repeat)b.click();}});
 addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter')S.ff=false;});
-addEventListener('resize',resize);
+addEventListener('resize',resize);addEventListener('orientationchange',()=>setTimeout(resize,250));if(window.visualViewport)visualViewport.addEventListener('resize',resize);setTimeout(resize,400);
 $('bCoast').onclick=()=>{audio();showCoast();};
 $('bDaily').onclick=()=>{audio();startBay(true);};
 $('bRandom').onclick=()=>{audio();startBay(false);};
@@ -655,7 +717,7 @@ function frame(now){const elp=Math.min(.1,(now-last)/1000);last=now;acc+=elp;
 
 /* ---------- debug API (headless-safe: step() drives time when rAF is asleep) ---------- */
 window.IBD={
-  get S(){return S;},CFG,VERSION,showCoast,coastDiff,get META(){return META;},genBay,newChart,runNight,bench,botSlash,botOmni,
+  get S(){return S;},CFG,VERSION,showCoast,coastDiff,openWheel,useSupply,bottle,get META(){return META;},genBay,newChart,runNight,bench,botSlash,botOmni,
   start(seed){startBay(false,seed);},
   step(sec){const n=Math.round((sec||1)/DT);for(let i=0;i<n;i++)update(DT);render();return this.info();},
   line(x1,y1,x2,y2){const c=S.chart;if(S.phase!=='dusk')return false;S.began=true;return botLine(c,x1,y1,x2,y2);},

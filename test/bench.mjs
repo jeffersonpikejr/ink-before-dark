@@ -12,7 +12,7 @@ const src = html.slice(html.indexOf('<script>') + 8, html.lastIndexOf('</script>
 const noop = () => {};
 const ctx2d = new Proxy({}, { get: (t, k) => (k === 'canvas' ? {} : (k in t ? t[k] : (k === 'createRadialGradient' ? () => ({ addColorStop: noop }) : noop))), set: (t, k, v) => { t[k] = v; return true; } });
 const elem = () => ({ style: {}, classList: { add: noop, remove: noop, toggle: noop }, firstElementChild: { style: {}, textContent: '' }, lastElementChild: { innerHTML: '' },
-  getContext: () => ctx2d, addEventListener: noop, appendChild: noop, querySelector: () => null, setPointerCapture: noop, width: 0, height: 0, textContent: '', innerHTML: '', click: noop });
+  getContext: () => ctx2d, getBoundingClientRect: () => ({ left: 0, top: 0, width: 1000, height: 640 }), firstChild: null, disabled: false, addEventListener: noop, appendChild: noop, querySelector: () => null, setPointerCapture: noop, width: 0, height: 0, textContent: '', innerHTML: '', click: noop });
 const sandbox = { console, performance: { now: () => 0 }, requestAnimationFrame: noop, setTimeout: noop, clearTimeout: noop, innerWidth: 1000, innerHeight: 640,
   addEventListener: noop, navigator: {}, localStorage: { getItem: () => null, setItem: noop, removeItem: noop },
   document: { getElementById: elem, createElement: elem, body: { classList: { toggle: noop } } } };

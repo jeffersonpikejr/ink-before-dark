@@ -6,7 +6,7 @@ A single-file browser game with one verb: **draw**. You get twenty seconds of fa
 
 Your chart doesn't have to be true. It has to bring her home.
 
-**Status:** v0.6 (2026-11-22).
+**Status:** v0.7 (2026-11-22).
 
 **▶ Play in your browser: https://jeffersonpikejr.github.io/ink-before-dark/** — on an iPad or iPhone, Share → Add to Home Screen runs it full-screen.
 
@@ -18,7 +18,7 @@ python3 -m http.server 8471 --directory ~/code/ink-before-dark
 
 Then open http://localhost:8471. Or double-click `index.html`: it is one self-contained file with no dependencies and no build step.
 
-- **Dusk.** Draw with a finger or the mouse. Three of the six harbour lamps are marked tonight; she will visit them in an order you are not told. The light fails over twenty seconds, and the ink bar is all you get. `Space` casts off early.
+- **Dusk.** Draw with a finger or the mouse. Three of the six harbour lamps are numbered tonight: she visits them in that order. The light fails over twenty seconds, and the ink bar is all you get. `Space` casts off early.
 - **Night.** Watch. Her dotted course is pencilled on your chart. Hold the pointer (or `Space`) to hurry.
 - **Dawn.** Her night is retraced along her wake, and the truth appears beneath it.
 - Three nights on one bay. The chart persists; each dusk brings a fresh, smaller bottle and three other lamps. `M` mutes.
@@ -53,6 +53,13 @@ One `index.html` (about 600 lines): canvas rendering, a Dijkstra pilot on an 8-u
 Debug API in the console: `IBD.start(seed)` · `IBD.step(seconds)` (drives time by hand when animation frames are asleep) · `IBD.pause()` · `IBD.still()` (no CSS transitions) · `IBD.pen([[x,y],…])` (draws through the real pointer handlers) · `IBD.castOff()` · `IBD.info()` · `IBD.bench(n)`.
 
 ## Changelog
+
+### v0.7 — Harbours (2026-11-22)
+- Pencil and touch precision: strokes are mapped through the canvas's real on-screen box, and every coalesced Pencil sample is used.
+- More ink: every coast bay gets at least the bottle bay ten gets.
+- Tonight's lamps are numbered 1, 2, 3 in the order she visits them.
+- Harbours: planked piers on a quay, a few roofs and a spire or lighthouse behind each. Later bays put harbours on islands.
+- Supplies: a wheel (behind an ad placeholder) wins one-night extras — ink, dusk light, tide — spent with buttons at dusk.
 
 ### v0.6 — The Coast (2026-11-22)
 - A coast of ten bays, each harder than the last (ten rocks and a generous bottle on bay 1; twenty-two and a lean one on bay 10). Every night she gets home lights one of a bay's three lamps; two lamps open the next bay. Progress is saved.

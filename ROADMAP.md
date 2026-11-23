@@ -46,9 +46,10 @@ The build has never been played in real time by a person. Fix what the iPad show
 2. ✅ **A difficulty curve** (2026-11-22): bay 1 has ten rocks and a generous bottle; bay 10 has twenty-two and a lean one. Seeds are bench-picked so a blank chart loses everywhere.
 3. ✅ **Progress saved** per bay: best lamps, tries, and a DRY mark for three nights without a strike (2026-11-22).
 4. ✅ **Start over** in a bay, and **Reset coast** (2026-11-22).
-5. A drawn shoreline for the coast screen in place of the grid of circles.
-6. Two more mastery marks: *ink to spare* and *first light*.
-7. **The chart drawer**: every finished chart kept and saved as an image.
+5. ✅ Numbered lamp order, island harbours, town art, a larger bottle, and a supply wheel with an ad placeholder (2026-11-22, from iPad play).
+6. A drawn shoreline for the coast screen in place of the grid of circles.
+7. Two more mastery marks: *ink to spare* and *first light*.
+8. **The chart drawer**: every finished chart kept and saved as an image.
 
 ## P3 — New waters (one new idea per coast)
 Each coast is ten bays and introduces exactly one thing, alone at first and then mixed with what came before.
