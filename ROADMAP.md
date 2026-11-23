@@ -55,7 +55,7 @@ The build has never been played in real time by a person. Fix what the iPad show
 ## P3 — New waters (one new idea per coast)
 Each coast is ten bays and introduces exactly one thing, alone at first and then mixed with what came before.
 
-1. **The Set.** A current runs across the bay, shown at dusk as a drift arrow. She is carried sideways as she sails, so a stroke that would have turned her safely now has to be drawn up-current.
+1. ✅ **The Set — The River Mouths** (2026-11-22, ten bays). A current runs across the bay, shown at dusk as a drift arrow. She is carried sideways as she sails, so a stroke that would have turned her safely now has to be drawn up-current.
 2. **Drying rocks.** Some rocks are drawn dashed: they are covered on some nights and bare on others, and the almanac line at dusk says which. A mark that saves her tonight sends her the long way round tomorrow.
 3. **Fog.** Part of the bay is hidden at dusk and the hidden part moves each night, so the chart must be built from three partial looks.
 4. **The Drifter.** A wreck moves along a path shown at dusk. Ink cannot mark where it will be; it can only keep her out of the lane it crosses.
