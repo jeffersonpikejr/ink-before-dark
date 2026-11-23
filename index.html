@@ -96,7 +96,7 @@ button.pri{border-width:2px}
   <p class="hook">Whatever you leave off the chart, she finds in the dark.</p>
   <p class="how">Twenty seconds of dusk. One bottle of ink. Then Odile sails the bay by your chart alone.</p>
   <div class="row"><button class="pri" id="bCoast">The Coast</button><button id="bDaily">Tonight's bay</button><button id="bRandom">Another bay</button></div>
-  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.9</p>
+  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.9.1</p>
 </div>
 <div id="coast"><h2 id="cTitle">The Strait</h2><p id="cBlurb"></p><div id="bays"></div><div class="row"><button id="bBack">Back</button><button id="bOther"></button><button id="bSpin">Spin for supplies</button><button id="bWipe">Reset coast</button></div><p id="invLine" style="margin-top:10px"></p></div>
 <div id="wheel"><h2>Supplies</h2><p id="wMsg"></p><div id="wWrap"><div id="wPtr"></div><div id="wDisc"></div></div><div class="row"><button class="pri" id="wGo">Watch an ad to spin</button><button id="wClose">Close</button></div><p class="fine2">Ads are a placeholder in this web build. Real rewarded ads arrive with the App Store version.</p></div>
@@ -109,7 +109,7 @@ button.pri{border-width:2px}
    Sections: config · rng · bay generator · chart · pilot · night sim
              · bots & bench · audio · store · game state · render · input · boot
    ============================================================ */
-const VERSION='0.9';
+const VERSION='0.9.1';
 const W=1000,H=640,CELL=8,GW=W/CELL|0,GH=H/CELL|0,NC=GW*GH;
 const CFG={
   DUSK:20,          // seconds of failing light
@@ -433,7 +433,11 @@ const COASTS=[{name:'The Strait',seeds:[874466113,654379450,74939381,3846542944,
 const COAST_N=10,coastSeed=i=>COASTS[S.co||0].seeds[i];
 const CS=()=>(S.co===1?META.coast2:META.coast);
 const bayRec=i=>CS().bays[i]||{lamps:0,dry:false,tries:0};
-const bayOpen=i=>i===0||bayRec(i-1).lamps>=2;
+// Developer mode: every coast and every bay is open. Turn it on with ?dev in the address, or five quick taps on the small print under the title; tap five times again to turn it off.
+let DEV=false;try{DEV=/[?&]dev\b/.test(location.search)||localStorage.getItem('ibd_dev')==='1';}catch(e){}
+function setDev(on){DEV=!!on;try{if(DEV)localStorage.setItem('ibd_dev','1');else localStorage.removeItem('ibd_dev');}catch(e){}devMark();}
+function devMark(){const f=$('fine');if(f){f.textContent=f.textContent.replace(/ \u00b7 DEV$/,'')+(DEV?' \u00b7 DEV':'');}}
+const bayOpen=i=>DEV||i===0||bayRec(i-1).lamps>=2;
 const lampsOn=st=>st.bays.reduce((a,r)=>a+(r?r.lamps||0:0),0);
 function startBay(daily,seed,ci){
   S.daily=!!daily;S.dayKey=dayKey();S.ci=ci!=null?ci:null;
@@ -450,8 +454,8 @@ function leave(){S.phase='title';timers.length=0;S.N=null;setSea(0);setPen(0);ca
   el.hud.classList.add('hide');$('bLeave').classList.add('hide');$('bOver').classList.add('hide');
   if(S.ci!=null)showCoast();else{$('coast').style.display='none';el.title.style.display='flex';}}
 function showCoast(){S.phase='title';if(S.co==null)S.co=0;el.title.style.display='none';$('coast').style.display='flex';
-  const C=COASTS[S.co],other=COASTS[1-S.co],have=lampsOn(META.coast),locked=S.co===0&&have<other.need;
-  $('cTitle').textContent=C.name;$('cBlurb').textContent=C.blurb+' Every night she gets home lights a lamp; two lamps open the next bay. Marks: DRY (no strikes), SPARE (a third of every bottle unused), FIRST (three lamps on the first try).';
+  const C=COASTS[S.co],other=COASTS[1-S.co],have=lampsOn(META.coast),locked=!DEV&&S.co===0&&have<other.need;
+  $('cTitle').textContent=C.name+(DEV?' \u00b7 dev':'');$('cBlurb').textContent=C.blurb+' Every night she gets home lights a lamp; two lamps open the next bay. Marks: DRY (no strikes), SPARE (a third of every bottle unused), FIRST (three lamps on the first try).';
   $('bOther').textContent=S.co===0?(locked?other.name+' \u2014 '+have+'/'+other.need+' lamps':other.name+' \u203a'):'\u2039 '+other.name;$('bOther').disabled=locked;$('bOther').style.opacity=locked?.4:1;
   let next=-1;for(let i=0;i<COAST_N;i++)if(bayOpen(i)&&bayRec(i).lamps<3&&next<0)next=i;
   // a strait: bays 1-5 in coves along the north shore, 6-10 back along the south
@@ -486,6 +490,7 @@ function spinWheel(){if(wSpinning)return;wSpinning=true;const go=$('wGo');go.dis
     setTimeout(()=>{META.inv[w[0]]+=w[1];saveMeta();$('wMsg').textContent='You won '+SUP[w[0]].name+(w[1]>1?' \u00d72':'')+' ('+SUP[w[0]].tip+'). '+invText();go.textContent='Watch another ad';go.disabled=false;wSpinning=false;
       if($('invLine'))$('invLine').textContent=invText();if(S.phase==='dusk')duskButtons();},3400);};tick();}
 $('wGo').onclick=()=>{audio();spinWheel();};$('wClose').onclick=()=>{if(!wSpinning)$('wheel').style.display='none';};$('bSpin').onclick=()=>{audio();openWheel();};
+{let taps=0,last=0;$('fine').addEventListener('click',()=>{const now=Date.now();taps=now-last<600?taps+1:1;last=now;if(taps>=5){taps=0;setDev(!DEV);}});$('fine').style.pointerEvents='auto';}
 $('bOther').onclick=()=>{if($('bOther').disabled)return;S.co=1-S.co;showCoast();};
 $('bBack').onclick=()=>{$('coast').style.display='none';el.title.style.display='flex';};
 // Supplies won on the wheel. Each is spent at dusk and lasts one night.
@@ -773,7 +778,7 @@ function frame(now){const elp=Math.min(.1,(now-last)/1000);last=now;acc+=elp;
 
 /* ---------- debug API (headless-safe: step() drives time when rAF is asleep) ---------- */
 window.IBD={
-  get S(){return S;},CFG,VERSION,showCoast,coastDiff,openWheel,useSupply,bottle,get META(){return META;},genBay,newChart,runNight,bench,botSlash,botOmni,
+  get S(){return S;},CFG,VERSION,showCoast,coastDiff,setDev,get DEV(){return DEV;},openWheel,useSupply,bottle,get META(){return META;},genBay,newChart,runNight,bench,botSlash,botOmni,
   start(seed){startBay(false,seed);},
   step(sec){const n=Math.round((sec||1)/DT);for(let i=0;i<n;i++)update(DT);render();return this.info();},
   line(x1,y1,x2,y2){const c=S.chart;if(S.phase!=='dusk')return false;S.began=true;return botLine(c,x1,y1,x2,y2);},
@@ -790,7 +795,7 @@ window.IBD={
 
 /* ---------- boot ---------- */
 resize();
-loadMeta().then(()=>{muted=!!META.muted;const k=dayKey();if(META.daily[k])$('fine').textContent='tonight’s bay, first try: home '+META.daily[k].home+'/3 · M mutes · prototype v'+VERSION;});
+loadMeta().then(()=>{muted=!!META.muted;const k=dayKey();if(META.daily[k])$('fine').textContent='tonight’s bay, first try: home '+META.daily[k].home+'/3 · M mutes · prototype v'+VERSION;devMark();});
 requestAnimationFrame(frame);
 </script>
 </body>

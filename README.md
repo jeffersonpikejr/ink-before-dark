@@ -6,7 +6,7 @@ A single-file browser game with one verb: **draw**. You get twenty seconds of fa
 
 Your chart doesn't have to be true. It has to bring her home.
 
-**Status:** v0.9 (2026-11-22).
+**Status:** v0.9.1 (2026-11-22).
 
 **▶ Play in your browser: https://jeffersonpikejr.github.io/ink-before-dark/** — on an iPad or iPhone, Share → Add to Home Screen runs it full-screen.
 
@@ -53,6 +53,9 @@ One `index.html` (about 600 lines): canvas rendering, a Dijkstra pilot on an 8-u
 Debug API in the console: `IBD.start(seed)` · `IBD.step(seconds)` (drives time by hand when animation frames are asleep) · `IBD.pause()` · `IBD.still()` (no CSS transitions) · `IBD.pen([[x,y],…])` (draws through the real pointer handlers) · `IBD.castOff()` · `IBD.info()` · `IBD.bench(n)`.
 
 ## Changelog
+
+### v0.9.1 — Developer mode (2026-11-22)
+- Developer mode opens every coast and every bay for testing. Turn it on by adding `?dev` to the address, or with five quick taps on the small print under the title; five more turn it off. The title's small print and the coast heading say when it is on.
 
 ### v0.9 — The River Mouths (2026-11-22)
 - A second coast of ten bays, opened by twelve lamps on the first. A river cuts through the north shore of each bay and its current carries her down-stream of her pencilled course, so rocks beside the line matter and strokes have to be drawn with the drift in mind.
