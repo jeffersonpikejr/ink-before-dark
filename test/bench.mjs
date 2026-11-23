@@ -21,10 +21,11 @@ vm.createContext(sandbox);
 vm.runInContext(src, sandbox);
 const IBD = sandbox.IBD;
 const args = process.argv.slice(2), nums = args.filter(a => !a.includes('='));
-for (const kv of args.filter(a => a.includes('='))) { const [k, v] = kv.split('='); IBD.CFG[k] = v.includes(',') ? v.split(',').map(Number) : Number(v); }
+let LEVEL;
+for (const kv of args.filter(a => a.includes('='))) { const [k, v] = kv.split('='); if (k === 'LEVEL') { LEVEL = Number(v); continue; } IBD.CFG[k] = v.includes(',') ? v.split(',').map(Number) : Number(v); }
 const N = Number(nums[0] || 400), seed0 = Number(nums[1] || 1);
 const t0 = Date.now();
-const r = IBD.bench(N, seed0);
+const r = IBD.bench(N, seed0, LEVEL);
 const row = (n, o) => `${n.padEnd(6)} home by night ${o.homePct.map(v => String(v).padStart(3) + '%').join(' ')}   all nights ${String(o.homeAll).padStart(3)}%   all-three ${String(o.all3Pct).padStart(3)}%   strikes ${o.strikes.join(' / ')}`;
 console.log(`bays ${r.n}  (avg rocks ${r.rocksAvg})   ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 console.log(row('blank', r.blank)); console.log(row('slash', r.slash)); console.log(row('omni', r.omni));

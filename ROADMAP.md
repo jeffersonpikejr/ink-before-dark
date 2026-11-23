@@ -42,11 +42,13 @@ The build has never been played in real time by a person. Fix what the iPad show
 5. A home-screen icon and splash, and a service worker so it opens offline.
 
 ## P2 — The Coast (the first real reason to come back)
-1. **A coast map**: ten bays in a row along a drawn shoreline. Each bay is three nights; each night home lights one of its three lamps. Lamps are the currency of progress.
-2. **A difficulty curve** in place of one setting: bay 1 has eight rocks and a generous bottle; bay 10 has twenty-two and a lean one. The first bay becomes the tutorial with no tutorial screen.
-3. **Progress saved** per bay: best lamps, the finished chart, fewest rocks found.
-4. **Mastery marks** on each bay: *home dry* (no strikes on any night), *ink to spare* (a third of a bottle unused), *first light* (all three nights on the first try). These give expert players a second way through water they have already crossed.
-5. **The chart drawer**: every finished chart is kept and can be saved as an image.
+1. ✅ **A coast of ten bays** (2026-11-22). Each bay is three nights; each night home lights one of its three lamps; two lamps open the next bay.
+2. ✅ **A difficulty curve** (2026-11-22): bay 1 has ten rocks and a generous bottle; bay 10 has twenty-two and a lean one. Seeds are bench-picked so a blank chart loses everywhere.
+3. ✅ **Progress saved** per bay: best lamps, tries, and a DRY mark for three nights without a strike (2026-11-22).
+4. ✅ **Start over** in a bay, and **Reset coast** (2026-11-22).
+5. A drawn shoreline for the coast screen in place of the grid of circles.
+6. Two more mastery marks: *ink to spare* and *first light*.
+7. **The chart drawer**: every finished chart kept and saved as an image.
 
 ## P3 — New waters (one new idea per coast)
 Each coast is ten bays and introduces exactly one thing, alone at first and then mixed with what came before.

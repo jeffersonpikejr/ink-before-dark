@@ -6,7 +6,7 @@ A single-file browser game with one verb: **draw**. You get twenty seconds of fa
 
 Your chart doesn't have to be true. It has to bring her home.
 
-**Status:** prototype v0.5 (2026-11-22).
+**Status:** v0.6 (2026-11-22).
 
 **▶ Play in your browser: https://jeffersonpikejr.github.io/ink-before-dark/** — on an iPad or iPhone, Share → Add to Home Screen runs it full-screen.
 
@@ -53,6 +53,12 @@ One `index.html` (about 600 lines): canvas rendering, a Dijkstra pilot on an 8-u
 Debug API in the console: `IBD.start(seed)` · `IBD.step(seconds)` (drives time by hand when animation frames are asleep) · `IBD.pause()` · `IBD.still()` (no CSS transitions) · `IBD.pen([[x,y],…])` (draws through the real pointer handlers) · `IBD.castOff()` · `IBD.info()` · `IBD.bench(n)`.
 
 ## Changelog
+
+### v0.6 — The Coast (2026-11-22)
+- A coast of ten bays, each harder than the last (ten rocks and a generous bottle on bay 1; twenty-two and a lean one on bay 10). Every night she gets home lights one of a bay's three lamps; two lamps open the next bay. Progress is saved.
+- The ten bays are fixed seeds picked by the bench: on each, a blank chart loses and a perfect chart brings her home all three nights.
+- **Start over** (bottom right, two taps): the same bay from its first dusk with a blank chart. **Reset coast** on the coast screen erases all lamps.
+- A Leave button; bench accepts `LEVEL=0..9` to test a coast bay's difficulty.
 
 ### v0.5 — Out of the drawer (2026-11-22)
 - Public repo and GitHub Pages hosting; home-screen meta tags so it runs full-screen on iPad and iPhone.
