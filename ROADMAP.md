@@ -1,50 +1,93 @@
 # INK BEFORE DARK — Roadmap
 
-**Finished when:** a stranger can play three nights on tonight's bay on a phone, wince at dawn, and paste the result.
+**Where it is going:** an App Store game for iPhone and iPad, free with ads, that is still one verb — draw — and gets more interesting the longer you play.
 
-**The scope rule:** anything added deletes something of equal size in the same commit.
+**Play the current build:** https://jeffersonpikejr.github.io/ink-before-dark/
 
 Phases ship one at a time and each ends playable. Dates are ship dates.
+
+## Three tests every new feature must pass
+
+1. **Drawable.** It changes what is worth drawing. If the player's ink cannot answer it, it does not go in.
+2. **Visible.** Its rule can be seen on the chart or in her course. Nothing she does is unexplained.
+3. **Benched.** `test/bench.mjs` gets a bot for it, and a blank chart must still lose while a perfect one still wins.
+
+Still out for good: steering the boat yourself, anything with hit points, and upgrades that buy power. Progress is new water and new marks, never a stronger boat.
+
+## The loops, smallest to largest
+
+| Loop | Length | What pulls you into the next one |
+|---|---|---|
+| A night | 45 seconds | Dawn shows exactly which rock cost you the tide. |
+| A bay | 3 nights, about 3 minutes | The chart you built is tested on new lamps; Odile's verdict. |
+| A coast | 8–10 bays | Each coast adds one new kind of water. Lamps earned open the next coast. |
+| The almanac | weeks | Finished charts are kept. Pilots, marks and papers are collected. |
+| The day | once a day | Tonight's bay, the same for everyone, with a streak and a result to paste. |
 
 ---
 
 ## ✅ P0 — The prototype (2026-11-18)
+One verb, one pilot, one clock, three nights on a seeded bay, dawn readback, tonight's bay, a share line, a three-bot bench, portrait phone layout.
 
-1. ✅ One verb: draw. Freehand ink with a ration and a minimum blot per pen-down.
-2. ✅ The pilot: shortest course clear of the ink, trusts blank paper, shows her course, re-plans after a strike, crosses the thinnest line if walled in.
-3. ✅ One clock, one loss: the tide. A strike costs time; nothing has hit points.
-4. ✅ Three nights on one seeded bay; the chart persists; three other lamps each night.
-5. ✅ Dawn retraces her night along her wake; the whole bay on the third dawn; Odile's verdict.
-6. ✅ Tonight's bay (one seed per date) and a share line.
-7. ✅ Bench with three bots; phone portrait layout; versioned save.
+## ✅ P0.5 — Out of the drawer (2026-11-22)
+Public repo, GitHub Pages, home-screen meta tags for iPad.
 
-## 🔜 P1 — Five strangers (no new features)
+## 🔜 P1 — Hands on glass
+The build has never been played in real time by a person. Fix what the iPad shows before adding anything.
 
-The bots draw perfect strokes in zero seconds. Everything that matters next is what a person does with twenty.
+1. Play ten bays on the iPad. Note every moment the finger hides the stroke, a tap misfires, or the night drags.
+2. Listen to it; the audio has never been heard.
+3. Tune from that: ink ration, tide slack, dusk length, rock count, boat speed.
+4. Touch polish: a stroke offset above the fingertip (optional), palm rejection for Pencil, a haptic tick on a strike once wrapped natively.
+5. A home-screen icon and splash, and a service worker so it opens offline.
 
-1. Put v0.4 in front of five people who have not seen it, on their own phone or laptop. Say nothing for two minutes. One of them should be Katherine.
-2. Write down, per person: did they circle or strike through; the second they understood she follows the chart; home or late on night one; whether they started a second bay unasked.
-3. Listen to it. No human has heard the audio; it was written and never played aloud.
-4. Tune from those five sessions only: ink ration, tide slack, dusk length, rock count. Re-run `node test/bench.mjs` after each change.
-5. **Kill criterion:** if fewer than three of the five start a second bay unprompted, stop here and write down why.
+## P2 — The Coast (the first real reason to come back)
+1. **A coast map**: ten bays in a row along a drawn shoreline. Each bay is three nights; each night home lights one of its three lamps. Lamps are the currency of progress.
+2. **A difficulty curve** in place of one setting: bay 1 has eight rocks and a generous bottle; bay 10 has twenty-two and a lean one. The first bay becomes the tutorial with no tutorial screen.
+3. **Progress saved** per bay: best lamps, the finished chart, fewest rocks found.
+4. **Mastery marks** on each bay: *home dry* (no strikes on any night), *ink to spare* (a third of a bottle unused), *first light* (all three nights on the first try). These give expert players a second way through water they have already crossed.
+5. **The chart drawer**: every finished chart is kept and can be saved as an image.
 
-## P2 — The whole game (v1.0)
+## P3 — New waters (one new idea per coast)
+Each coast is ten bays and introduces exactly one thing, alone at first and then mixed with what came before.
 
-1. The keepsake: export the finished chart as an image, and attach it to the share line.
-2. Bay variety inside the one bay type: reefs (long rocks), islets, a narrows. No new kind of hazard.
-3. Phone polish: an installable page (manifest and icons), a thumb-offset option so the finger does not hide the stroke, a buzz on a strike.
-4. Settings: volume, no screen shake. Red already never carries meaning alone (hatch and a cross go with it).
-5. Tonight's bay records the first attempt and says so; later tries are practice.
-6. Decide public or private, then ship with `ship-verify`. **v1.0 is declared finished here.**
+1. **The Set.** A current runs across the bay, shown at dusk as a drift arrow. She is carried sideways as she sails, so a stroke that would have turned her safely now has to be drawn up-current.
+2. **Drying rocks.** Some rocks are drawn dashed: they are covered on some nights and bare on others, and the almanac line at dusk says which. A mark that saves her tonight sends her the long way round tomorrow.
+3. **Fog.** Part of the bay is hidden at dusk and the hidden part moves each night, so the chart must be built from three partial looks.
+4. **The Drifter.** A wreck moves along a path shown at dusk. Ink cannot mark where it will be; it can only keep her out of the lane it crosses.
+5. **The Bar.** A sandbar closes the direct way to one lamp as the tide falls, so the order she visits lamps starts to matter and the chart has to leave her the long way open.
 
-## P3 — Only if people keep coming back
+## P4 — Pilots and marks (the collection)
+1. **Pilots.** Each reads the same chart differently, which makes old bays new.
+   - *Odile*: the baseline.
+   - *Bram*, cautious: keeps twice the margin from ink, so strokes can be shorter and walls close more water than you meant.
+   - *Wren*, bold: cuts close and sails faster, so the tide is kinder and near-misses are not.
+   - *Old Solveig*: slow, but she remembers one rock per bay without being told.
+   Pilots are earned with lamps. Each has her own dawn lines and verdicts.
+2. **Marks.** New things the pen can do, each costing ink differently.
+   - *A buoy*: a tap-and-hold mark that she passes on a chosen side.
+   - *A lead line*: a dotted stroke she prefers to follow when it is safe, for threading a channel.
+   - *The scraper*: remove one stroke per dusk.
+3. **Papers and inks**: cosmetic only, earned with lamps or by streaks.
 
-1. A drawer of your finished charts, by date.
-2. A seven-night passage: same rules, one bay, one chart.
-3. A link that hands a friend the same bay.
+## P5 — The day and the week
+1. **Tonight's bay** locks its first attempt, keeps a streak, and shares a result with the chart image.
+2. **The long passage**: once a week, seven nights on one large bay with one chart.
+3. **A friend's bay**: a link that hands someone the same water and shows both charts side by side at the end.
+4. **The almanac**: a page per coast recording charts kept, marks earned, and Odile's worst remarks.
 
-## P4 — Out, on purpose
+## P6 — The App Store
+1. **Wrap** the web build with Capacitor (the game stays one HTML file; the wrapper adds what Safari cannot): haptics, Game Center, in-app purchase, ads.
+2. **Ads, placed where they cost the game nothing:**
+   - *Rewarded*: "a second bottle" (one refill, once per bay) or "sail it again" (replay a lost night). Always the player's choice.
+   - *Interstitial*: only between bays, never between nights, never before the first three bays.
+   - *Sponsored*: tonight's bay can carry a "presented by" line.
+   - *Remove ads*: one purchase, which also unlocks the paper-and-ink set.
+3. **Game Center**: a leaderboard for tonight's bay and achievements that mirror the mastery marks.
+4. **Store work**: icon, screenshots that are finished charts, a fifteen-second preview that is one dusk and one strike, privacy labels, the tracking prompt that ad networks require.
+5. **TestFlight** with ten outside testers before submission.
 
-Player steering · currents · the tide as a hazard · wind · erasing · chart symbols with meanings · upgrades · a roster of pilots · other boats · a story beyond Odile's lines · any third meter.
+Needs from Jefferson before P6 starts: an Apple Developer account, an ad network account, and a check that a paid side product sits inside his employer's outside-activity policy.
 
-Each of these was proposed and cut during the design review. Steering was the game's second verb and two critics voted to kill the concept over it; the hull was cut so that nothing in the game has hit points. They stay out unless something of equal size leaves.
+## Order and why
+P1 is hands-on tuning and cannot be skipped. P2 is the smallest thing that makes a second session different from the first. P3 is where "more interesting the more you play" is actually delivered, and it is the bulk of the work. P4 multiplies P2 and P3 without new bays. P5 needs enough game underneath it to be worth a daily visit. P6 can start any time after P2, in parallel, because the wrapper does not depend on content.

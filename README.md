@@ -6,9 +6,11 @@ A single-file browser game with one verb: **draw**. You get twenty seconds of fa
 
 Your chart doesn't have to be true. It has to bring her home.
 
-**Status:** prototype v0.4 (2026-11-18). Local only; nothing is published.
+**Status:** prototype v0.5 (2026-11-22).
 
-## Play
+**▶ Play in your browser: https://jeffersonpikejr.github.io/ink-before-dark/** — on an iPad or iPhone, Share → Add to Home Screen runs it full-screen.
+
+## Run it locally
 
 ```bash
 python3 -m http.server 8471 --directory ~/code/ink-before-dark
@@ -50,9 +52,11 @@ One `index.html` (about 600 lines): canvas rendering, a Dijkstra pilot on an 8-u
 
 Debug API in the console: `IBD.start(seed)` · `IBD.step(seconds)` (drives time by hand when animation frames are asleep) · `IBD.pause()` · `IBD.still()` (no CSS transitions) · `IBD.pen([[x,y],…])` (draws through the real pointer handlers) · `IBD.castOff()` · `IBD.info()` · `IBD.bench(n)`.
 
-`notes/` holds how the concept was chosen: the creator brief, 33 seeds, the three finalists, the five-seat critic bench with its tally, and the chair's ruling.
-
 ## Changelog
+
+### v0.5 — Out of the drawer (2026-11-22)
+- Public repo and GitHub Pages hosting; home-screen meta tags so it runs full-screen on iPad and iPhone.
+- Roadmap rewritten: from a three-night prototype to a coast of bays, new waters, pilots, daily habits, and an App Store build.
 
 ### v0.4 — Dawn reads it back (2026-11-18)
 - Dawn retraces her night in order: the truth appears along her wake as the sweep passes, each strike landing as it is reached. On the last dawn the rest of the bay follows.
