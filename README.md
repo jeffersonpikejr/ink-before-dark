@@ -6,7 +6,7 @@ A single-file browser game with one verb: **draw**. You get twenty seconds of fa
 
 Your chart doesn't have to be true. It has to bring her home.
 
-**Status:** v0.9.1 (2026-11-22).
+**Status:** v0.10 (2026-11-23).
 
 **▶ Play in your browser: https://jeffersonpikejr.github.io/ink-before-dark/** — on an iPad or iPhone, Share → Add to Home Screen runs it full-screen.
 
@@ -53,6 +53,12 @@ One `index.html` (about 600 lines): canvas rendering, a Dijkstra pilot on an 8-u
 Debug API in the console: `IBD.start(seed)` · `IBD.step(seconds)` (drives time by hand when animation frames are asleep) · `IBD.pause()` · `IBD.still()` (no CSS transitions) · `IBD.pen([[x,y],…])` (draws through the real pointer handlers) · `IBD.castOff()` · `IBD.info()` · `IBD.bench(n)`.
 
 ## Changelog
+
+### v0.10 — The River (2026-11-23)
+- A third coast, opened by twelve lamps on the second: ten reaches of a winding river, sailed west to east. Three ports a night, each farther upriver than the last, always ending at the far port.
+- The river winds harder with every reach, from a lazy S on the first to tight meanders on the tenth. No current on this coast.
+- She knows the outer line of the valley; each point of land the river bends round is hers to be told about, with a touch of ink. Rocks sit in the channel, where a stroke that is too wide closes it.
+- Coast screen cycles through all three coasts.
 
 ### v0.9.1 — Developer mode (2026-11-22)
 - Developer mode opens every coast and every bay for testing. Turn it on by adding `?dev` to the address, or with five quick taps on the small print under the title; five more turn it off. The title's small print and the coast heading say when it is on.

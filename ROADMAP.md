@@ -56,10 +56,11 @@ The build has never been played in real time by a person. Fix what the iPad show
 Each coast is ten bays and introduces exactly one thing, alone at first and then mixed with what came before.
 
 1. ✅ **The Set — The River Mouths** (2026-11-22, ten bays). A current runs across the bay, shown at dusk as a drift arrow. She is carried sideways as she sails, so a stroke that would have turned her safely now has to be drawn up-current.
-2. **Drying rocks.** Some rocks are drawn dashed: they are covered on some nights and bare on others, and the almanac line at dusk says which. A mark that saves her tonight sends her the long way round tomorrow.
-3. **Fog.** Part of the bay is hidden at dusk and the hidden part moves each night, so the chart must be built from three partial looks.
-4. **The Drifter.** A wreck moves along a path shown at dusk. Ink cannot mark where it will be; it can only keep her out of the lane it crosses.
-5. **The Bar.** A sandbar closes the direct way to one lamp as the tide falls, so the order she visits lamps starts to matter and the chart has to leave her the long way open.
+2. ✅ **The River** (2026-11-23, ten reaches; Jefferson's idea, taking the place of the next planned mechanic). The whole chart is one winding river sailed west to east, port by port; the terrain itself is the puzzle and it twists harder each reach. No current.
+3. **Drying rocks.** Some rocks are drawn dashed: they are covered on some nights and bare on others, and the almanac line at dusk says which. A mark that saves her tonight sends her the long way round tomorrow.
+4. **Fog.** Part of the bay is hidden at dusk and the hidden part moves each night, so the chart must be built from three partial looks.
+5. **The Drifter.** A wreck moves along a path shown at dusk. Ink cannot mark where it will be; it can only keep her out of the lane it crosses.
+6. **The Bar.** A sandbar closes the direct way to one lamp as the tide falls, so the order she visits lamps starts to matter and the chart has to leave her the long way open.
 
 ## P4 — Pilots and marks (the collection)
 1. **Pilots.** Each reads the same chart differently, which makes old bays new.
