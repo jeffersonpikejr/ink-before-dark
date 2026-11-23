@@ -6,7 +6,7 @@ A single-file browser game with one verb: **draw**. You get twenty seconds of fa
 
 Your chart doesn't have to be true. It has to bring her home.
 
-**Status:** v0.7 (2026-11-22).
+**Status:** v0.8 (2026-11-22).
 
 **▶ Play in your browser: https://jeffersonpikejr.github.io/ink-before-dark/** — on an iPad or iPhone, Share → Add to Home Screen runs it full-screen.
 
@@ -26,7 +26,7 @@ Then open http://localhost:8471. Or double-click `index.html`: it is one self-co
 ## The rules she sails by (all of them)
 
 1. She plans the shortest way to the lit lamp that stays 14 units clear of your ink. The faint margin round every stroke is exactly that water.
-2. She can see the loom of the land. She cannot see rocks. Blank paper is open water to her.
+2. She knows the plain shoreline. She does not know rocks, or the land that juts out from the shore: headlands, spits and islands. Touch one of those with ink and she knows all of it; a rock needs a stroke across her course.
 3. When she strikes a rock it costs her about two seconds, the bay draws that rock on your chart in red, and she re-plans around it.
 4. If your ink leaves her no way through, she crosses your thinnest line.
 5. The tide allows her about one strike. Two and she is late. Walling off half the bay makes her late too.
@@ -53,6 +53,13 @@ One `index.html` (about 600 lines): canvas rendering, a Dijkstra pilot on an 8-u
 Debug API in the console: `IBD.start(seed)` · `IBD.step(seconds)` (drives time by hand when animation frames are asleep) · `IBD.pause()` · `IBD.still()` (no CSS transitions) · `IBD.pen([[x,y],…])` (draws through the real pointer handlers) · `IBD.castOff()` · `IBD.info()` · `IBD.bench(n)`.
 
 ## Changelog
+
+### v0.8 — What juts out (2026-11-22)
+- Terrain: ragged, lobed islands; angular rocks; shores with fine noise that bites deeper on headlands; bays now vary in shape, with one to three headlands (sometimes a long peninsula), coves, and spits off either side.
+- The land is a hazard: she knows the plain shore but not headlands, spits or islands. Any ink that touches one flags the whole piece for her; one she strikes unflagged costs time and is revealed whole.
+- Two more mastery marks, SPARE (a third of every bottle unused) and FIRST (three lamps on the first try), beside DRY.
+- The coast screen is a drawn strait: bays 1–5 in coves along the north shore, 6–10 back along the south.
+- Bots follow the numbered order. Bench, 80 bays: blank 8%, ruler 64%, perfect knowledge 93–95%.
 
 ### v0.7 — Harbours (2026-11-22)
 - Pencil and touch precision: strokes are mapped through the canvas's real on-screen box, and every coalesced Pencil sample is used.
