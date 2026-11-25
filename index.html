@@ -9,6 +9,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ink Before Dark">
 <meta name="theme-color" content="#0b0e13">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
+<link rel="icon" type="image/png" href="assets/icon-192.png">
 <style>
 :root{--fg:#efe6d0;--bg:#0b0e13;--red:#b3261e}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -96,10 +99,10 @@ button.pri{border-width:2px}
   <p class="hook">Whatever you leave off the chart, she finds in the dark.</p>
   <p class="how">Twenty seconds of dusk. One bottle of ink. Then Odile sails the bay by your chart alone.</p>
   <div class="row"><button class="pri" id="bCoast">The Coast</button><button id="bDaily">Tonight's bay</button><button id="bRandom">Another bay</button></div>
-  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.12</p>
+  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.13</p>
 </div>
 <div id="coast"><h2 id="cTitle">The Strait</h2><p id="cBlurb"></p><div id="bays"></div><div class="row"><button id="bBack">Back</button><button id="bPrev"></button><button id="bOther"></button><button id="bSpin">Spin for supplies</button><button id="bWipe">Reset coast</button></div><p id="invLine" style="margin-top:10px"></p></div>
-<div id="wheel"><h2>Supplies</h2><p id="wMsg"></p><div id="wWrap"><div id="wPtr"></div><div id="wDisc"></div></div><div class="row"><button class="pri" id="wGo">Watch an ad to spin</button><button id="wClose">Close</button></div><p class="fine2">Ads are a placeholder in this web build. Real rewarded ads arrive with the App Store version.</p></div>
+<div id="wheel"><h2>Supplies</h2><p id="wMsg"></p><div id="wWrap"><div id="wPtr"></div><div id="wDisc"></div></div><div class="row"><button class="pri" id="wGo">Watch an ad to spin</button><button id="wClose">Close</button></div><p class="fine2" id="wFine">Ads are a placeholder in this web build. Real rewarded ads arrive with the App Store version. <a href="privacy.html" style="color:inherit">Privacy</a></p></div>
 <button class="mini hide" id="bLeave">&lsaquo; Leave</button><button class="mini hide" id="bOver">&#8634; Start over</button>
 <script>
 'use strict';
@@ -109,7 +112,7 @@ button.pri{border-width:2px}
    Sections: config · rng · bay generator · chart · pilot · night sim
              · bots & bench · audio · store · game state · render · input · boot
    ============================================================ */
-const VERSION='0.12';
+const VERSION='0.13';
 const W=1000,H=640,CELL=8,GW=W/CELL|0,GH=H/CELL|0,NC=GW*GH;
 const CFG={
   DUSK:20,          // seconds of failing light
@@ -574,11 +577,30 @@ const WHEEL=[['ink',1],['tide',1],['light',1],['ink',2],['tide',1],['light',2]];
 function invText(){const v=META.inv;return'Supplies: ink \u00d7'+v.ink+' \u00b7 light \u00d7'+v.light+' \u00b7 tide \u00d7'+v.tide;}
 function openWheel(){const d=$('wDisc');if(!d.firstChild)WHEEL.forEach((w,i)=>{const e=document.createElement('span');e.textContent=SUP[w[0]].name+(w[1]>1?' \u00d72':'');e.style.transform='rotate('+(i*60+30-90)+'deg) translate(34%,-50%)';e.style.left='50%';e.style.top='50%';e.style.transform='rotate('+(i*60+30-90)+'deg) translateX(46px) translateY(-50%)';d.appendChild(e);});
   $('wMsg').textContent=invText();$('wGo').textContent='Watch an ad to spin';$('wGo').disabled=false;$('wheel').style.display='flex';}
-function spinWheel(){if(wSpinning)return;wSpinning=true;const go=$('wGo');go.disabled=true;let n=5;
-  const tick=()=>{if(n>0){$('wMsg').textContent='Ad placeholder \u2014 '+n+'\u2026';n--;setTimeout(tick,1000);return;}
+// Ads. One interface for the whole game. On the web it is a five-second placeholder and no interstitials;
+// inside the App Store build (Capacitor + @capacitor-community/admob) the same calls show real ads.
+// The unit ids below are Google's public TEST ids. Real ids go in before submission, never before.
+const Ads={
+  native:!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()),
+  ids:{rewarded:'ca-app-pub-3940256099942544/1712485313',interstitial:'ca-app-pub-3940256099942544/4411468910'},
+  ready:false,chartsSince:0,
+  get plugin(){return window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.AdMob;},
+  get off(){return!!META.noAds;},
+  async init(){if(!this.native||!this.plugin||this.ready)return;try{await this.plugin.initialize({initializeForTesting:true});try{await this.plugin.requestTrackingAuthorization();}catch(e){}this.ready=true;}catch(e){}},
+  // resolves true if the player earned the reward
+  async rewarded(say){
+    if(this.native&&this.plugin){try{await this.init();say('Loading\u2026');await this.plugin.prepareRewardVideoAd({adId:this.ids.rewarded});const r=await this.plugin.showRewardVideoAd();return!!(r&&(r.amount!=null||r.type));}catch(e){say('No ad to show just now.');return false;}}
+    for(let n=5;n>0;n--){say('Ad placeholder \u2014 '+n+'\u2026');await new Promise(r=>setTimeout(r,1000));}return true;},
+  // between charts only: never on the first coast, never two charts running, never if ads were bought off
+  async between(){this.chartsSince++;if(!this.native||!this.plugin||this.off||S.co===0||this.chartsSince<2)return;
+    try{await this.init();await this.plugin.prepareInterstitial({adId:this.ids.interstitial});await this.plugin.showInterstitial();this.chartsSince=0;}catch(e){}}
+};
+function spinWheel(){if(wSpinning)return;wSpinning=true;const go=$('wGo');go.disabled=true;
+  Ads.rewarded(t=>{$('wMsg').textContent=t;}).then(ok=>{
+    if(!ok){go.disabled=false;wSpinning=false;return;}
     const i=Math.floor(Math.random()*WHEEL.length),w=WHEEL[i];wTurns+=5;$('wDisc').style.transform='rotate('+(wTurns*360-(i*60+30))+'deg)';$('wMsg').textContent='\u2026';
-    setTimeout(()=>{META.inv[w[0]]+=w[1];saveMeta();$('wMsg').textContent='You won '+SUP[w[0]].name+(w[1]>1?' \u00d72':'')+' ('+SUP[w[0]].tip+'). '+invText();go.textContent='Watch another ad';go.disabled=false;wSpinning=false;
-      if($('invLine'))$('invLine').textContent=invText();if(S.phase==='dusk')duskButtons();},3400);};tick();}
+    setTimeout(()=>{META.inv[w[0]]+=w[1];saveMeta();$('wMsg').textContent='You won '+SUP[w[0]].name+(w[1]>1?' \u00d72':'')+' ('+SUP[w[0]].tip+'). '+invText();go.textContent=Ads.native?'Watch another ad':'Spin again';go.disabled=false;wSpinning=false;
+      if($('invLine'))$('invLine').textContent=invText();if(S.phase==='dusk')duskButtons();},3400);});}
 $('wGo').onclick=()=>{audio();spinWheel();};$('wClose').onclick=()=>{if(!wSpinning)$('wheel').style.display='none';};$('bSpin').onclick=()=>{audio();openWheel();};
 {let taps=0,last=0;$('fine').addEventListener('click',()=>{const now=Date.now();taps=now-last<600?taps+1:1;last=now;if(taps>=5){taps=0;setDev(!DEV);}});$('fine').style.pointerEvents='auto';}
 $('bOther').onclick=()=>{if($('bOther').disabled)return;S.co=S.nextCo;showCoast();};
@@ -654,7 +676,7 @@ function finish(){
   if(S.ci!=null){const r=bayRec(S.ci),was=r.lamps;r.tries++;r.lamps=Math.max(r.lamps,home);r.dry=r.dry||(home===3&&strikes===0);const gotSpare=home===3&&S.spareMin>=1/3,gotFirst=home===3&&r.tries===1;r.spare=r.spare||gotSpare;r.first=r.first||gotFirst;S.marks=[home===3&&strikes===0?'home dry':'',gotSpare?'ink to spare':'',gotFirst?'first light':''].filter(Boolean);CS().bays[S.ci]=r;
     for(let i=0;i<S.ci;i++)if(!CS().bays[i])CS().bays[i]={lamps:0,dry:false,tries:0};saveMeta();
     el.cap.lastElementChild.innerHTML+='<br><i>Lamps lit in this bay: '+'\u25cf'.repeat(r.lamps)+'\u25cb'.repeat(3-r.lamps)+(r.lamps>was?' (new best)':'')+(S.marks.length?' \u00b7 earned: '+S.marks.join(', '):'')+(S.ci<COAST_N-1&&r.lamps<2?' \u00b7 two open the next bay':'')+'</i>';
-    const list=[];if(S.ci<COAST_N-1&&r.lamps>=2)list.push(['Next bay',()=>startBay(false,null,S.ci+1)]);list.push(['Again',()=>restartBay()],['Spin for supplies',()=>openWheel()],['Coast',()=>leave()]);buttons(list);
+    const list=[];if(S.ci<COAST_N-1&&r.lamps>=2)list.push(['Next bay',()=>{Ads.between().then(()=>startBay(false,null,S.ci+1));}]);list.push(['Again',()=>restartBay()],['Spin for supplies',()=>openWheel()],['Coast',()=>leave()]);buttons(list);
   }else buttons([['Another bay',()=>startBay(false)],['Spin for supplies',()=>openWheel()],copy]);
   S.phase='final';}
 
@@ -918,6 +940,8 @@ window.IBD={
 
 /* ---------- boot ---------- */
 resize();
+if(Ads.native){const f=$('wFine');if(f)f.innerHTML='Watching is always your choice.';}
+if('serviceWorker' in navigator&&!Ads.native&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 loadMeta().then(()=>{muted=!!META.muted;const k=dayKey();if(META.daily[k])$('fine').textContent='tonight’s bay, first try: home '+META.daily[k].home+'/3 · M mutes · prototype v'+VERSION;devMark();});
 requestAnimationFrame(frame);
 </script>

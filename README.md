@@ -6,7 +6,7 @@ A single-file browser game with one verb: **draw**. You get twenty seconds of fa
 
 Your chart doesn't have to be true. It has to bring her home.
 
-**Status:** v0.12 (2026-11-25): all ten coasts, 100 charts.
+**Status:** v0.13 (2026-11-25): all ten coasts, 100 charts; App Store wrapper prepared, not yet built.
 
 **▶ Play in your browser: https://jeffersonpikejr.github.io/ink-before-dark/** — on an iPad or iPhone, Share → Add to Home Screen runs it full-screen.
 
@@ -53,6 +53,12 @@ One `index.html` (about 600 lines): canvas rendering, a Dijkstra pilot on an 8-u
 Debug API in the console: `IBD.start(seed)` · `IBD.step(seconds)` (drives time by hand when animation frames are asleep) · `IBD.pause()` · `IBD.still()` (no CSS transitions) · `IBD.pen([[x,y],…])` (draws through the real pointer handlers) · `IBD.castOff()` · `IBD.info()` · `IBD.bench(n)`.
 
 ## Changelog
+
+### v0.13 — Ready to wrap (2026-11-25)
+- App icon, web manifest and an offline service worker (network first, so a new version always wins).
+- One ad interface for the whole game: a placeholder on the web; AdMob rewarded and interstitial calls inside the app, on Google's test ids. Interstitials only between charts, never on the first coast, never two charts running.
+- `privacy.html`.
+- `ios/`: a Capacitor 8 project (Swift Package Manager) with the icon, AdMob test app id and tracking-permission text set. **Not built or run: the machine it was made on has no Xcode.** `store/APP_STORE.md` is the step-by-step from here to TestFlight.
 
 ### v0.12 — Ten coasts (2026-11-25)
 - Seven new coasts, 70 new charts, each built round one new feature and combining earlier ones:

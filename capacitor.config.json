@@ -1,0 +1,7 @@
+{
+  "appId": "com.jeffersonpike.inkbeforedark",
+  "appName": "Ink Before Dark",
+  "webDir": "www",
+  "backgroundColor": "#0b0e13",
+  "ios": { "contentInset": "never", "scrollEnabled": false, "backgroundColor": "#0b0e13" }
+}

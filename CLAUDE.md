@@ -8,8 +8,12 @@ The target is an Apple App Store game with ads, and play that gets more interest
 ## Ship
 Public repo `jeffersonpikejr/ink-before-dark`, GitHub Pages from `main` root: https://jeffersonpikejr.github.io/ink-before-dark/ . Ship with the `ship-verify` skill and prove the live URL serves the new `VERSION`. `notes/` is git-ignored and stays off GitHub.
 
+## App Store wrapper
+`index.html` at the repo root is the game and what GitHub Pages serves. `npm run build` copies it to `www/` (git-ignored); `npm run ios` syncs it into `ios/` and opens Xcode. Read `store/APP_STORE.md` first. Ad unit ids in the repo are Google's public test ids; real ids go in only at submission. When `sw.js` exists, bump its `CACHE` string with every version.
+
 ## Testing
-- `node test/bench.mjs` (400 bays, ~40 s) after any change to the pilot, the generator or `CFG`. It prints FAIL when the middle bot is outside 40–70%; at v0.5 it reads 71%. Do not edit the thresholds to turn it green.
+- `node test/charts.mjs` must report 0 failing charts after any change to the generator, pilot or `CFG`; if it does not, re-pick that coast's seeds.
+- `node test/bench.mjs` (400 bays, ~40 s) after any change to the pilot, the generator or `CFG`. It prints FAIL when the middle bot is outside 40–70%; at v0.5 it read 71%. Do not edit the thresholds to turn it green.
 - When the Browser pane is hidden, animation frames do not fire. Use `IBD.pause(); IBD.still(); IBD.start(seed)` and drive time with `IBD.step(seconds)`; draw through the real handlers with `IBD.pen([[x,y],…])` or the drag tool. A screenshot can lag one paint behind a script: wait two seconds first.
 - Save hygiene: tests write `ibd_save` in that browser's localStorage. Remove it when done so the title does not show a test result as tonight's.
 
