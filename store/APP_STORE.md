@@ -20,7 +20,7 @@ npm install          # once
 npm run ios          # builds www/, syncs, opens Xcode
 ```
 1. In Xcode: pick the team under Signing & Capabilities; run on an iPad simulator and on the real iPad.
-2. Check on device: Pencil precision, the supply wheel showing a **test** rewarded ad and paying out, an interstitial appearing between charts on coast 2 and not on coast 1, the tracking prompt wording.
+2. Check on device: Pencil precision, the supply wheel showing a **test** rewarded ad and paying out, no interstitial in the first session, then at most one per three finished charts, the tracking prompt wording.
 3. Replace the three test ids with real ones: `GADApplicationIdentifier` in `ios/App/App/Info.plist`, and `Ads.ids.rewarded` / `Ads.ids.interstitial` in `index.html`. Set `initializeForTesting:false`. Add the rest of Google's current SKAdNetwork list to `Info.plist`.
 4. **Remove Ads** purchase: not built. Needs a non-consumable product in App Store Connect and a StoreKit plugin; on success set `META.noAds=true` (the ad layer already honours it).
 5. Game Center leaderboard for tonight's bay: not built.

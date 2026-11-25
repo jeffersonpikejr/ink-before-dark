@@ -53,7 +53,7 @@ Every coast is ten charts and follows the same shape, so a player always knows w
 - ✅ **P0 — The prototype** (2026-11-18). One verb, one pilot, one clock, three nights, dawn readback.
 - ✅ **Hosting** (2026-11-22). Public repo, GitHub Pages, home-screen meta tags.
 - ✅ **Coast 1 — The Strait** (2026-11-22). Ten charts, lamps, saved progress, Start over, Reset coast, mastery marks, drawn coast screen, ragged terrain, flags.
-- ✅ **From iPad play** (2026-11-22). Pencil precision, larger bottle, numbered lamps, harbours and towns, island harbours, supply wheel with an ad placeholder, developer mode.
+- ✅ **From iPad play** (2026-11-22). Pencil precision (confirmed fixed on the iPad 2026-11-25), larger bottle, numbered lamps, harbours and towns, island harbours, supply wheel with an ad placeholder, developer mode.
 - ✅ **Coast 2 — The River Mouths** (2026-11-22). The current.
 - ✅ **Coast 3 — The River** (2026-11-23, reworked 2026-11-25). Winding channel, islets and forks, spurs; nights escalate to a contrary current and then barges at anchor.
 
