@@ -6,7 +6,10 @@ One verb: draw. Read `README.md` for the six rules the pilot sails by and `ROADM
 The target is an Apple App Store game with ads, and play that gets more interesting the longer you play. `ROADMAP.md` is the plan. The earlier "anything added deletes something" rule and closed cut list are retired; what replaces them are the three tests at the top of the roadmap (drawable, visible, benched).
 
 ## Feature freeze (2026-11-25)
-Features are frozen at v0.14 until the playtest gate in `ROADMAP.md` passes (4 of 10 outside testers back within 48 hours). Bug fixes and fixes for drop-off points the play logs show are allowed; new mechanics, coasts and store features are not, unless Jefferson says otherwise.
+Features are frozen at v0.14 until the playtest gate in `ROADMAP.md` passes (4 of 10 outside testers back within 48 hours). Bug fixes and fixes for drop-off points the play logs show are allowed; new mechanics, coasts and store features are not, unless Jefferson says otherwise. (He did on 2026-11-25 for v0.15: cloud, ice, lanes and the log, from his own play notes. That was one exception, not the end of the freeze.)
+
+## Feature design rule (Jefferson, 2026-11-25)
+Every feature asks for its own pen gesture and must be beatable by skill alone; nothing may hide information the player has no way to get. New coasts come from new combinations of the deck in `ROADMAP.md` on new terrain. Weather and traffic are generated from their own random stream (`R2` in `tryBay`) so adding one never moves a rock.
 
 ## Ship
 Public repo `jeffersonpikejr/ink-before-dark`, GitHub Pages from `main` root: https://jeffersonpikejr.github.io/ink-before-dark/ . Ship with the `ship-verify` skill and prove the live URL serves the new `VERSION`. `notes/` is git-ignored and stays off GitHub.

@@ -49,6 +49,8 @@ button.pri{border-width:2px}
 #title .how{font-size:clamp(13px,2vw,15px);opacity:.66;max-width:34em;line-height:1.5;margin-top:4px}
 #title .row{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;justify-content:center}
 #title button{color:#efe6d0;border-color:#efe6d0}
+#title .log{font-size:13px;letter-spacing:.06em;opacity:.85;margin-top:18px;min-height:1.2em}
+#title .log b{letter-spacing:.3em;font-weight:normal}
 #title .fine{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.4;margin-top:20px}
 #rule{width:64px;height:2px;background:var(--red);margin:6px 0 4px}
 #coast{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 16px;gap:8px;
@@ -99,8 +101,9 @@ button.pri{border-width:2px}
   <p class="hook">Whatever you leave off the chart, she finds in the dark.</p>
   <p class="how">Twenty seconds of dusk. One bottle of ink. Then Odile sails the bay by your chart alone.</p>
   <div class="row"><button class="pri" id="bCoast">The Coast</button><button id="bDaily">Tonight's bay</button><button id="bRandom">Another bay</button></div>
+  <p class="log" id="logline"></p>
   <p class="fine" style="opacity:.6;margin-top:14px"><a id="bLog" href="#" style="color:#efe6d0">Send play log</a></p>
-  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.14</p>
+  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.15</p>
 </div>
 <div id="coast"><h2 id="cTitle">The Strait</h2><p id="cBlurb"></p><div id="bays"></div><div class="row"><button id="bBack">Back</button><button id="bPrev"></button><button id="bOther"></button><button id="bSpin">Spin for supplies</button><button id="bWipe">Reset coast</button></div><p id="invLine" style="margin-top:10px"></p></div>
 <div id="wheel"><h2>Supplies</h2><p id="wMsg"></p><div id="wWrap"><div id="wPtr"></div><div id="wDisc"></div></div><div class="row"><button class="pri" id="wGo">Watch an ad to spin</button><button id="wClose">Close</button></div><p class="fine2" id="wFine">Ads are a placeholder in this web build. Real rewarded ads arrive with the App Store version. <a href="privacy.html" style="color:inherit">Privacy</a></p></div>
@@ -113,7 +116,7 @@ button.pri{border-width:2px}
    Sections: config · rng · bay generator · chart · pilot · night sim
              · bots & bench · audio · store · game state · render · input · boot
    ============================================================ */
-const VERSION='0.14';
+const VERSION='0.15';
 const W=1000,H=640,CELL=8,GW=W/CELL|0,GH=H/CELL|0,NC=GW*GH;
 const CFG={
   DUSK:20,          // seconds of failing light
@@ -140,10 +143,10 @@ function coastDiff(i,co){const t=i/9,L=(a,b)=>a+(b-a)*t;
     if(co===3){d.dry=Math.round(L(2,5));if((mid&&i%2)||late){d.cur=L(8,13);f++;}}
     if(co===4){d.fog=true;if(mid||late){d.dry=2;f++;}if(late){d.cur=10;f++;}}
     if(co===5){d.river=true;d.bars=Math.round(L(2,4));if(mid||late){d.cur=L(8,13);f++;}if(late){d.dry=2;f++;}}
-    if(co===6){d.floes=Math.round(L(1,3));if(mid||late){d.cur=L(7,11);f++;}if(late){d.fog=true;f++;}}
+    if(co===6){d.floes=Math.round(L(2,4));if(mid||late){d.cur=L(7,11);f++;}if(late){d.fog=true;f++;}}
     if(co===7){d.decoy=true;if(mid){if(i%2)d.fog=true;else d.dry=2;f++;}if(late){d.fog=true;d.dry=2;f+=2;}}
-    if(co===8){d.ships=Math.round(L(1,3));if(mid||late){d.cur=L(7,11);f++;}if(late){d.bars=2;f++;}}
-    if(co===9){d.six=true;d.cur=L(6,10);d.dry=2;d.decoy=true;d.fog=i>=4;d.floes=i>=6?1:0;d.ships=i>=8?1:0;d.ink*=1.75;d.floor*=1.75;f=3;}
+    if(co===8){d.ships=Math.round(L(2,4));if(mid||late){d.cur=L(7,11);f++;}if(late){d.bars=2;f++;}}
+    if(co===9){d.six=true;d.cur=L(6,10);d.dry=2;d.decoy=true;d.fog=i>=4;d.floes=i>=6?1:0;d.ships=i>=8?2:0;d.ink*=1.75;d.floor*=1.75;f=3;}
     d.floor+=70*(f-1);d.pad+=.3*(f-1)+.2;return d;}
   return{cur:0,river:false,leg:L(.5,1),minR:Math.round(L(7,12)),maxR:Math.round(L(10,22)),ex0:1,ex1:Math.round(L(1,4)),ink:L(1.6,1.15),pad:L(.6,.2),cap:true,isl:i<2?0:i<6?1:2,floor:L(700,660)};}
 const FLOOR_K=[1,.8,.7];function bottle(bay,ni){return Math.max(bay.sumW*CFG.RATION[ni]*bay.inkMul,bay.inkFloor*FLOOR_K[ni]);}
@@ -197,6 +200,7 @@ function dilate(src){const out=new Uint8Array(NC);for(let y=0;y<GH;y++)for(let x
 
 /* ---------- the bay ---------- */
 const RK=12; // outline samples per rock
+const CSPAN=W+320; // a cloud bank comes round again after this far
 function inRock(q,x,y){const dx=x-q.x,dy=y-q.y,d=Math.hypot(dx,dy);if(d>q.rmax)return false;const n=q.rad.length;
   let a=Math.atan2(dy,dx);if(a<0)a+=Math.PI*2;const f=a/(Math.PI*2)*n,i=Math.floor(f)%n,j=(i+1)%n,t=f-Math.floor(f);
   return d<q.rad[i]*(1-t)+q.rad[j]*t;}
@@ -332,28 +336,56 @@ function tryBay(seed){
     tours.push(good?{start,stops,trio:tr,best:d/CFG.V,limit:CFG.TIDE_K[ni]*d/CFG.V*slow+CFG.TIDE_PAD+DIFF.pad}:null);});
   if(tours.some(t=>!t))return null;
   const legsOf=T=>T.stops.map((L,k)=>[k?T.stops[k-1]:T.start,L]),wet=(x,y)=>x>30&&y>30&&x<W-30&&y<H-30&&!hardAll[cellAt(x,y)];
-  // fog: off her course on the first night, then it moves and grows
-  const fog=[[],[],[]];if(DIFF.fog)for(let ni=0;ni<3;ni++){const lg=legsOf(tours[ni]);
-    for(let t=0;t<160&&fog[ni].length<2+ni;t++){const r=rr(90,128)*(1+.15*ni),x=rr(140,860),y=rr(150,500);
-      if(ni===0&&lg.some(([a,b])=>segDist(x,y,a.x,a.y,b.x,b.y)<r+34))continue;if(fog[ni].some(f=>Math.hypot(f.x-x,f.y-y)<r*.9))continue;fog[ni].push({x,y,r});}}
   // false lights: one the first night, two after
   const decoys=[[],[],[]];if(DIFF.decoy)for(let ni=0;ni<3;ni++){const T=tours[ni],n=T.stops.length,ks=ni===0?[1]:ni===1?[0,n-1]:[1,n-1];
     for(const k of ks){const Lk=T.stops[k],pv=k?T.stops[k-1]:T.start;for(let t=0;t<80;t++){const a=rr(0,6.283),dd=rr(95,150),x=Lk.x+Math.cos(a)*dd,y=Lk.y+Math.sin(a)*dd;
         if(!wet(x,y)||!wet(x+16,y)||!wet(x-16,y)||!wet(x,y+16)||!wet(x,y-16)||Math.hypot(x-pv.x,y-pv.y)<120)continue;decoys[ni].push({x,y,px:x,py:y+1,stop:k});break;}}}
-  // things under way: floes that go to and fro, ships that keep one heading
-  const movers=[],nm=(DIFF.floes||0)+(DIFF.ships||0);
-  for(let m=0;m<nm;m++)for(let t=0;t<300;t++){const a=lamps[ri(0,5)],b=lamps[ri(0,5)];if(a===b)continue;const mx=(a.x+b.x)/2+rr(-40,40),my=(a.y+b.y)/2+rr(-40,40),an=Math.atan2(b.y-a.y,b.x-a.x)+Math.PI/2+rr(-.5,.5),h=rr(100,150);
-    const A={x:mx-Math.cos(an)*h,y:my-Math.sin(an)*h},B={x:mx+Math.cos(an)*h,y:my+Math.sin(an)*h};if(!wet(A.x,A.y)||!wet(B.x,B.y)||!los(hardAll,null,A.x,A.y,B.x,B.y))continue;
-    if(movers.some(q=>Math.hypot((q.ax+q.bx)/2-mx,(q.ay+q.by)/2-my)<120))continue;
-    const kind=m<(DIFF.floes||0)?'floe':'ship';movers.push({ax:A.x,ay:A.y,bx:B.x,by:B.y,T:kind==='floe'?rr(9,13):rr(6,9),ph:rnd(),r:kind==='floe'?13:11,kind,from:m%3});break;}
+  // weather and traffic are drawn from a stream of their own, so adding one never moves a rock
+  const R2=mulberry32((seed^0x5bd1e995)>>>0),q2=(a,b)=>a+R2()*(b-a);
+  const wsg=R2()<.5?1:-1,wa=q2(-.35,.35),wind={x:wsg*Math.cos(wa),y:Math.sin(wa)};
+  const wetR=(x,y,r)=>{if(!wet(x,y))return false;for(let a=0;a<8;a++)if(!wet(x+Math.cos(a*.785)*r,y+Math.sin(a*.785)*r))return false;return true;};
+  // her best course each night, and the time she reaches each point of it
+  const courses=tours.map((T,ni)=>{const pts=[],hd=hardBy[ni],slow=nightCur[ni]?1+nightCur[ni].mag/CFG.V*1.25:1;let at=T.start,t=0;
+    for(const st of T.stops){const pp=planPath(hd,null,at,st);for(let i=1;i<pp.length;i++){const d=Math.hypot(pp[i].x-pp[i-1].x,pp[i].y-pp[i-1].y),n=Math.max(1,Math.ceil(d/10));
+      for(let k=1;k<=n;k++){t+=d/n/CFG.V*slow;pts.push({x:pp[i-1].x+(pp[i].x-pp[i-1].x)*k/n,y:pp[i-1].y+(pp[i].y-pp[i-1].y)*k/n,t});}}at=st;}return pts;});
+  // cloud: banks that cross the bay on the wind while you draw. Nothing under one stays hidden for long, but the light does not wait.
+  const clouds=[[],[],[]];if(DIFF.fog){const sp=q2(30,44)*wsg;for(let ni=0;ni<3;ni++)for(let t=0;t<200&&clouds[ni].length<3+ni;t++){const r=q2(80,118),y=q2(110,H-110),x0=q2(0,CSPAN);
+      if(clouds[ni].some(f=>Math.abs(f.y-y)<(f.r+r)*.7&&Math.min(Math.abs(f.x0-x0),CSPAN-Math.abs(f.x0-x0))<f.r+r+140))continue;
+      const lobes=[{dx:0,dy:0,r:r*.62}];for(let k=0;k<6;k++){const a=k/6*6.283+q2(-.3,.3);lobes.push({dx:Math.cos(a)*r*.52*q2(.8,1.25),dy:Math.sin(a)*r*.34,r:r*q2(.42,.58)});}
+      clouds[ni].push({x0,y,r,sp,lobes});}}
+  // ice: each berg drifts down the wind all night and is set adrift so that it lies across her best course when she gets there
+  const bergs=[];for(let m=0;m<(DIFF.floes||0);m++){const ni=m%3,C=courses[ni];for(let t=0;t<300;t++){const P=C[Math.floor(q2(.25,.8)*C.length)],sp=q2(8,12.5),an=Math.atan2(wind.y,wind.x)+q2(-.5,.5),vx=Math.cos(an)*sp,vy=Math.sin(an)*sp,r=q2(17,24);
+      const x0=P.x-vx*P.t,y0=P.y-vy*P.t;let free=true,tEnd=tours[ni].limit+8;
+      for(let u=0;u<=P.t+3;u+=.5)if(!wetR(x0+vx*u,y0+vy*u,r+6)){free=false;break;}if(!free)continue;
+      for(let u=P.t+3;u<=tEnd;u+=.5)if(!wetR(x0+vx*u,y0+vy*u,r+6)){tEnd=u-.5;break;} // then it grounds
+      if(nodes.some(n=>segDist(n.x,n.y,x0,y0,x0+vx*tEnd,y0+vy*tEnd)<r+46))continue;if(bergs.some(b=>Math.hypot(b.x0-x0,b.y0-y0)<90))continue;
+      const rad=[],n=6;for(let k=0;k<n;k++)rad.push(r*q2(.78,1.18));bergs.push({x0,y0,vx,vy,r,tEnd,rad,rot:q2(0,6.28),ni});break;}}
+  if(bergs.length<(DIFF.floes||0))return null;
+  // ships: lanes run harbour to harbour, round whatever lies between, and are timed so that a ship is on her best course when she crosses
+  const lanes=[];if(DIFF.ships){const cand=[];
+    for(let i=0;i<lamps.length;i++)for(let j=0;j<lamps.length;j++){if(i===j)continue;const a=lamps[i],b=lamps[j],pp=planPath(hardAll,null,a,b);if(pp.length===2&&!los(hardAll,null,a.x,a.y,b.x,b.y))continue;
+      const len=pathLen(pp);if(len<280)continue;const sm=[];for(let k=1;k<pp.length;k++){const d=Math.hypot(pp[k].x-pp[k-1].x,pp[k].y-pp[k-1].y),n=Math.max(1,Math.round(d/6));for(let m=0;m<n;m++)sm.push({x:pp[k-1].x+(pp[k].x-pp[k-1].x)*m/n,y:pp[k-1].y+(pp[k].y-pp[k-1].y)*m/n});}
+      sm.push(pp[pp.length-1]);cand.push({i,j,s:sm,len,st:len/(sm.length-1)});}
+    for(let i=cand.length-1;i>0;i--){const j=Math.floor(R2()*(i+1)),t=cand[i];cand[i]=cand[j];cand[j]=t;}
+    const cross=(cd,ni)=>{const C=courses[ni],T=tours[ni];let X=null,along=0;
+      for(const P of C){let bm=-1,bd=14;for(let m=0;m<cd.s.length;m++){const d=Math.hypot(cd.s[m].x-P.x,cd.s[m].y-P.y);if(d<bd){bd=d;bm=m;}}if(bm<0)continue;along++;
+        if(!X&&bd<7&&bm*cd.st>70&&bm*cd.st<cd.len-70&&T.stops.every(q=>Math.hypot(q.x-P.x,q.y-P.y)>55)&&Math.hypot(T.start.x-P.x,T.start.y-P.y)>55)X={m:bm,t:P.t};}
+      return along>24?null:X;};
+    const nL=DIFF.ships;for(let k=0;k<nL;k++){const from=Math.min(2,Math.max(0,k-Math.max(0,nL-3)));let best=null,bs=0,bX=null;
+      for(const cd of cand){if(lanes.some(l=>(l.i===cd.i&&l.j===cd.j)||(l.i===cd.j&&l.j===cd.i)))continue;const X=cross(cd,from);if(!X)continue;
+        let sc=1;for(let ni=from+1;ni<3;ni++)if(cross(cd,ni))sc++;if(sc>bs){bs=sc;best=cd;bX=X;}}
+      if(!best)continue;const sp=q2(58,74),n=Math.max(1,Math.round(best.len/q2(88,108))),gap=best.len/n;
+      lanes.push({i:best.i,j:best.j,s:best.s,len:best.len,st:best.st,sp,n,gap,ph:((bX.m*best.st-sp*bX.t)%gap+gap)%gap,from});}
+    if(lanes.length<nL)return null;
+    tours.forEach((T,ni)=>{T.limit+=.7*lanes.filter(l=>l.from<=ni).length;});}
   const sumW=rocks.reduce((a,q)=>a+(q.kind==='barge'?0:2*q.r),0);
-  return{topC,leftC,rightC,isLand,lamps,starts,rocks,rockCells,solid,rid,hard,tours,sumW,inkMul:DIFF.ink,inkFloor:DIFF.floor,isles,shore,topB,leftB,rightB,piece,pieceCells,rx,cur:curV,nightCur,fog,decoys,movers,six:!!DIFF.six,botC,botB,winding:!!DIFF.winding,hdg0:DIFF.winding?0:-Math.PI/2};}
+  return{topC,leftC,rightC,isLand,lamps,starts,rocks,rockCells,solid,rid,hard,tours,sumW,inkMul:DIFF.ink,inkFloor:DIFF.floor,isles,shore,topB,leftB,rightB,piece,pieceCells,rx,cur:curV,nightCur,clouds,decoys,bergs,lanes,courses,wind,six:!!DIFF.six,botC,botB,winding:!!DIFF.winding,hdg0:DIFF.winding?0:-Math.PI/2};}
 
 /* ---------- the chart (what you drew, and what the bay added in red) ---------- */
-function newChart(bay){const c={ink:0,spent:0,strokes:[],inkNear:new Uint8Array(NC),known:new Uint8Array(NC),knownHard:new Uint8Array(NC),reds:new Set(),scars:[],shown:new Set(),bay:bay||null};
+function newChart(bay){const c={ink:0,spent:0,strokes:[],inkNear:new Uint8Array(NC),known:new Uint8Array(NC),knownHard:new Uint8Array(NC),reds:new Set(),scars:[],shown:new Set(),lanes:new Set(),lanesRed:new Set(),bay:bay||null};
   if(bay){c.known.set(bay.shore);c.knownHard=dilate(c.known);} // she knows the plain shore; not the headlands, spits and islands that jut out from it
   return c;}
-function cloneChart(c){return{ink:c.ink,spent:c.spent,strokes:c.strokes.slice(),inkNear:c.inkNear.slice(),known:c.known.slice(),knownHard:c.knownHard.slice(),reds:new Set(c.reds),scars:c.scars.slice(),shown:new Set(c.shown),bay:c.bay};}
+function cloneChart(c){return{ink:c.ink,spent:c.spent,strokes:c.strokes.slice(),inkNear:c.inkNear.slice(),known:c.known.slice(),knownHard:c.knownHard.slice(),reds:new Set(c.reds),scars:c.scars.slice(),shown:new Set(c.shown),lanes:new Set(c.lanes),lanesRed:new Set(c.lanesRed),bay:c.bay};}
 function flagLand(c,id){if(!id||c.shown.has(id))return false;c.shown.add(id);for(const i of c.bay.pieceCells[id])c.known[i]=1;c.knownHard=dilate(c.known);return true;}
 function inkStamp(c,x,y){if(c.bay){const id=c.bay.piece[cellAt(x,y)];if(id&&!c.shown.has(id))flagLand(c,id);}const R=CFG.CLR,gx0=Math.max(0,((x-R)/CELL)|0),gx1=Math.min(GW-1,((x+R)/CELL)|0),gy0=Math.max(0,((y-R)/CELL)|0),gy1=Math.min(GH-1,((y+R)/CELL)|0);
   for(let gy=gy0;gy<=gy1;gy++)for(let gx=gx0;gx<=gx1;gx++){const cx=gx*CELL+CELL/2-x,cy=gy*CELL+CELL/2-y;if(cx*cx+cy*cy<=R*R)c.inkNear[gy*GW+gx]=1;}}
@@ -366,12 +398,24 @@ function reveal(bay,c,x,y,ci){const r=bay.rid[ci];let what;
 function rocksMarked(bay,c){let m=0;bay.rockCells.forEach((cells,k)=>{if(c.reds.has(k))return;for(const i of cells)if(c.inkNear[i]){m++;return;}});return m;}
 
 /* ---------- one night: the pilot sails exactly what the chart says ---------- */
-function moverPos(m,t){let u=((t/m.T+m.ph)%1+1)%1;if(m.kind==='floe')u=u<.5?u*2:2-u*2;return{x:m.ax+(m.bx-m.ax)*u,y:m.ay+(m.by-m.ay)*u};}
+const cloudX=(f,t)=>((f.x0+f.sp*t)%CSPAN+CSPAN)%CSPAN-160;
+function bergPos(b,t){const u=clamp(t,0,b.tEnd);return{x:b.x0+b.vx*u,y:b.y0+b.vy*u};}
+function lanePt(L,sd){const f=clamp(sd,0,L.len)/L.st,i=Math.min(L.s.length-2,Math.floor(f)),u=f-i,a=L.s[i],b=L.s[i+1];return{x:a.x+(b.x-a.x)*u,y:a.y+(b.y-a.y)*u};}
+// a ship is a short hull on its lane; within a length of either harbour it is alongside and harms no one
+function shipSeg(L,j,t){const sd=((L.ph+L.sp*t+j*L.gap)%L.len+L.len)%L.len;if(sd<44||sd>L.len-44)return null;const a=lanePt(L,sd-19),b=lanePt(L,sd+19);return{ax:a.x,ay:a.y,bx:b.x,by:b.y,x:(a.x+b.x)/2,y:(a.y+b.y)/2};}
+// A lane is on the chart once you have traced a ship's length of it: ink lying along some forty units of the lane.
+// A stroke that merely crosses a lane does not count, so charting a lane is a thing you choose to spend ink on.
+const LANE_TRACE=7;
+function laneInked(c,L){if(!c.strokes.length)return false;if(!c._lk)c._lk=new Map();const v=c._lk.get(L);if(v&&v.sp===c.spent)return v.on;let n=0;
+  for(const p of L.s){let hit=false;for(const st of c.strokes){if(st.length<=2)continue;for(let i=2;i<st.length&&!hit;i+=2)if(segDist(p.x,p.y,st[i-2],st[i-1],st[i],st[i+1])<6)hit=true;if(hit)break;}if(hit&&++n>=LANE_TRACE)break;}
+  const on=n>=LANE_TRACE;c._lk.set(L,{sp:c.spent,on});return on;}
 function liveAt(bay,N,ci){const v=bay.solid[ci];if(!v)return false;const r=bay.rid[ci];if(r===255)return true;const q=bay.rocks[r-1];return N.ni>=(q.from||0)&&(q.after==null||N.lamps>=q.after);}
 function nightNew(bay,chart,ni){const tour=bay.tours[ni];
   // a false light she has not been warned of is a stop she makes before the true one
   const stops=[];tour.stops.forEach((L,k)=>{for(const F of bay.decoys[ni])if(F.stop===k&&!chart.inkNear[cellAt(F.x,F.y)])stops.push({x:F.x,y:F.y,px:F.px,py:F.py,false:true});stops.push(L);});
-  const N={ni,pos:{x:tour.start.x,y:tour.start.y},hdg:bay.hdg0!=null?bay.hdg0:-Math.PI/2,stop:0,stops,lamps:0,need:tour.stops.length,imm:[],path:null,pi:1,t:0,limit:tour.limit,
+  // a lane your ink touches is on her chart: she will give way to its ships
+  bay.lanes.forEach((L,k)=>{if(ni>=L.from&&!chart.lanes.has(k)&&laneInked(chart,L))chart.lanes.add(k);});
+  const N={ni,pos:{x:tour.start.x,y:tour.start.y},hdg:bay.hdg0!=null?bay.hdg0:-Math.PI/2,stop:0,stops,lamps:0,need:tour.stops.length,imm:[],immL:[],path:null,pi:1,t:0,limit:tour.limit,
     strikes:0,stun:0,done:false,made:false,track:[{x:tour.start.x,y:tour.start.y}],hits:[],events:[],lit:[]};
   replan(N,chart);return N;}
 function replan(N,chart){const tgt=N.stops[N.stop];
@@ -391,8 +435,16 @@ function nightStep(N,bay,chart,dt){
     const step=Math.min(move,d,3),cu=bay.nightCur[N.ni],nx=N.pos.x+dx/d*step+(cu?cu.x*step/CFG.V:0),ny=N.pos.y+dy/d*step+(cu?cu.y*step/CFG.V:0);
     N.hdg=Math.atan2(dy,dx);
     const ci=cellAt(nx,ny);
-    let mhit=-1;for(let k=0;k<bay.movers.length;k++){const m=bay.movers[k];if(N.ni<m.from||N.t<(N.imm[k]||0))continue;const q=moverPos(m,N.t);if(Math.hypot(q.x-nx,q.y-ny)<m.r+5){mhit=k;break;}}
-    if(mhit>=0){N.strikes++;N.stun=CFG.STRIKE_T;N.imm[mhit]=N.t+4;N.hits.push({x:nx,y:ny,rock:null,mover:mhit,ti:N.track.length-1});N.events.push({k:'strike',x:nx,y:ny,mover:true,hdg:N.hdg});return;}
+    // ice adrift: it is not where you saw it
+    let mhit=-1;for(let k=0;k<bay.bergs.length;k++){if(N.t<(N.imm[k]||0))continue;const b=bay.bergs[k],q=bergPos(b,N.t);if(Math.hypot(q.x-nx,q.y-ny)<b.r+5){mhit=k;break;}}
+    if(mhit>=0){N.strikes++;N.stun=CFG.STRIKE_T;N.imm[mhit]=N.t+4;N.hits.push({x:nx,y:ny,rock:null,mover:mhit,berg:mhit,ti:N.track.length-1});N.events.push({k:'strike',x:nx,y:ny,mover:true,berg:mhit,t:N.t,hdg:N.hdg});return;}
+    // ships: she gives way to a lane that is on her chart, and crosses blind a lane that is not
+    let hold=false;
+    for(let k=0;k<bay.lanes.length;k++){const L=bay.lanes[k];if(N.ni<L.from)continue;const known=chart.lanes.has(k);if(!known&&N.t<(N.immL[k]||0))continue;
+      for(let j=0;j<L.n;j++){const g=shipSeg(L,j,N.t);if(!g)continue;const dn=segDist(nx,ny,g.ax,g.ay,g.bx,g.by);
+        if(known){if(dn<15&&segDist(N.pos.x,N.pos.y,g.ax,g.ay,g.bx,g.by)>=15)hold=true;}
+        else if(dn<9){N.strikes++;N.stun=CFG.STRIKE_T;N.immL[k]=N.t+4;chart.lanes.add(k);chart.lanesRed.add(k);N.hits.push({x:nx,y:ny,rock:null,mover:k,lane:k,ti:N.track.length-1});N.events.push({k:'strike',x:nx,y:ny,mover:true,lane:k,hdg:N.hdg});return;}}}
+    if(hold){if(!N.holding){N.holding=true;N.events.push({k:'hold'});}return;}N.holding=false;
     if(liveAt(bay,N,ci)){ // something you did not draw
       N.strikes++;N.stun=CFG.STRIKE_T;const what=reveal(bay,chart,nx,ny,ci);
       N.hits.push({x:nx,y:ny,rock:what.rock,ti:N.track.length-1});N.events.push({k:'strike',x:nx,y:ny,rock:what.rock,land:!!what.land,hdg:N.hdg});
@@ -412,7 +464,13 @@ function runNight(bay,chart,ni){const N=nightNew(bay,chart,ni);let g=0;while(!N.
 /* ---------- bots and the bench (the kill criterion is measured, not argued) ---------- */
 function segDist(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy||1;const t=clamp(((px-ax)*dx+(py-ay)*dy)/l2,0,1);return Math.hypot(px-(ax+dx*t),py-(ay+dy*t));}
 // "Slash": does not know the lamp order. Marks rocks lying on any likely course with one stroke across it.
+// The cheapest way to put a lane on the chart: trace a ship's length of it where it runs straight, as far from her own course as the lane goes.
+function laneMark(bay,c,k,ni){const L=bay.lanes[k],C=bay.courses[ni],n=LANE_TRACE+1;let best=null,bd=-1;
+  for(let m=8;m+n<L.s.length-8;m+=2){const a=L.s[m],b=L.s[m+n];let straight=true;for(let j=1;j<n&&straight;j++)if(segDist(L.s[m+j].x,L.s[m+j].y,a.x,a.y,b.x,b.y)>3)straight=false;if(!straight)continue;
+    const p=L.s[m+(n>>1)];let dm=1e9;for(let i=0;i<C.length;i+=2){const d=Math.hypot(C[i].x-p.x,C[i].y-p.y);if(d<dm)dm=d;}for(const q of bay.lamps){const d=Math.hypot(q.x-p.x,q.y-p.y)-20;if(d<dm)dm=d;}if(dm>bd){bd=dm;best=[a,b];}}
+  return best?botLine(c,best[0].x,best[0].y,best[1].x,best[1].y):false;}
 function botSlash(bay,c,ni){const S0=bay.tours[ni].start,L=bay.tours[ni].stops;
+  bay.lanes.forEach((Ln,k)=>{if(ni>=Ln.from&&!c.lanes.has(k)&&!laneInked(c,Ln))laneMark(bay,c,k,ni);});
   for(const F of bay.decoys[ni])botLine(c,F.x-4,F.y,F.x+4,F.y);
   const legs=L.map((p,k)=>[k?L[k-1]:S0,p]);const done=new Set();
   for(const [a,b] of legs){const ux=b.x-a.x,uy=b.y-a.y,n=Math.hypot(ux,uy)||1,dx=ux/n,dy=uy/n,px=-dy,py=dx;
@@ -426,6 +484,9 @@ function botOmni(bay,c,ni){for(const F of bay.decoys[ni])botLine(c,F.x-4,F.y,F.x
   for(let g=0;g<30;g++){const cc=cloneChart(c),N=nightNew(bay,cc,ni);let hit=null,n=0;
     while(!N.done&&n++<20000){nightStep(N,bay,cc,1/30);hit=N.events.find(e=>e.k==='strike');if(hit)break;}
     if(!hit)break;
+    if(hit.lane!=null){if(!laneMark(bay,c,hit.lane,ni))break;continue;}
+    if(hit.berg!=null){ // a stroke across her course where the ice will be when she gets there, wide enough to carry her round it
+      const b=bay.bergs[hit.berg],q=bergPos(b,hit.t+.4),dx=Math.cos(hit.hdg),dy=Math.sin(hit.hdg),h=b.r+10+g*4;if(!botLine(c,q.x+dy*h,q.y-dx*h,q.x-dy*h,q.y+dx*h))break;continue;}
     if(hit.mover){const dx=Math.cos(hit.hdg),dy=Math.sin(hit.hdg),ex=hit.x-dx*(26+g*3),ey=hit.y-dy*(26+g*3),sg=g%2?1:-1;if(!botLine(c,ex-dy*30*sg-dy*8,ey+dx*30*sg+dx*8,ex+dy*14*sg,ey-dx*14*sg))break;continue;}
     if(hit.rock==null){const dx=Math.cos(hit.hdg),dy=Math.sin(hit.hdg);if(!botLine(c,hit.x+dx*4,hit.y+dy*4,hit.x+dx*10,hit.y+dy*10))break;continue;}
     const dx=Math.cos(hit.hdg),dy=Math.sin(hit.hdg),px=-dy,py=dx,q=bay.rocks[hit.rock],R=q.rmax+1+(bay.nightCur[ni]?bay.nightCur[ni].mag*.9:0);
@@ -521,19 +582,39 @@ const ORD=['First','Second','Third'];
 // timed captions ride the game clock, not setTimeout, so a backgrounded tab or a manual step() stays in sync
 const timers=[];function after(sec,fn){timers.push({t:sec,fn});}
 
-function dayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+const dkey=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function dayKey(){return dkey(new Date());}
+// The log: nights in a row on which you drew tonight's bay. Keeping it means finishing the bay, not winning it,
+// and a lay day covers a night you missed, so one bad evening does not cost a long run. It lives on the device.
+function dayBack(n){const d=new Date();d.setDate(d.getDate()-n);return dkey(d);}
+const kept=k=>!!META.daily[k]||!!(META.lay&&META.lay[k]);
+function logRun(){let n=0,i=META.daily[dayBack(0)]?0:1;while(n<4000&&kept(dayBack(i))){n++;i++;}return n;}
+function layUp(){if(META.layDays==null)META.layDays=1;if(!META.lay)META.lay={};if(kept(dayBack(0)))return;
+  let g=0;while(g<8&&!kept(dayBack(1+g)))g++;
+  if(g>0&&g<=META.layDays&&kept(dayBack(1+g))){for(let i=1;i<=g;i++)META.lay[dayBack(i)]=1;META.layDays-=g;saveMeta();}}
+const LOG_MARKS=[7,14,30,60,100,200,365];
+// what a night kept earns: one supply, turn and turn about; a lay day every seventh night (two in hand at most); one of each supply at a landmark
+function keepLog(){const run=logRun();META.bestRun=Math.max(META.bestRun||0,run);const k=['ink','light','tide'][(run-1)%3];META.inv[k]=(META.inv[k]||0)+1;let msg='Log: '+run+(run===1?' night':' nights')+' running. Kept: '+SUP[k].name.toLowerCase()+' for the locker';
+  if(run%7===0&&(META.layDays||0)<2){META.layDays=(META.layDays||0)+1;msg+=', and a lay day';}
+  if(LOG_MARKS.includes(run)){for(const q of['ink','light','tide'])META.inv[q]++;msg+='. '+run+' nights: one of each supply besides';}
+  plog('D',run);saveMeta();return msg+'.';}
+function showLog(){const e=$('logline');if(!e)return;layUp();const run=logRun(),best=Math.max(META.bestRun||0,run),done=!!META.daily[dayBack(0)];
+  if(!best&&!done){e.innerHTML='Draw tonight’s bay to open the log.';return;}
+  let strip='';for(let i=6;i>=0;i--){const k=dayBack(i);strip+=META.daily[k]?'●':(META.lay&&META.lay[k])?'◐':i===0?'◌':'○';}
+  const lay=META.layDays||0;
+  e.innerHTML='<b>'+strip+'</b> &nbsp; '+(run?run+(run===1?' night':' nights')+' running':'The log starts again tonight')+(best>run?' · best '+best:'')+(lay?' · '+lay+(lay===1?' lay day':' lay days')+' in hand':'')+(done?'':' · tonight’s bay is waiting');}
 // Coast 1: ten seeds chosen by the bench so that on every bay a blank chart loses and a perfect chart brings her home all three nights.
 // Each coast: ten seeds chosen by the bench so that on every bay a blank chart loses and a perfect chart brings her home all three nights.
 const COASTS=[{name:'The Strait',seeds:[874466113,654379450,74939381,3846542944,2299479309,3696375929,1445608987,971365964,1029730873,809644210],blurb:'Ten bays, each harder than the last.'},
   {name:'The River Mouths',seeds:[2322889133,1727192044,3038527770,144467827,797210223,2471611411,1651080545,1430993882,2389042918,2436118231],blurb:'A river runs out into every bay, and its current carries her off her line.',need:12},
   {name:'The River',seeds:[2368863991,1879055496,2670285033,309098165,1088772963,1146190868,1892310428,3859646094,1681938303,3329219280],blurb:'Upriver, west to east, port by port, round islets and through forks. The first night is still water; the second, the river runs against her; the third, barges lie at anchor in the channel.',need:12},
   {name:'The Drying Shore',seeds:[856231923,3067516919,1693324626,1506793201,2125980359,1646514456,2437743993,2234434949,2887177345,2379379084],blurb:'Dashed rocks lie under water tonight and bare tomorrow. Each night the tide stands lower.',need:12},
-  {name:'The Fog Banks',seeds:[285103042,2642279177,1867827259,2340858135,1704893358,4062069493,1118185012,3228987523,2294047965,360267537],blurb:'Fog hides part of the chart at dusk, and moves each night. Draw what you remember.',need:12},
+  {name:'The Low Cloud',seeds:[285103042,2642279177,1867827259,2340858135,1704893358,4062069493,1118185012,3228987523,2294047965,360267537],blurb:'Cloud crosses the bay while you draw and hides what lies under it. Wait and it passes. The light does not wait.',need:12},
   {name:'The Delta',seeds:[241355653,21268990,3703240979,3767093911,3116532633,2862890732,678022119,2325303096,91313773,1492221126],blurb:'Sand closes behind her: each bar shuts once she has made the lamp numbered on it.',need:12},
-  {name:'The Ice',seeds:[2319282780,645990571,2890425654,1499860893,3046924528,1378855199,4149728330,2232725521,2990642996,873588687],blurb:'Floes drift to and fro along lanes you can see at dusk and she cannot see at all.',need:12},
+  {name:'The Ice',seeds:[2319282780,645990571,2890425654,1499860893,3849636644,1901458089,4149728330,2232725521,806770947,2800431842],blurb:'Bergs drift down the wind all night. Ink where the ice is going, not where it lies.',need:12},
   {name:'The Wreckers\u2019 Coast',seeds:[1003116767,2687963715,1856987089,3773989898,270252139,1943544348,1124122461,2514687222,3837577687,3347769192],blurb:'Some lights have no harbour under them. Touch one with ink, or she steers for it.',need:12},
-  {name:'The Roads',seeds:[3303792209,3507101253,2721094596,2674019283,1867224274,2087310937,1296081400,3943767719,462999430,3340281754],blurb:'Ships under way keep to their lanes all night, without lights.',need:12},
-  {name:'The Long Passage',seeds:[1797074689,1576988026,963992719,474184224,3222087885,307239590,2368217563,1893974540,1952339449,1732252786],blurb:'Six lamps a night, one bottle, and everything the nine coasts before it have taught.',need:12}];
+  {name:'The Roads',seeds:[3303792209,3507101253,2721094596,2674019283,1867224274,2087310937,3128425719,3943767719,462999430,3340281754],blurb:'Ships run harbour to harbour all night, without lights. Trace a ship\u2019s length of a lane and she gives way to them; leave it off and she crosses blind.',need:12},
+  {name:'The Long Passage',seeds:[1797074689,1576988026,963992719,474184224,3222087885,307239590,2368217563,2860291579,1952339449,1732252786],blurb:'Six lamps a night, one bottle, and everything the nine coasts before it have taught.',need:12}];
 const SKEY=i=>i?'coast'+(i+1):'coast';
 const STORES=()=>COASTS.map((_,i)=>(META[SKEY(i)]&&Array.isArray(META[SKEY(i)].bays))?META[SKEY(i)]:(META[SKEY(i)]={bays:[]}));
 const COAST_N=10,coastSeed=i=>COASTS[S.co||0].seeds[i];
@@ -559,7 +640,7 @@ function startBay(daily,seed,ci){
 function restartBay(){if(!S.bay)return;S.spareMin=1;S.chart=newChart(S.bay);S.ni=0;S.results=[];S.full=false;S.toldRed=false;S.N=null;disarm();startDusk();}
 function leave(){if(S.phase==='dusk'||S.phase==='night')plog('Q',S.ni+1,S.phase==='dusk'?0:1);S.phase='title';timers.length=0;S.N=null;setSea(0);setPen(0);caption('','');buttons([]);hint('');disarm();
   el.hud.classList.add('hide');$('bLeave').classList.add('hide');$('bOver').classList.add('hide');
-  if(S.ci!=null)showCoast();else{$('coast').style.display='none';el.title.style.display='flex';}}
+  if(S.ci!=null)showCoast();else{$('coast').style.display='none';el.title.style.display='flex';showLog();}}
 function showCoast(){S.phase='title';if(S.co==null)S.co=0;el.title.style.display='none';$('coast').style.display='flex';
   const NC2=COASTS.length,nx=(S.co+1)%NC2,pv=(S.co+NC2-1)%NC2,C=COASTS[S.co],other=COASTS[nx],have=nx>0?lampsOn(STORES()[nx-1]):0,locked=!DEV&&nx>0&&have<other.need;S.nextCo=nx;S.prevCo=pv;
   const pLock=!DEV&&pv>0&&lampsOn(STORES()[pv-1])<12;$('bPrev').textContent='\u2039 '+COASTS[pv].name;$('bPrev').disabled=pLock;$('bPrev').style.opacity=pLock?.4:1;$('bPrev').style.display=S.co===0&&pLock?'none':'';
@@ -626,7 +707,7 @@ $('wGo').onclick=()=>{audio();spinWheel();};$('wClose').onclick=()=>{if(!wSpinni
 {let taps=0,last=0;$('fine').addEventListener('click',()=>{const now=Date.now();taps=now-last<600?taps+1:1;last=now;if(taps>=5){taps=0;setDev(!DEV);}});$('fine').style.pointerEvents='auto';}
 $('bOther').onclick=()=>{if($('bOther').disabled)return;S.co=S.nextCo;showCoast();};
 $('bPrev').onclick=()=>{if($('bPrev').disabled)return;S.co=S.prevCo;showCoast();};
-$('bBack').onclick=()=>{$('coast').style.display='none';el.title.style.display='flex';};
+$('bBack').onclick=()=>{$('coast').style.display='none';el.title.style.display='flex';showLog();};
 // Supplies won on the wheel. Each is spent at dusk and lasts one night.
 const SUP={ink:{name:'Ink',tip:'+40% bottle'},light:{name:'Light',tip:'+6 s of dusk'},tide:{name:'Tide',tip:'+3 s tonight'}};
 function useSupply(k){if(S.phase!=='dusk'||!(META.inv[k]>0))return;META.inv[k]--;saveMeta();plog('U');
@@ -639,13 +720,13 @@ function duskButtons(){const list=[['Cast off',()=>{if(S.phase==='dusk')startNig
 function featHint(b){if(b.winding||S.co==null||S.co<3||S.ci==null)return'';
   if(b.six)return'Six lamps tonight, and everything this coast has taught her.';
   if(S.co===7)return'A light with no harbour is a wrecker\u2019s. Touch it with ink and she will not be fooled.';
-  if(S.co===8)return'Ships keep to the dotted lanes all night, without lights. Ink cannot stop one; it can keep her clear.';
-  if(S.co===6)return'Ice drifts to and fro along the dotted lanes. Keep her off them, or time her crossing.';
+  if(S.co===8)return'Ships run the dotted lanes harbour to harbour, without lights. Trace a ship\u2019s length of a lane and she will give way to them.';
+  if(S.co===6)return'Ice drifts down the wind all night. The dotted track is where it will go; each tick is a quarter of the tide.';
   if(S.co===5)return'Dotted sand closes once she has made the lamp numbered on it.';
-  if(S.co===4)return'Fog lies off her course tonight. It will move, and what you saw you must remember.';
+  if(S.co===4)return'Cloud is crossing the bay. Wait and it passes; the light will not.';
   if(S.co===3)return'Dashed rocks are under water tonight. They will not be tomorrow.';return'';}
 function startDusk(){
-  S.phase='dusk';S.duskT=0;S.began=false;S.wait=0;S.dark=0;S.N=null;S.full=false;S.rings.length=0;S.capFade=false;S.toldDry=false;timers.length=0;
+  S.phase='dusk';S.duskT=0;S.cloudT=0;S.began=false;S.wait=0;S.dark=0;S.N=null;S.full=false;S.rings.length=0;S.capFade=false;S.toldDry=false;timers.length=0;
   S.chart.ink=bottle(S.bay,S.ni);S.inkCap=Math.max(S.chart.ink,1);S.tideBonus=0;
   el.hNight.textContent=(S.ci!=null?'Bay '+(S.ci+1)+' \u00b7 ':'')+'Night '+(S.ni+1)+' of 3';
   el.mInk.classList.remove('hide');el.mTide.classList.add('hide');
@@ -679,7 +760,8 @@ function startDawn(){
   const cnt=n=>n?num(n):'none',tally='Your chart: '+cnt(marked)+' in your hand, '+cnt(red)+' in red, of '+nR+'.';
   let line2='<br><i>'+(found?'She found '+rocks+' you left off. ':(N.made?'':'She struck nothing; your ink sent her the long way round. '))+tally+'</i>';
   if(N.falses)line2+='<br>She steered for '+(N.falses===1?'a false light':num(N.falses)+' false lights')+' you did not strike out.';
-  if(N.hits.some(h=>h.mover!=null))line2+='<br>Something under way met her in the dark.';
+  if(N.hits.some(h=>h.berg!=null))line2+='<br>Ice met her in the dark. It had drifted since dusk.';
+  if(N.hits.some(h=>h.lane!=null))line2+='<br>A ship crossed her bows. Its lane is on the chart now, in red.';
   if(!N.made&&!S.toldTip&&S.ni<2){S.toldTip=true;line2+='<br>A stroke across her course is enough. She keeps clear of your ink.';}
   el.mTide.classList.add('hide');hint('');setSea(0.02);
   if(N.made)SFX.home();else SFX.late();
@@ -690,9 +772,9 @@ function startDawn(){
 function finish(){plog('F',S.results.filter(r=>r.made).length);Ads.askTracking();
   const home=S.results.filter(r=>r.made).length,strikes=S.results.reduce((a,r)=>a+r.strikes,0);
   S.share='Ink Before Dark · bay '+S.label+' · home '+home+'/3 · '+S.results.map(r=>r.made?'●':'○').join('')+' · '+strikes+' found in the dark';
-  META.bays++;if(S.daily&&!META.daily[S.dayKey])META.daily[S.dayKey]={home,strikes};saveMeta();
+  META.bays++;let logMsg='';if(S.daily&&!META.daily[S.dayKey]){META.daily[S.dayKey]={home,strikes};if(S.dayKey===dayKey())logMsg=keepLog();}saveMeta();
   const VERDICT=['Odile has taken work ashore.','Odile is drawing her own chart.','Odile will take yours, and a lantern.','Odile would sail it blind.'];
-  el.cap.lastElementChild.innerHTML+='<br>Home '+home+' of 3 nights. '+VERDICT[home];
+  el.cap.lastElementChild.innerHTML+='<br>Home '+home+' of 3 nights. '+VERDICT[home]+(logMsg?'<br><i>'+logMsg+'</i>':'');
   const copy=['Copy result',()=>{const b=el.btns.lastElementChild;try{navigator.clipboard.writeText(S.share).then(()=>{b.textContent='Copied';},()=>{b.textContent=S.share;});}catch(e){b.textContent=S.share;}}];
   if(S.ci!=null){const r=bayRec(S.ci),was=r.lamps;r.tries++;r.lamps=Math.max(r.lamps,home);r.dry=r.dry||(home===3&&strikes===0);const gotSpare=home===3&&S.spareMin>=1/3,gotFirst=home===3&&r.tries===1;r.spare=r.spare||gotSpare;r.first=r.first||gotFirst;S.marks=[home===3&&strikes===0?'home dry':'',gotSpare?'ink to spare':'',gotFirst?'first light':''].filter(Boolean);CS().bays[S.ci]=r;
     for(let i=0;i<S.ci;i++)if(!CS().bays[i])CS().bays[i]={lamps:0,dry:false,tries:0};saveMeta();
@@ -707,7 +789,7 @@ function update(dt){
   for(let i=timers.length-1;i>=0;i--){const tm=timers[i];tm.t-=dt;if(tm.t<=0){timers.splice(i,1);tm.fn();}}
   if(S.shake>0)S.shake=Math.max(0,S.shake-dt*22);
   for(const r of S.rings)r.t+=dt;while(S.rings.length&&S.rings[0].t>1.2)S.rings.shift();
-  if(S.phase==='dusk'){
+  if(S.phase==='dusk'){S.cloudT+=dt;
     if(!S.began){S.wait+=dt;if(S.wait>(S.ni===0?3.5:0.6))S.began=true;}
     if(S.began)S.duskT+=dt;
     S.dark=smooth((S.duskT-CFG.GRACE)/(CFG.DUSK-CFG.GRACE))*0.985;
@@ -720,6 +802,7 @@ function update(dt){
       if(e.k==='strike'){SFX.crunch();S.shake=7;S.rings.push({x:e.x,y:e.y,t:0});
         if(!S.toldRed){S.toldRed=true;caption('','The bay marks what you didn’t.',2.8);}}
       else if(e.k==='lamp'){SFX.bell();}
+      else if(e.k==='hold'){SFX.dry();if(!S.toldHold){S.toldHold=true;caption('','She gives way to the ship.',2.4);}}
     }
     const left=Math.max(0,N.limit-N.t),sec=Math.ceil(left);
     if(left<5&&sec!==lastTide){lastTide=sec;SFX.tick();}
@@ -814,6 +897,18 @@ function drawBoat(c,x,y,hdg,col,glow){c.save();c.translate(x,y);c.rotate(hdg);
   if(glow){const g=c.createRadialGradient(0,0,0,0,0,26);g.addColorStop(0,'rgba(239,230,208,.34)');g.addColorStop(1,'rgba(239,230,208,0)');c.fillStyle=g;c.beginPath();c.arc(0,0,26,0,7);c.fill();}
   c.beginPath();c.moveTo(10,0);c.quadraticCurveTo(2,6,-8,4.5);c.lineTo(-8,-4.5);c.quadraticCurveTo(2,-6,10,0);c.closePath();
   c.fillStyle=col;c.fill();c.restore();}
+function drawInk(c,ch,d){c.lineJoin='round';c.lineCap='round';
+  // the water she will keep out of: a faint margin round every stroke, so the ink shows what it covers
+  c.strokeStyle=c.fillStyle=mixc(INK,CREAM,d,S.phase==='night'?0.085:0.05);c.lineWidth=CFG.CLR*2;
+  for(const st of ch.strokes){if(st.length<=2){c.beginPath();c.arc(st[0],st[1],CFG.CLR,0,7);c.fill();continue;}
+    c.beginPath();c.moveTo(st[0],st[1]);for(let i=2;i<st.length;i+=2)c.lineTo(st[i],st[i+1]);c.stroke();}
+  // your ink
+  c.strokeStyle=c.fillStyle=mixc(INK,CREAM,d);c.lineWidth=3.4;
+  for(const st of ch.strokes){if(st.length<=2){c.beginPath();c.arc(st[0],st[1],2.6,0,7);c.fill();continue;}
+    c.beginPath();c.moveTo(st[0],st[1]);for(let i=2;i<st.length;i+=2)c.lineTo(st[i],st[i+1]);c.stroke();}
+}
+function bergPath(c,b,x,y){c.beginPath();const n=b.rad.length;for(let k=0;k<n;k++){const a=b.rot+k/n*6.283,px=x+Math.cos(a)*b.rad[k],py=y+Math.sin(a)*b.rad[k];k?c.lineTo(px,py):c.moveTo(px,py);}c.closePath();}
+function drawShip(c,g,col){c.save();c.translate(g.x,g.y);c.rotate(Math.atan2(g.by-g.ay,g.bx-g.ax));c.fillStyle=col;c.beginPath();c.moveTo(21,0);c.lineTo(12,5.5);c.lineTo(-19,5.5);c.lineTo(-19,-5.5);c.lineTo(12,-5.5);c.closePath();c.fill();c.restore();}
 function render(){
   const c=ctx,d=S.dark;c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;
   c.fillStyle=S.phase==='title'?'rgba(0,0,0,0)':mixc(PAPER,NIGHT,d);c.clearRect(0,0,cv.width,cv.height);if(S.phase==='title')return;c.fillRect(0,0,cv.width,cv.height);
@@ -838,14 +933,7 @@ function render(){
   for(const k of ch.reds){const q=bay.rocks[k];rockPath(c,q);c.save();c.clip();c.strokeStyle=RED;c.globalAlpha=.55;c.lineWidth=1.3;c.beginPath();
     for(let t=-q.r*2;t<q.r*2;t+=6){c.moveTo(q.x+t-q.r,q.y-q.r*1.3);c.lineTo(q.x+t+q.r,q.y+q.r*1.3);}c.stroke();c.restore();c.globalAlpha=1;rockPath(c,q);c.strokeStyle=RED;c.lineWidth=2.8;c.stroke();}
   for(const s of ch.scars){c.strokeStyle=RED;c.lineWidth=2.6;c.beginPath();for(let k=0;k<5;k++){const a=k*1.9+s.x*.01,r=7+k*3.2;c.moveTo(s.x+Math.cos(a)*r,s.y+Math.sin(a)*r);c.lineTo(s.x-Math.cos(a+.6)*r,s.y-Math.sin(a+.6)*r);}c.stroke();}
-  // the water she will keep out of: a faint margin round every stroke, so the ink shows what it covers
-  c.strokeStyle=c.fillStyle=mixc(INK,CREAM,d,S.phase==='night'?0.085:0.05);c.lineWidth=CFG.CLR*2;
-  for(const st of ch.strokes){if(st.length<=2){c.beginPath();c.arc(st[0],st[1],CFG.CLR,0,7);c.fill();continue;}
-    c.beginPath();c.moveTo(st[0],st[1]);for(let i=2;i<st.length;i+=2)c.lineTo(st[i],st[i+1]);c.stroke();}
-  // your ink
-  c.strokeStyle=c.fillStyle=mixc(INK,CREAM,d);c.lineWidth=3.4;
-  for(const st of ch.strokes){if(st.length<=2){c.beginPath();c.arc(st[0],st[1],2.6,0,7);c.fill();continue;}
-    c.beginPath();c.moveTo(st[0],st[1]);for(let i=2;i<st.length;i+=2)c.lineTo(st[i],st[i+1]);c.stroke();}
+  drawInk(c,ch,d);
   if(S.phase==='dusk'||S.phase==='dawn'||S.phase==='final'){const al=S.phase==='dusk'?Math.pow(1-d,1.2):smooth((S.dawnT-0.7)/2.4),inkc='#1c2430';c.globalAlpha=al;
     for(const q of bay.rocks){if(!q.kind)continue;
       if(q.kind==='barge'){if(S.ni<2)continue;rockPath(c,q);c.fillStyle=inkc;c.fill();c.strokeStyle=inkc;c.lineWidth=2;c.stroke();c.strokeStyle='#e9e0cc';c.lineWidth=1.2;c.beginPath();const ux=Math.cos(q.ang),uy=Math.sin(q.ang);c.moveTo(q.x-ux*q.rmax*.6,q.y-uy*q.rmax*.6);c.lineTo(q.x+ux*q.rmax*.6,q.y+uy*q.rmax*.6);c.stroke();}
@@ -854,15 +942,23 @@ function render(){
       else if(q.kind==='bar'){rockPath(c,q);c.save();c.clip();c.fillStyle=inkc;for(let yy=q.y-q.rmax;yy<q.y+q.rmax;yy+=6)for(let xx=q.x-q.rmax+((yy/6|0)%2)*3;xx<q.x+q.rmax;xx+=6)c.fillRect(xx,yy,1.5,1.5);c.restore();
         rockPath(c,q);c.setLineDash([1.5,4]);c.strokeStyle=inkc;c.lineWidth=1.8;c.stroke();c.setLineDash([]);c.save();c.translate(q.x,q.y);if(VIEW.rot)c.rotate(-Math.PI/2);c.fillStyle='#e9e0cc';c.beginPath();c.arc(0,0,9,0,7);c.fill();c.fillStyle=inkc;c.font='italic bold 15px Georgia,serif';c.textAlign='center';c.textBaseline='middle';c.fillText(String(q.after),0,1);c.restore();}}
     c.globalAlpha=1;}
-  if(S.phase==='dusk'){const tt=performance.now()/1000,col=mixc(INK,CREAM,d,Math.max(.2,1-d));
-    for(const m of bay.movers){if(S.ni<m.from)continue;c.strokeStyle=col;c.lineWidth=1.4;c.setLineDash([2,7]);c.beginPath();c.moveTo(m.ax,m.ay);c.lineTo(m.bx,m.by);c.stroke();c.setLineDash([]);
-      const q=moverPos(m,tt),an=Math.atan2(m.by-m.ay,m.bx-m.ax);c.save();c.translate(q.x,q.y);c.rotate(an);c.fillStyle=col;c.strokeStyle=col;c.lineWidth=1.8;
-      if(m.kind==='floe'){c.beginPath();for(let k=0;k<7;k++){const a=k/7*6.283,r=m.r*(.8+.3*((k*37)%5)/5);k?c.lineTo(Math.cos(a)*r,Math.sin(a)*r):c.moveTo(Math.cos(a)*r,Math.sin(a)*r);}c.closePath();c.stroke();}
-      else{c.beginPath();c.moveTo(m.r+7,0);c.lineTo(m.r-2,5.5);c.lineTo(-m.r-4,5.5);c.lineTo(-m.r-4,-5.5);c.lineTo(m.r-2,-5.5);c.closePath();c.fill();}
-      c.restore();}
-    // fog lies over the chart itself, not over your ink
-    for(const f of bay.fog[S.ni]){const g=c.createRadialGradient(f.x,f.y,f.r*.25,f.x,f.y,f.r),pc=mixc(PAPER,NIGHT,d);g.addColorStop(0,pc);g.addColorStop(.72,pc);g.addColorStop(1,mixc(PAPER,NIGHT,d,0));c.fillStyle=g;c.beginPath();c.arc(f.x,f.y,f.r,0,7);c.fill();
-      c.strokeStyle=mixc(INK,CREAM,d,.28);c.lineWidth=1.2;c.setLineDash([1,6]);for(const k of[.55,.78,.96]){c.beginPath();c.arc(f.x,f.y,f.r*k,0,7);c.stroke();}c.setLineDash([]);}}
+  if(S.phase==='dusk'){const tt=S.cloudT||0,col=mixc(INK,CREAM,d,Math.max(.2,1-d)),T=bay.tours[S.ni].limit;
+    // ice: where it lies now, the track it will drift down tonight (a tick each quarter of the tide), and where it ends
+    for(const b of bay.bergs){const te=Math.min(b.tEnd,T),ex=b.x0+b.vx*te,ey=b.y0+b.vy*te,sp=Math.hypot(b.vx,b.vy),ux=b.vx/sp,uy=b.vy/sp;
+      c.strokeStyle=col;c.lineWidth=1.5;c.setLineDash([2,6]);c.beginPath();c.moveTo(b.x0,b.y0);c.lineTo(ex,ey);c.stroke();c.setLineDash([]);
+      c.beginPath();for(let q=1;q<=4;q++){const tq=T*q/4;if(tq>te+.01)break;const x=b.x0+b.vx*tq,y=b.y0+b.vy*tq;c.moveTo(x-uy*8,y+ux*8);c.lineTo(x+uy*8,y-ux*8);}c.stroke();
+      bergPath(c,b,ex,ey);c.setLineDash([3,4]);c.stroke();c.setLineDash([]);
+      const gh=bergPos(b,(tt%5)/5*te);c.globalAlpha=.35;bergPath(c,b,gh.x,gh.y);c.stroke();c.globalAlpha=1;
+      bergPath(c,b,b.x0,b.y0);c.fillStyle=mixc([250,247,238],NIGHT,d);c.fill();c.lineWidth=2.2;c.stroke();
+      c.lineWidth=1.1;c.beginPath();for(let k=0;k<b.rad.length;k+=2){const a=b.rot+k/b.rad.length*6.283;c.moveTo(b.x0+ux*3,b.y0+uy*3);c.lineTo(b.x0+Math.cos(a)*b.rad[k],b.y0+Math.sin(a)*b.rad[k]);}c.stroke();}
+    // ships and their lanes; a lane your ink has touched is drawn firm, one she found the hard way is red
+    bay.lanes.forEach((L,k)=>{if(S.ni<L.from)return;const red=ch.lanesRed.has(k),flag=red||ch.lanes.has(k)||laneInked(ch,L),lc=red?RED:col;
+      c.strokeStyle=lc;c.lineWidth=flag?2.4:1.4;c.setLineDash(flag?[10,5]:[2,7]);c.beginPath();L.s.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.stroke();c.setLineDash([]);
+      for(let j=0;j<L.n;j++){const g=shipSeg(L,j,tt);if(g)drawShip(c,g,lc);}});
+    // cloud lies over the bay, not over your ink or the lamps
+    const CL=bay.clouds[S.ni];if(CL.length){const fill=mixc([248,245,236],NIGHT,d),edge=mixc(INK,CREAM,d,.5),lob=f=>{const x=cloudX(f,tt);c.beginPath();for(const l of f.lobes){c.moveTo(x+l.dx+l.r,f.y+l.dy);c.arc(x+l.dx,f.y+l.dy,l.r,0,6.2832);}};
+      for(const f of CL){lob(f);c.strokeStyle=edge;c.lineWidth=2.4;c.stroke();}for(const f of CL){lob(f);c.fillStyle=fill;c.fill();}
+      drawInk(c,ch,d);}}
   const curNow=bay.nightCur[S.ni];
   if(curNow&&(S.phase==='dusk'||S.phase==='night')){const cu=curNow,t0=performance.now()/1000,al=S.phase==='night'?0.16:0.5*(1-d)+0.08,ux=cu.x/cu.mag,uy=cu.y/cu.mag;
     c.strokeStyle=mixc(INK,CREAM,d,al);c.lineWidth=1.6;c.beginPath();
@@ -880,6 +976,9 @@ function render(){
     const L=N.stops[N.stop];if(L){const pulse=.75+.25*Math.sin(performance.now()/300);
       const g=c.createRadialGradient(L.x,L.y,0,L.x,L.y,95);g.addColorStop(0,'rgba(239,230,208,'+(.55*pulse)+')');g.addColorStop(.25,'rgba(239,230,208,.14)');g.addColorStop(1,'rgba(239,230,208,0)');
       c.fillStyle=g;c.beginPath();c.arc(L.x,L.y,95,0,7);c.fill();c.fillStyle='#fff7e2';c.beginPath();c.arc(L.x,L.y,4.5,0,7);c.fill();}
+    // a lane on her chart, and the ships she is giving way to
+    bay.lanes.forEach((L,k)=>{if(N.ni<L.from||!ch.lanes.has(k))return;c.strokeStyle='rgba(239,230,208,.2)';c.lineWidth=1.4;c.setLineDash([10,5]);c.beginPath();L.s.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.stroke();c.setLineDash([]);
+      for(let j=0;j<L.n;j++){const g=shipSeg(L,j,N.t);if(g)drawShip(c,g,'rgba(239,230,208,.45)');}});
     // her pencilled course
     if(N.path&&N.stun<=0){c.strokeStyle=mixc(PENCIL,PENCIL,0,.8);c.lineWidth=1.8;c.setLineDash([3,8]);c.beginPath();c.moveTo(N.pos.x,N.pos.y);for(let i=N.pi;i<N.path.length;i++)c.lineTo(N.path[i].x,N.path[i].y);c.stroke();c.setLineDash([]);}
     // wake
@@ -889,6 +988,8 @@ function render(){
   if(N&&(S.phase==='dawn'||S.phase==='final')){const tr=N.track,k=Math.min(S.sweepK,tr.length-1);
     c.strokeStyle=mixc(INK,PENCIL,d,.6);c.lineWidth=1.6;c.setLineDash([2,6]);c.beginPath();for(let i=0;i<=k;i++)i?c.lineTo(tr[i].x,tr[i].y):c.moveTo(tr[i].x,tr[i].y);c.stroke();c.setLineDash([]);
     bay.tours[S.ni].stops.forEach((L,i)=>drawLampMark(c,L,mixc(INK,CREAM,d),0,i+1));
+    // the lanes, at dawn: red where a ship taught her, firm where your ink did
+    bay.lanes.forEach((L,k)=>{if(S.ni<L.from)return;const red=ch.lanesRed.has(k);if(red&&!N.hits.slice(0,S.sweepHits).some(h=>h.lane===k)&&N.hits.some(h=>h.lane===k))return;c.globalAlpha=smooth((S.dawnT-0.7)/2.4)*(red||ch.lanes.has(k)?.9:.45);c.strokeStyle=red?RED:mixc(INK,CREAM,d);c.lineWidth=ch.lanes.has(k)?2.2:1.4;c.setLineDash(ch.lanes.has(k)?[10,5]:[2,7]);c.beginPath();L.s.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.stroke();c.setLineDash([]);c.globalAlpha=1;});
     for(let i=0;i<S.sweepHits;i++){const h=N.hits[i];c.strokeStyle=RED;c.lineWidth=2.6;c.beginPath();c.moveTo(h.x-6,h.y-6);c.lineTo(h.x+6,h.y+6);c.moveTo(h.x+6,h.y-6);c.lineTo(h.x-6,h.y+6);c.stroke();}
     const done=k>=tr.length-1,bp=done?N.pos:tr[k],nx=tr[Math.min(k+1,tr.length-1)];
     drawBoat(c,bp.x,bp.y,done?N.hdg:Math.atan2(nx.y-bp.y,nx.x-bp.x),mixc(INK,CREAM,d),false);
@@ -944,8 +1045,9 @@ function frame(now){const elp=Math.min(.1,(now-last)/1000);last=now;acc+=elp;
 
 /* ---------- debug API (headless-safe: step() drives time when rAF is asleep) ---------- */
 window.IBD={
-  get S(){return S;},CFG,VERSION,showCoast,coastDiff,playSummary,setDev,get DEV(){return DEV;},openWheel,useSupply,bottle,get META(){return META;},genBay,newChart,runNight,bench,botSlash,botOmni,
+  get S(){return S;},CFG,VERSION,showCoast,coastDiff,playSummary,setDev,showLog,logRun,get DEV(){return DEV;},openWheel,useSupply,bottle,get META(){return META;},genBay,newChart,runNight,bench,botSlash,botOmni,
   start(seed){startBay(false,seed);},
+  bay(co,ci){S.co=co;startBay(false,null,ci);},
   step(sec){const n=Math.round((sec||1)/DT);for(let i=0;i<n;i++)update(DT);render();return this.info();},
   line(x1,y1,x2,y2){const c=S.chart;if(S.phase!=='dusk')return false;S.began=true;return botLine(c,x1,y1,x2,y2);},
   castOff(){if(S.phase==='dusk')startNight();},
@@ -965,7 +1067,7 @@ if(Ads.native){const f=$('wFine');if(f)f.innerHTML='Watching is always your choi
 if('serviceWorker' in navigator&&!Ads.native&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 $('bLog').onclick=e=>{e.preventDefault();sendLog();};
 let hidAt=0;document.addEventListener('visibilitychange',()=>{if(document.hidden)hidAt=Date.now();else if(hidAt&&Date.now()-hidAt>1800000){META.sessions=(META.sessions||0)+1;plog('S');}});
-loadMeta().then(()=>{META.sessions=(META.sessions||0)+1;plog('S');muted=!!META.muted;const k=dayKey();if(META.daily[k])$('fine').textContent='tonight’s bay, first try: home '+META.daily[k].home+'/3 · M mutes · prototype v'+VERSION;devMark();});
+loadMeta().then(()=>{META.sessions=(META.sessions||0)+1;plog('S');muted=!!META.muted;const k=dayKey();if(META.daily[k])$('fine').textContent='tonight’s bay, first try: home '+META.daily[k].home+'/3 · M mutes · prototype v'+VERSION;devMark();showLog();});
 requestAnimationFrame(frame);
 </script>
 </body>

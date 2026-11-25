@@ -34,11 +34,11 @@ Every coast is ten charts and follows the same shape, so a player always knows w
 | 2 | **The River Mouths** | **The set**: a current | She is carried off her line, so what lies beside the course matters and strokes go up-current. | headlands · islands | new lamps | ✅ live |
 | 3 | **The River** | **The channel**: one winding river with islets and forks, sailed end to end | The straight course cuts every bend; a stroke too wide closes the channel; islets make her choose a side. | spurs · islets | the river against her · barges at anchor | ✅ live |
 | 4 | **The Drying Shore** | **The tide's height**: rocks drawn dashed are covered on some nights and bare on others | A mark that saves her tonight sends her the long way round tomorrow; a second ink (a dashed stroke she ignores at high water) is earned here. | current · headlands / river channel | half tide · low water | ✅ live (first build) |
-| 5 | **The Fog Banks** | **Fog** over part of the chart at dusk | You draw part of the chart blind, from what earlier dawns showed you; the wake at dawn becomes the thing you study. | drying rocks · current / islets | fog moves · fog thickens | ✅ live (first build) |
+| 5 | **The Low Cloud** | **Cloud** banks that cross the bay on the wind while you draw | Nothing stays hidden: wait and the cloud passes, but the light is going. The choice is when to look and when to draw. | drying rocks · current / islets | a fourth bank · a fifth | ✅ rebuilt v0.15 |
 | 6 | **The Delta** | **Bars**: sand that closes a channel as the tide falls | The order she visits lamps decides which channels are still open; ink can hold her back from a channel that will shut behind her. | river forks · current / drying rocks | an earlier ebb · two bars | ✅ live (first build) |
-| 7 | **The Ice** | **Floes** that drift along a path shown at dusk | Ink cannot mark where a floe will be, only keep her out of the lane it crosses, and when. | current (floes ride it) · fog / bars | faster floes · a second lane | ✅ live (first build) |
+| 7 | **The Ice** | **Bergs** that drift down the wind all night, one way, then ground | You ink where the ice is going, not where it lies: the dotted track has a tick for each quarter of the tide, and you judge when she gets there. | current · cloud | each berg is set adrift to lie across a different night's best course | ✅ rebuilt v0.15 |
 | 8 | **The Wreckers' Coast** | **False lights**: a lamp ashore that she will steer for unless you strike it out | Ink gains a second meaning: a stroke through a light tells her it lies. Leave one unmarked and she sails for the rocks under it. | headlands · fog / drying rocks | a second false light · the true lamp dimmed | ✅ live (first build) |
-| 9 | **The Roads** | **Traffic**: ships under way on fixed lanes and timetables | Her timing matters: a detour you draw can put her in a lane as a ship passes; the lane and its clock are on the chart. | current · bars / floes | more ships · fog over the lane | ✅ live (first build) |
+| 9 | **The Roads** | **Shipping lanes**: convoys that run harbour to harbour, round whatever lies between | Trace a ship's length of a lane and she gives way to its ships (a short wait); leave it off and she crosses blind and is usually run down once, after which the lane is on the chart in red. A lane costs about what a rock costs. | current · bars | two to four lanes; a new one opens each night, timed to cross that night's best course | ✅ rebuilt v0.15 |
 | 10 | **The Long Passage** | **Six lamps a night** on one bottle | The ink has to last twice the passage; every feature met so far is on the chart. Chart 100 is all of them at once. | all | more of each | ✅ live (first build) |
 
 **Why this order.** Each new feature needs the one before it to be interesting: the set makes position matter, the channel makes width matter, the tide's height makes *time* matter, fog makes *memory* matter, bars make *order* matter, floes and traffic make *timing* matter, and false lights turn the ink itself into a statement that can be true or false. The last coast is the exam.
@@ -56,6 +56,49 @@ Every coast is ten charts and follows the same shape, so a player always knows w
 - ✅ **From iPad play** (2026-11-22). Pencil precision (confirmed fixed on the iPad 2026-11-25), larger bottle, numbered lamps, harbours and towns, island harbours, supply wheel with an ad placeholder, developer mode.
 - ✅ **Coast 2 — The River Mouths** (2026-11-22). The current.
 - ✅ **Coast 3 — The River** (2026-11-23, reworked 2026-11-25). Winding channel, islets and forks, spurs; nights escalate to a contrary current and then barges at anchor.
+
+## The deck (set by Jefferson 2026-11-25): one pen gesture per feature
+
+Jefferson's play notes: ice read as a reskinned island, fog hid things no skill could find, and ships and floes were the same idea twice. The rule that came out of it: **every feature must ask for its own gesture, and every feature must be beatable by skill alone.** New coasts after the tenth come from new combinations of cards in this deck on new terrain, not from a new feature each time.
+
+| Card | What the pen does | What makes it its own | Stacks with |
+|---|---|---|---|
+| Rock | a stroke across her course | fixed, hidden from her | everything |
+| Headland, island | a touch | she then knows the whole piece | everything |
+| Current | the stroke goes up-current, and longer | changes where every other mark belongs | everything |
+| Drying rock | a stroke tonight for a rock that shows tomorrow | the chart is drawn ahead of the bay | everything |
+| Bar | a stroke placed by the lamp order | the bay closes behind her | current, cloud |
+| False light | a dot | ink that means "not this" | everything |
+| Cloud | wait, then draw | costs light, not ink | everything (it hides the other cards) |
+| Ice | a stroke where it will be | time is on the chart as ticks | current, cloud, lanes |
+| Shipping lane | a traced length along it | she waits instead of striking; a choice of what to spend | everything |
+| Six lamps | fewer, better strokes | one bottle for twice the passage | everything |
+
+**Terrain is a card too:** open bay, river mouth, winding river so far. Candidates: an archipelago (many islands, no open water), a single narrow strait sailed both ways, a lagoon behind a reef with two or three gaps.
+
+**Candidate cards, not built.** Each has a gesture none of the above uses.
+1. **Lighthouse beam.** A lit sector sweeps the bay; she sees for herself whatever lies in it. Ink is only needed in the dark sectors, so you draw the shape of the light.
+2. **Soundings.** Shoal water she can cross on some nights' tide and not on others, drawn with depth figures; you ink only what tonight's tide makes dangerous.
+3. **Whirlpool.** It turns her course by a fixed angle; you mark the far side of it.
+4. **Kelp.** It costs her time, not a strike; marking it is only worth the ink when the tide is tight.
+5. **The other boat.** A second pilot shares your chart on the last night, sailing different lamps.
+6. **Wreck.** Mark a wreck and it pays a little ink toward tomorrow's bottle.
+
+## Keeping players (research 2026-11-25; full note in the vault)
+
+What has experimental evidence behind it, in order: a streak that forgives, easing difficulty rather than spiking it, and leagues. The rest of what top games do (calendars, albums, events) is common but unproven in public.
+
+| Loop | State |
+|---|---|
+| **The log**: nights in a row on tonight's bay; kept by finishing, not by winning; a lay day covers a missed night; a supply for each night kept | ✅ v0.15 |
+| **Tonight's bay with a result to share** | ✅ since v0.1; a picture of the finished chart would share better (the chart drawer, skipped) |
+| **Relief after a hard chart**: after two failed tries, offer a supply or a look at the perfect chart | not built |
+| **Win-run bonus**: lamps lit in a row across charts carry a small bonus into the next | not built |
+| **Game Center leaderboard for tonight's bay** (the on-device stand-in for a league) | needs the wrapper |
+| **Home-screen widget** showing the log and tonight's bay | needs the wrapper |
+| **Archive of past nightly bays** as a paid extra | after the gate |
+
+Avoided on purpose: lives or energy timers, countdown pressure, streak-loss warnings, and any reward for turning on notifications (Apple forbids it).
 
 ## Shipped 2026-11-25: coasts 4–10, first build
 
@@ -102,5 +145,8 @@ All seven are playable and every chart passes `node test/charts.mjs`. They are f
 Needs from Jefferson before this starts: an Apple Developer account, an ad network account, and a check that a paid side product sits inside his employer's outside-activity policy.
 
 ## Skipped for now
+
+Note: v0.15 was built during the feature freeze at Jefferson's direction, from his own play notes. The freeze otherwise stands.
+
 
 The chart drawer (finished charts kept as images), at Jefferson's call.
