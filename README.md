@@ -6,7 +6,7 @@ A single-file browser game with one verb: **draw**. You get twenty seconds of fa
 
 Your chart doesn't have to be true. It has to bring her home.
 
-**Status:** v0.10 (2026-11-23).
+**Status:** v0.11 (2026-11-25).
 
 **▶ Play in your browser: https://jeffersonpikejr.github.io/ink-before-dark/** — on an iPad or iPhone, Share → Add to Home Screen runs it full-screen.
 
@@ -53,6 +53,11 @@ One `index.html` (about 600 lines): canvas rendering, a Dijkstra pilot on an 8-u
 Debug API in the console: `IBD.start(seed)` · `IBD.step(seconds)` (drives time by hand when animation frames are asleep) · `IBD.pause()` · `IBD.still()` (no CSS transitions) · `IBD.pen([[x,y],…])` (draws through the real pointer handlers) · `IBD.castOff()` · `IBD.info()` · `IBD.bench(n)`.
 
 ## Changelog
+
+### v0.11 — Forks and barges (2026-11-25)
+- The River reworked to be harder: tighter meanders, islets mid-channel that fork it, rocky spurs off the banks, rougher shores, more rocks, a tighter tide.
+- Its nights now escalate. Night one is still water. Night two the river runs against her and sets her west, onto what she cleared before. Night three, barges lie at anchor on the inside of the bends, exactly where she likes to cut.
+- Roadmap rewritten for 100 charts on ten coasts, each coast one new feature combined with earlier ones.
 
 ### v0.10 — The River (2026-11-23)
 - A third coast, opened by twelve lamps on the second: ten reaches of a winding river, sailed west to east. Three ports a night, each farther upriver than the last, always ending at the far port.

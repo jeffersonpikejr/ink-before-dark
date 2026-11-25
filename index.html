@@ -96,7 +96,7 @@ button.pri{border-width:2px}
   <p class="hook">Whatever you leave off the chart, she finds in the dark.</p>
   <p class="how">Twenty seconds of dusk. One bottle of ink. Then Odile sails the bay by your chart alone.</p>
   <div class="row"><button class="pri" id="bCoast">The Coast</button><button id="bDaily">Tonight's bay</button><button id="bRandom">Another bay</button></div>
-  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.10</p>
+  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.11</p>
 </div>
 <div id="coast"><h2 id="cTitle">The Strait</h2><p id="cBlurb"></p><div id="bays"></div><div class="row"><button id="bBack">Back</button><button id="bOther"></button><button id="bSpin">Spin for supplies</button><button id="bWipe">Reset coast</button></div><p id="invLine" style="margin-top:10px"></p></div>
 <div id="wheel"><h2>Supplies</h2><p id="wMsg"></p><div id="wWrap"><div id="wPtr"></div><div id="wDisc"></div></div><div class="row"><button class="pri" id="wGo">Watch an ad to spin</button><button id="wClose">Close</button></div><p class="fine2">Ads are a placeholder in this web build. Real rewarded ads arrive with the App Store version.</p></div>
@@ -109,7 +109,7 @@ button.pri{border-width:2px}
    Sections: config · rng · bay generator · chart · pilot · night sim
              · bots & bench · audio · store · game state · render · input · boot
    ============================================================ */
-const VERSION='0.10';
+const VERSION='0.11';
 const W=1000,H=640,CELL=8,GW=W/CELL|0,GH=H/CELL|0,NC=GW*GH;
 const CFG={
   DUSK:20,          // seconds of failing light
@@ -130,7 +130,7 @@ const PILOT='Odile';
 const DEF={leg:1,minR:10,maxR:20,ex0:2,ex1:4,ink:1.25,pad:0.3,cap:false,isl:1,floor:0,cur:0,river:false};let DIFF=DEF;
 function coastDiff(i,co){const t=i/9,L=(a,b)=>a+(b-a)*t;
   if(co===1)return{leg:L(.7,1),minR:Math.round(L(9,12)),maxR:Math.round(L(13,20)),ex0:1,ex1:Math.round(L(2,4)),ink:L(1.5,1.2),pad:L(1.1,.7),cap:true,isl:i<4?0:1,floor:L(720,720),cur:L(8,17),river:true};
-  if(co===2)return{winding:true,A:L(55,165),lam:L(820,420),w0:L(64,50),leg:1,minR:Math.round(L(4,8)),maxR:Math.round(L(6,10)),ex0:0,ex1:0,ink:1,pad:L(.5,.8),cap:true,isl:0,floor:L(520,640),cur:0,river:false};
+  if(co===2)return{winding:true,A:L(90,158),lam:L(620,380),w0:L(60,50),islets:Math.round(L(1,4)),spurs:Math.round(L(2,7)),barges:Math.round(L(2,4)),ncur:L(7,13),leg:1,minR:Math.round(L(5,8)),maxR:Math.round(L(7,11)),ex0:0,ex1:0,ink:1,pad:L(.3,.5),cap:true,isl:0,floor:L(560,680),cur:0,river:false};
   return{cur:0,river:false,leg:L(.5,1),minR:Math.round(L(7,12)),maxR:Math.round(L(10,22)),ex0:1,ex1:Math.round(L(1,4)),ink:L(1.6,1.15),pad:L(.6,.2),cap:true,isl:i<2?0:i<6?1:2,floor:L(700,660)};}
 const FLOOR_K=[1,.8,.7];function bottle(bay,ni){return Math.max(bay.sumW*CFG.RATION[ni]*bay.inkMul,bay.inkFloor*FLOOR_K[ni]);}
 
@@ -213,15 +213,25 @@ function tryBay(seed){
   const baseLand=(x,y)=>y<topB(x)||x<leftB(y)||x>W-rightB(y)||(botB!==null&&y>botB(x));
   // coast three: the whole chart is one winding river, west to east. She knows the outer line of the valley; every point of land the river bends round is hers to be told about.
   let wHalf=null;
-  if(DIFF.winding){const A=DIFF.A,lam=DIFF.lam,ph=rr(0,6.28),ph2=rr(0,6.28),k1=2*Math.PI/lam,k2=2*Math.PI/(lam*0.47);
-    const cy=x=>H/2+A*Math.sin(k1*x+ph)+A*0.2*Math.sin(k2*x+ph2),sl=x=>(cy(x+2)-cy(x-2))/4;
-    const wv=x=>Math.min(150,DIFF.w0*Math.sqrt(1+sl(x)*sl(x))*0.9*(0.92+0.16*vn1(x/90,s1^3)));
+  const riverIsles=[];
+  if(DIFF.winding){const A=DIFF.A,lam=DIFF.lam,ph=rr(0,6.28),ph2=rr(0,6.28),ph3=rr(0,6.28),k1=2*Math.PI/lam,k2=2*Math.PI/(lam*0.47),k3=2*Math.PI/(lam*0.23);
+    const cy=x=>H/2+A*Math.sin(k1*x+ph)+A*0.2*Math.sin(k2*x+ph2)+A*0.07*Math.sin(k3*x+ph3),sl=x=>(cy(x+2)-cy(x-2))/4;
+    // islets sit mid-channel where the river is made to widen round them, so every one is a fork
+    const ix=[];for(let t=0;t<80&&ix.length<DIFF.islets;t++){const x=rr(170,860);if(ix.every(v=>Math.abs(v-x)>150)&&Math.abs(sl(x))<1.3&&Math.abs(cy(x)-H/2)<A*0.55)ix.push(x);}
+    const spur=[];for(let t=0;t<60&&spur.length<DIFF.spurs;t++){const x=rr(60,950),d=((x-150)%145+145)%145;if(d>58&&d<87)spur.push({x,top:rnd()<0.5,len:rr(16,30),wid:rr(6,11)});}
+    const wide=x=>{let m=1;for(const v of ix){const d=(x-v)/60;m+=0.8*Math.exp(-d*d);}return m;};
+    const wv=x=>Math.min(170,DIFF.w0*Math.sqrt(1+sl(x)*sl(x))*0.9*(0.92+0.16*vn1(x/90,s1^3))*wide(x));
+    const sp=(x,top)=>{let v=0;for(const q of spur)if(q.top===top){const d=(x-q.x)/q.wid;v+=q.len*Math.exp(-d*d);}return v;};
     const n=W/2+41,bt=new Float32Array(n),bb=new Float32Array(n),et=new Float32Array(n),eb=new Float32Array(n),at=x=>clamp(Math.round(x/2)+20,0,n-1);
     for(let i=0;i<n;i++){const x=(i-20)*2;bt[i]=cy(x)-wv(x);bb[i]=cy(x)+wv(x);}
     const win=Math.round(lam/4);for(let i=0;i<n;i++){let mn=1e9,mx=-1e9;for(let j=Math.max(0,i-win);j<=Math.min(n-1,i+win);j++){if(bt[j]<mn)mn=bt[j];if(bb[j]>mx)mx=bb[j];}et[i]=mn+10;eb[i]=mx-10;}
-    topC=x=>bt[at(x)]+jag(x,s1)*0.8;botC=x=>bb[at(x)]-jag(x,s2)*0.8;leftC=rightC=()=>-60;
+    topC=x=>bt[at(x)]+jag(x,s1)*1.5+sp(x,true);botC=x=>bb[at(x)]-jag(x,s2)*1.5-sp(x,false);leftC=rightC=()=>-60;
     topB=x=>Math.min(et[at(x)],topC(x));botB=x=>Math.max(eb[at(x)],botC(x));leftB=rightB=()=>-60;cyF=cy;wHalf=wv;
-    for(let x=0;x<=W;x+=20)if(bt[at(x)]<22||bb[at(x)]>H-22)return null;}
+    for(let x=0;x<=W;x+=20)if(bt[at(x)]<20||bb[at(x)]>H-20)return null;
+    for(const x of ix){const ang=Math.atan(sl(x)),hw=wv(x),a=Math.min(46,hw*0.42),b=Math.max(11,hw*0.2),IN2=22,raw=[];for(let j=0;j<IN2;j++)raw.push(rnd());
+      const rad=raw.map((v,j)=>{const th=j/IN2*Math.PI*2-ang;return(a*b/Math.hypot(b*Math.cos(th),a*Math.sin(th)))*(0.82+0.36*v);});
+      riverIsles.push({x,y:cy(x)+rr(-.12,.12)*hw,r:a,rad,rmax:Math.max(...rad)+1,a:0});}
+  }
   // islands: long, lobed, ragged
   const isles=[],IN=30;
   for(let k=0;k<DIFF.isl;k++)for(let t=0;t<60;t++){const x=rr(280,720),y=rr(240,410),r=rr(34,50);let okI=isles.every(q=>Math.hypot(q.x-x,q.y-y)>240);
@@ -229,6 +239,7 @@ function tryBay(seed){
     if(okI){const e=rr(.12,.42),ph=rr(0,Math.PI),e3=rr(0,.16),ph3=rr(0,Math.PI*2),raw=[];for(let j=0;j<IN;j++)raw.push(rnd());
       const rad=raw.map((v,j)=>{const th=j/IN*Math.PI*2,sm=(raw[(j+IN-1)%IN]+v+raw[(j+1)%IN])/3;return r*(1+e*Math.cos(2*(th-ph))+e3*Math.cos(3*(th-ph3)))*(0.8+0.3*sm+0.14*(v-.5));});
       isles.push({x,y,r,rad,rmax:Math.max(...rad)+1,a:rr(0,Math.PI*2)});break;}}
+  for(const q of riverIsles)isles.push(q);
   const isLand=(x,y)=>coastLand(x,y)||isles.some(q=>inRock(q,x,y));
   // six harbour lamps, each at the end of a short pier; three are lit on any one night
   const clearOf=(v,h)=>!h||Math.abs(v-h.y)>h.wid*2.2;
@@ -244,7 +255,7 @@ function tryBay(seed){
     for(let k=0;k<6;k++){let bx=150+k*145,best=1e9;for(let dx=-48;dx<=48;dx+=6){const x=150+k*145+dx,m=Math.abs(cyF(x+3)-cyF(x-3));if(m<best){best=m;bx=x;}}
       const top=rnd()<0.5;lamps.push(top?{x:bx,y:topC(bx)+30,px:bx,py:topC(bx)}:{x:bx,y:botC(bx)-30,px:bx,py:botC(bx)});}}
   // an island harbour takes the place of one mainland lamp
-  isles.forEach((q,k)=>{const n=q.rad.length,f=(q.a/(Math.PI*2))*n,i0=Math.floor(f)%n,re=Math.max(q.rad[i0],q.rad[(i0+1)%n]),ca=Math.cos(q.a),sa=Math.sin(q.a),slot=k===0?ri(0,1):2+ri(0,3);
+  if(!DIFF.winding)isles.forEach((q,k)=>{const n=q.rad.length,f=(q.a/(Math.PI*2))*n,i0=Math.floor(f)%n,re=Math.max(q.rad[i0],q.rad[(i0+1)%n]),ca=Math.cos(q.a),sa=Math.sin(q.a),slot=k===0?ri(0,1):2+ri(0,3);
     lamps[slot]={x:q.x+ca*(re+40),y:q.y+sa*(re+40),px:q.x+ca*re*0.86,py:q.y+sa*re*0.86,isle:q};});
   for(const L of lamps)for(let a=0;a<8;a++){if(isLand(L.x+Math.cos(a*Math.PI/4)*18,L.y+Math.sin(a*Math.PI/4)*18))return null;}
   for(let i=0;i<6;i++)for(let j=i+1;j<6;j++)if(Math.hypot(lamps[i].x-lamps[j].x,lamps[i].y-lamps[j].y)<(DIFF.winding?70:130))return null;
@@ -264,38 +275,46 @@ function tryBay(seed){
   const legs=[];
   for(let i=0;i<6;i++)for(let j=i+1;j<6;j++)legs.push([lamps[i],lamps[j]]);
   for(const s of starts)for(const L of lamps)legs.push([s,L]);
-  if(DIFF.winding){const want=ri(DIFF.minR,DIFF.maxR);for(let t=0;t<260&&rocks.length<want;t++){const r=rr(10,16),x=rr(70,W-50),y=cyF(x)+rr(-1,1)*Math.max(4,wHalf(x)-r-16);if(ok(x,y,r))add(x,y,r);}}
+  if(DIFF.winding){const want=ri(DIFF.minR,DIFF.maxR);for(let t=0;t<600&&rocks.length<want;t++){const r=rr(10,16),x=rr(70,W-50),y=cyF(x)+rr(-1,1)*Math.max(4,wHalf(x)-r-16);if(ok(x,y,r))add(x,y,r);}}
   else for(const [a,b] of legs){if(DIFF.cap&&rocks.length>=DIFF.maxR-1)break;if(rnd()>CFG.LEG_ROCK*DIFF.leg)continue;
     for(let tr=0;tr<14;tr++){const t=rr(0.24,0.76),j=rr(-18,18),dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy),r=rr(16,32);
       const x=a.x+dx*t-dy/l*j,y=a.y+dy*t+dx/l*j;if(ok(x,y,r)){add(x,y,r);break;}}}
+  if(DIFF.winding&&DIFF.barges){let placed=0; // on the inside of bends, which is exactly the line she likes to take
+    for(let t=0;t<300&&placed<DIFF.barges;t++){const x=rr(110,W-90),curv=cyF(x+24)+cyF(x-24)-2*cyF(x);if(Math.abs(curv)<3)continue;
+      const y=cyF(x)+(curv>0?1:-1)*wHalf(x)*rr(.3,.6),ang=Math.atan((cyF(x+3)-cyF(x-3))/6),a=rr(20,27),b=rr(6.5,8.5);if(!ok(x,y,a*0.7))continue;
+      const rad=[];for(let j=0;j<14;j++){const th=j/14*Math.PI*2-ang;rad.push(Math.min(a,(a*b/Math.hypot(b*Math.cos(th),a*Math.sin(th)))*1.12));}
+      rocks.push({x,y,r:a*0.6,rad,rmax:a+1,from:2,ang});placed++;}}
   const extra=DIFF.winding?0:ri(DIFF.ex0,DIFF.ex1);for(let m=0;m<extra;m++)for(let tr=0;tr<14;tr++){const r=rr(15,30),x=rr(90,W-90),y=rr(120,H-80);if(ok(x,y,r)){add(x,y,r);break;}}
   if(rocks.length<DIFF.minR||rocks.length>DIFF.maxR)return null;
   // grids
   const solid=new Uint8Array(NC),rid=new Uint8Array(NC),shore=new Uint8Array(NC),rockCells=rocks.map(()=>[]);
   for(let gy=0;gy<GH;gy++)for(let gx=0;gx<GW;gx++){const i=gy*GW+gx,x=gx*CELL+CELL/2,y=gy*CELL+CELL/2;
     if(isLand(x,y)){solid[i]=1;rid[i]=255;if(baseLand(x,y))shore[i]=1;continue;}
-    for(let k=0;k<rocks.length;k++)if(inRock(rocks[k],x,y)){solid[i]=1;rid[i]=k+1;rockCells[k].push(i);break;}}
+    for(let k=0;k<rocks.length;k++)if(inRock(rocks[k],x,y)){solid[i]=rocks[k].from?2:1;rid[i]=k+1;rockCells[k].push(i);break;}}
   const piece=new Uint16Array(NC),pieceCells=[null];
   for(let i0=0;i0<NC;i0++){if(rid[i0]!==255||shore[i0]||piece[i0])continue;const id=pieceCells.length,cells=[],st=[i0];piece[i0]=id;
     while(st.length){const i=st.pop();cells.push(i);const x=i%GW,y=(i/GW)|0;for(let n=0;n<4;n++){const nx=x+NBX[n],ny=y+NBY[n];if(nx<0||ny<0||nx>=GW||ny>=GH)continue;const j=ny*GW+nx;if(rid[j]===255&&!shore[j]&&!piece[j]){piece[j]=id;st.push(j);}}}
     if(cells.length<7){for(const i of cells){piece[i]=65535;shore[i]=1;}}else pieceCells.push(cells);}
   for(let i=0;i<NC;i++)if(piece[i]===65535)piece[i]=0; // slivers of shore are not headlands: she knows them
-  const hard=dilate(solid);
+  const solid1=solid.map(v=>v===1?1:0),hard=dilate(solid1),hardAll=dilate(solid);
   for(const n of nodes)if(hard[cellAt(n.x,n.y)])return null;
   // three nights on one bay: a different trio of lamps each night, lit in an order you are not told
   const idx=[0,1,2,3,4,5];for(let i=5;i>0;i--){const j=ri(0,i),t=idx[i];idx[i]=idx[j];idx[j]=t;}
   const trios=[idx.slice(0,3),idx.slice(3,6),[idx[ri(0,2)],idx[3+ri(0,2)],0]];
   {const rest=idx.filter(v=>v!==trios[2][0]&&v!==trios[2][1]);trios[2][2]=rest[ri(0,rest.length-1)];for(let i=2;i>0;i--){const j=ri(0,i),t=trios[2][i];trios[2][i]=trios[2][j];trios[2][j]=t;}}
   if(DIFF.winding){const prs=[[0,2],[1,3],[2,4],[0,3],[1,4],[0,4],[1,2],[0,1],[2,3]];for(let i=prs.length-1;i>0;i--){const j=ri(0,i),t=prs[i];prs[i]=prs[j];prs[j]=t;}for(let k=0;k<3;k++)trios[k]=[prs[k][0],prs[k][1],5];}
+  let curV=null;if(DIFF.cur>0){const a=Math.PI/2+rr(-.55,.55);curV={x:Math.cos(a)*DIFF.cur,y:Math.sin(a)*DIFF.cur,mag:DIFF.cur};}
+  // on the river the nights escalate: still water, then the current, then the current and barges
+  const nightCur=DIFF.winding?[null,{x:-DIFF.ncur,y:0,mag:DIFF.ncur},{x:-DIFF.ncur,y:0,mag:DIFF.ncur}]:[curV,curV,curV];
   const k0=ri(0,1),tours=[];
   trios.forEach((tr,ni)=>{const start=starts[(k0+ni)%2],stops=tr.map(i=>lamps[i]);
     let d=0,at=start,good=true;
-    for(const st of stops){const cells=route(hard,null,cellAt(at.x,at.y),cellAt(st.x,st.y));if(!cells){good=false;break;}d+=pathLen(planPath(hard,null,at,st));at=st;}
-    tours.push(good?{start,stops,trio:tr,best:d/CFG.V,limit:CFG.TIDE_K[ni]*d/CFG.V+CFG.TIDE_PAD+DIFF.pad}:null);});
+    const hd=ni>=2?hardAll:hard,slow=nightCur[ni]?1+nightCur[ni].mag/CFG.V*1.25:1;
+    for(const st of stops){const cells=route(hd,null,cellAt(at.x,at.y),cellAt(st.x,st.y));if(!cells){good=false;break;}d+=pathLen(planPath(hd,null,at,st));at=st;}
+    tours.push(good?{start,stops,trio:tr,best:d/CFG.V,limit:CFG.TIDE_K[ni]*d/CFG.V*slow+CFG.TIDE_PAD+DIFF.pad}:null);});
   if(tours.some(t=>!t))return null;
-  let curV=null;if(DIFF.cur>0){const a=Math.PI/2+rr(-.55,.55);curV={x:Math.cos(a)*DIFF.cur,y:Math.sin(a)*DIFF.cur,mag:DIFF.cur};}
-  const sumW=rocks.reduce((a,q)=>a+2*q.r,0);
-  return{topC,leftC,rightC,isLand,lamps,starts,rocks,rockCells,solid,rid,hard,tours,sumW,inkMul:DIFF.ink,inkFloor:DIFF.floor,isles,shore,topB,leftB,rightB,piece,pieceCells,rx,cur:curV,botC,botB,winding:!!DIFF.winding,hdg0:DIFF.winding?0:-Math.PI/2};}
+  const sumW=rocks.reduce((a,q)=>a+(q.from?0:2*q.r),0);
+  return{topC,leftC,rightC,isLand,lamps,starts,rocks,rockCells,solid,rid,hard,tours,sumW,inkMul:DIFF.ink,inkFloor:DIFF.floor,isles,shore,topB,leftB,rightB,piece,pieceCells,rx,cur:curV,nightCur,botC,botB,winding:!!DIFF.winding,hdg0:DIFF.winding?0:-Math.PI/2};}
 
 /* ---------- the chart (what you drew, and what the bay added in red) ---------- */
 function newChart(bay){const c={ink:0,spent:0,strokes:[],inkNear:new Uint8Array(NC),known:new Uint8Array(NC),knownHard:new Uint8Array(NC),reds:new Set(),scars:[],shown:new Set(),bay:bay||null};
@@ -332,10 +351,10 @@ function nightStep(N,bay,chart,dt){
     const p=N.path[N.pi];if(!p){replan(N,chart);break;}
     const dx=p.x-N.pos.x,dy=p.y-N.pos.y,d=Math.hypot(dx,dy);
     if(d<1e-4){N.pi++;if(N.pi>=N.path.length)arrive(N,chart);continue;}
-    const step=Math.min(move,d,3),cu=bay.cur,nx=N.pos.x+dx/d*step+(cu?cu.x*step/CFG.V:0),ny=N.pos.y+dy/d*step+(cu?cu.y*step/CFG.V:0);
+    const step=Math.min(move,d,3),cu=bay.nightCur[N.ni],nx=N.pos.x+dx/d*step+(cu?cu.x*step/CFG.V:0),ny=N.pos.y+dy/d*step+(cu?cu.y*step/CFG.V:0);
     N.hdg=Math.atan2(dy,dx);
     const ci=cellAt(nx,ny);
-    if(bay.solid[ci]){ // something you did not draw
+    if(bay.solid[ci]===1||(bay.solid[ci]===2&&N.ni>=2&&!chart.reds.has(bay.rid[ci]-1))){ // something you did not draw
       N.strikes++;N.stun=CFG.STRIKE_T;const what=reveal(bay,chart,nx,ny,ci);
       N.hits.push({x:nx,y:ny,rock:what.rock,ti:N.track.length-1});N.events.push({k:'strike',x:nx,y:ny,rock:what.rock,land:!!what.land,hdg:N.hdg});
       // she fends off and backs away along her own wake
@@ -357,7 +376,7 @@ function botSlash(bay,c,ni){const S0=bay.tours[ni].start,L=bay.tours[ni].stops;
   for(const [a,b] of legs){const ux=b.x-a.x,uy=b.y-a.y,n=Math.hypot(ux,uy)||1,dx=ux/n,dy=uy/n,px=-dy,py=dx;
     // shore across the leg: a stroke across her course, long enough to carry her round the nearer end of it
     for(let t=30;t<n-30;t+=6){const x=a.x+dx*t,y=a.y+dy*t,id=bay.piece[cellAt(x,y)];if(id&&!c.shown.has(id))botLine(c,x,y,x+dx*6,y+dy*6);}
-    bay.rocks.forEach((q,k)=>{if(done.has(k)||c.reds.has(k))return;if(segDist(q.x,q.y,a.x,a.y,b.x,b.y)<q.r*1.15+8){const h=q.rmax+5+(bay.cur?bay.cur.mag*.9:0);if(botLine(c,q.x-px*h,q.y-py*h,q.x+px*h,q.y+py*h))done.add(k);}});}}
+    bay.rocks.forEach((q,k)=>{if(done.has(k)||c.reds.has(k)||(q.from&&q.from>ni))return;if(segDist(q.x,q.y,a.x,a.y,b.x,b.y)<q.r*1.15+8){const h=q.rmax+5+(bay.nightCur[ni]?bay.nightCur[ni].mag*.9:0);if(botLine(c,q.x-px*h,q.y-py*h,q.x+px*h,q.y+py*h))done.add(k);}});}}
 // "Omni": knows tonight's order. Finds what she would strike and marks exactly that, until the ink is gone.
 // Where the course clips a rock off-centre it uses a shorter stroke centred on the course, long on the thick side,
 // so she rounds the thin end. An honest upper bound has to draw as cheaply as a good player could.
@@ -365,7 +384,7 @@ function botOmni(bay,c,ni){for(let g=0;g<30;g++){const cc=cloneChart(c),N=nightN
     while(!N.done&&n++<20000){nightStep(N,bay,cc,1/30);hit=N.events.find(e=>e.k==='strike');if(hit)break;}
     if(!hit)break;
     if(hit.rock==null){const dx=Math.cos(hit.hdg),dy=Math.sin(hit.hdg);if(!botLine(c,hit.x+dx*4,hit.y+dy*4,hit.x+dx*10,hit.y+dy*10))break;continue;}
-    const dx=Math.cos(hit.hdg),dy=Math.sin(hit.hdg),px=-dy,py=dx,q=bay.rocks[hit.rock],R=q.rmax+1+(bay.cur?bay.cur.mag*.9:0);
+    const dx=Math.cos(hit.hdg),dy=Math.sin(hit.hdg),px=-dy,py=dx,q=bay.rocks[hit.rock],R=q.rmax+1+(bay.nightCur[ni]?bay.nightCur[ni].mag*.9:0);
     const along=(q.x-hit.x)*dx+(q.y-hit.y)*dy,lat=(q.x-hit.x)*px+(q.y-hit.y)*py,e=Math.abs(lat),sg=lat>=0?1:-1; // centre lies on side sg
     const full=()=>botLine(c,q.x-px*(R+4),q.y-py*(R+4),q.x+px*(R+4),q.y+py*(R+4));
     const ax=hit.x+dx*along,ay=hit.y+dy*along,thin=Math.max(6,R-e+6),thick=thin+14;
@@ -450,7 +469,7 @@ function dayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMont
 // Each coast: ten seeds chosen by the bench so that on every bay a blank chart loses and a perfect chart brings her home all three nights.
 const COASTS=[{name:'The Strait',seeds:[874466113,654379450,74939381,3846542944,2299479309,3696375929,1445608987,971365964,1029730873,809644210],blurb:'Ten bays, each harder than the last.'},
   {name:'The River Mouths',seeds:[2322889133,1727192044,3038527770,144467827,797210223,2471611411,1651080545,1430993882,2389042918,2436118231],blurb:'A river runs out into every bay, and its current carries her off her line.',need:12},
-  {name:'The River',seeds:[8726741,1649572691,829041825,608955162,1383407080,905153324,2233266669,3634174022,2819975015,222621553],blurb:'Upriver, west to east, port by port. Each reach winds harder than the last.',need:12}];
+  {name:'The River',seeds:[2368863991,1879055496,2670285033,309098165,1088772963,1146190868,1892310428,3859646094,1681938303,3329219280],blurb:'Upriver, west to east, port by port, round islets and through forks. The first night is still water; the second, the river runs against her; the third, barges lie at anchor in the channel.',need:12}];
 const STORES=()=>[META.coast,META.coast2,META.coast3];
 const COAST_N=10,coastSeed=i=>COASTS[S.co||0].seeds[i];
 const CS=()=>STORES()[S.co||0];
@@ -529,7 +548,7 @@ function startDusk(){
   S.chart.ink=bottle(S.bay,S.ni);S.inkCap=Math.max(S.chart.ink,1);S.tideBonus=0;
   el.hNight.textContent=(S.ci!=null?'Bay '+(S.ci+1)+' \u00b7 ':'')+'Night '+(S.ni+1)+' of 3';
   el.mInk.classList.remove('hide');el.mTide.classList.add('hide');
-  caption('Dusk',S.ni===0?(S.bay.winding?'She runs upriver, port to port. Touch each point of land that crosses her course.':S.bay.cur?'The river\u2019s current carries her off her line. Mark what lies down-current of it.':'Strike through rocks on her course. Touch a headland or island to flag it.'):(S.ni===1?'Same bay, same chart. Three other lamps.':'Last night. What does the chart still owe her?'));
+  caption('Dusk',S.ni===0?(S.bay.winding?'She runs upriver, port to port. Touch each point of land and islet that crosses her course.':S.bay.cur?'The river\u2019s current carries her off her line. Mark what lies down-current of it.':'Strike through rocks on her course. Touch a headland or island to flag it.'):S.bay.winding?(S.ni===1?'Tonight the river runs against her and sets her west, onto what she cleared before.':'Barges lie at anchor in the channel, without lights. The river still runs.'):(S.ni===1?'Same bay, same chart. Three other lamps.':'Last night. What does the chart still owe her?'));
   duskButtons();hint('');
   SFX.dusk();setSea(0.012);}
 function startNight(){
@@ -672,7 +691,7 @@ function paintTruth(bay){
     c.fillStyle=ink;c.beginPath();c.arc(L.x,L.y,3,0,7);c.fill();});
   // rocks
   const r2=mulberry32(bay.seed^0x51ab);
-  for(const q of bay.rocks){rockPath(c,q);c.fillStyle=land;c.fill();c.strokeStyle=ink;c.lineWidth=2.4;c.stroke();
+  for(const q of bay.rocks){if(q.from)continue;rockPath(c,q);c.fillStyle=land;c.fill();c.strokeStyle=ink;c.lineWidth=2.4;c.stroke();
     c.fillStyle='rgba(28,36,48,.55)';for(let k=0;k<Math.round(q.r/3);k++){const a=r2()*7,d=r2()*q.r*0.62;c.beginPath();c.arc(q.x+Math.cos(a)*d,q.y+Math.sin(a)*d,1.1,0,7);c.fill();}
     c.lineWidth=1.6;c.beginPath();c.moveTo(q.x-4,q.y);c.lineTo(q.x+4,q.y);c.moveTo(q.x,q.y-4);c.lineTo(q.x,q.y+4);c.stroke();}
 }
@@ -724,7 +743,10 @@ function render(){
   c.strokeStyle=c.fillStyle=mixc(INK,CREAM,d);c.lineWidth=3.4;
   for(const st of ch.strokes){if(st.length<=2){c.beginPath();c.arc(st[0],st[1],2.6,0,7);c.fill();continue;}
     c.beginPath();c.moveTo(st[0],st[1]);for(let i=2;i<st.length;i+=2)c.lineTo(st[i],st[i+1]);c.stroke();}
-  if(bay.cur&&(S.phase==='dusk'||S.phase==='night')){const cu=bay.cur,t0=performance.now()/1000,al=S.phase==='night'?0.16:0.5*(1-d)+0.08,ux=cu.x/cu.mag,uy=cu.y/cu.mag;
+  if((S.phase==='dusk'||S.phase==='dawn'||S.phase==='final')&&S.ni>=2){const al=S.phase==='dusk'?Math.pow(1-d,1.2):smooth((S.dawnT-0.7)/2.4);c.globalAlpha=al;
+    for(const q of bay.rocks){if(!q.from)continue;rockPath(c,q);c.fillStyle='#1c2430';c.fill();c.strokeStyle='#1c2430';c.lineWidth=2;c.stroke();c.strokeStyle='#e9e0cc';c.lineWidth=1.2;c.beginPath();const ux=Math.cos(q.ang),uy=Math.sin(q.ang);c.moveTo(q.x-ux*q.rmax*.6,q.y-uy*q.rmax*.6);c.lineTo(q.x+ux*q.rmax*.6,q.y+uy*q.rmax*.6);c.stroke();}c.globalAlpha=1;}
+  const curNow=bay.nightCur[S.ni];
+  if(curNow&&(S.phase==='dusk'||S.phase==='night')){const cu=curNow,t0=performance.now()/1000,al=S.phase==='night'?0.16:0.5*(1-d)+0.08,ux=cu.x/cu.mag,uy=cu.y/cu.mag;
     c.strokeStyle=mixc(INK,CREAM,d,al);c.lineWidth=1.6;c.beginPath();
     for(let k=0;k<54;k++){const bx=(k*197.3)%W,by=(k*113.7)%H,ph=(t0*cu.mag*2.2+k*31)%140,x=bx+ux*ph,y=by+uy*ph;if(x<0||y<0||x>W||y>H||bay.isLand(x,y))continue;
       const L=7+cu.mag*.45;c.moveTo(x,y);c.lineTo(x+ux*L,y+uy*L);c.moveTo(x+ux*L,y+uy*L);c.lineTo(x+ux*(L-4)-uy*3,y+uy*(L-4)+ux*3);c.moveTo(x+ux*L,y+uy*L);c.lineTo(x+ux*(L-4)+uy*3,y+uy*(L-4)-ux*3);}

@@ -1,98 +1,80 @@
 # INK BEFORE DARK — Roadmap
 
-**Where it is going:** an App Store game for iPhone and iPad, free with ads, that is still one verb — draw — and gets more interesting the longer you play.
+**Where it is going:** an App Store game for iPhone and iPad, free with ads, that is still one verb — draw — across **100 charts on ten coasts**.
 
 **Play the current build:** https://jeffersonpikejr.github.io/ink-before-dark/
-
-Phases ship one at a time and each ends playable. Dates are ship dates.
 
 ## Three tests every new feature must pass
 
 1. **Drawable.** It changes what is worth drawing. If the player's ink cannot answer it, it does not go in.
 2. **Visible.** Its rule can be seen on the chart or in her course. Nothing she does is unexplained.
-3. **Benched.** `test/bench.mjs` gets a bot for it, and a blank chart must still lose while a perfect one still wins.
+3. **Benched.** `test/bench.mjs` gets a bot for it; on every shipped chart a blank chart must lose the first night and a perfect one must win all three.
 
-Still out for good: steering the boat yourself, anything with hit points, and upgrades that buy power. Progress is new water and new marks, never a stronger boat.
+Still out for good: steering the boat yourself, anything with hit points, and upgrades that buy power.
 
-## The loops, smallest to largest
+## How a coast is built
 
-| Loop | Length | What pulls you into the next one |
+Every coast is ten charts and follows the same shape, so a player always knows where they are in it.
+
+| Charts | Job | What is on them |
 |---|---|---|
-| A night | 45 seconds | Dawn shows exactly which rock cost you the tide. |
-| A bay | 3 nights, about 3 minutes | The chart you built is tested on new lamps; Odile's verdict. |
-| A coast | 8–10 bays | Each coast adds one new kind of water. Lamps earned open the next coast. |
-| The almanac | weeks | Finished charts are kept. Pilots, marks and papers are collected. |
-| The day | once a day | Tonight's bay, the same for everyone, with a streak and a result to paste. |
+| 1–3 | **Teach** | The coast's new feature alone, gentle, on simple water. |
+| 4–7 | **Combine** | The new feature with one earlier feature, a different one each chart. |
+| 8–10 | **Test** | The new feature with two earlier ones, at full strength. Chart 10 is the coast's set piece. |
 
----
+**Nights escalate.** From coast three on, the three nights of a chart are not three tries at the same problem. Night one is the plain chart. Night two adds a condition that makes a careless night-one chart fail. Night three adds another. The chart persists, so each dusk is about what the new condition has broken.
 
-## ✅ P0 — The prototype (2026-11-18)
-One verb, one pilot, one clock, three nights on a seeded bay, dawn readback, tonight's bay, a share line, a three-bot bench, portrait phone layout.
+**Opening a coast** takes twelve lamps (of thirty) on the one before. Developer mode opens everything.
 
-## ✅ P0.5 — Out of the drawer (2026-11-22)
-Public repo, GitHub Pages, home-screen meta tags for iPad.
+## The ten coasts
 
-## 🔜 P1 — Hands on glass
-The build has never been played in real time by a person. Fix what the iPad shows before adding anything.
+| # | Coast | New feature | What it does to the drawing | Combines with (4–7 / 8–10) | Nights two and three add | State |
+|---|---|---|---|---|---|---|
+| 1 | **The Strait** | Rocks, headlands, islands | Strike through rocks on her course; touch land that juts out to flag it. | — | new lamps | ✅ live |
+| 2 | **The River Mouths** | **The set**: a current | She is carried off her line, so what lies beside the course matters and strokes go up-current. | headlands · islands | new lamps | ✅ live |
+| 3 | **The River** | **The channel**: one winding river with islets and forks, sailed end to end | The straight course cuts every bend; a stroke too wide closes the channel; islets make her choose a side. | spurs · islets | the river against her · barges at anchor | ✅ live |
+| 4 | **The Drying Shore** | **The tide's height**: rocks drawn dashed are covered on some nights and bare on others | A mark that saves her tonight sends her the long way round tomorrow; a second ink (a dashed stroke she ignores at high water) is earned here. | current · headlands / river channel | half tide · low water | planned |
+| 5 | **The Fog Banks** | **Fog** over part of the chart at dusk | You draw part of the chart blind, from what earlier dawns showed you; the wake at dawn becomes the thing you study. | drying rocks · current / islets | fog moves · fog thickens | planned |
+| 6 | **The Delta** | **Bars**: sand that closes a channel as the tide falls | The order she visits lamps decides which channels are still open; ink can hold her back from a channel that will shut behind her. | river forks · current / drying rocks | an earlier ebb · two bars | planned |
+| 7 | **The Ice** | **Floes** that drift along a path shown at dusk | Ink cannot mark where a floe will be, only keep her out of the lane it crosses, and when. | current (floes ride it) · fog / bars | faster floes · a second lane | planned |
+| 8 | **The Wreckers' Coast** | **False lights**: a lamp ashore that she will steer for unless you strike it out | Ink gains a second meaning: a stroke through a light tells her it lies. Leave one unmarked and she sails for the rocks under it. | headlands · fog / drying rocks | a second false light · the true lamp dimmed | planned |
+| 9 | **The Roads** | **Traffic**: ships under way on fixed lanes and timetables | Her timing matters: a detour you draw can put her in a lane as a ship passes; the lane and its clock are on the chart. | current · bars / floes | more ships · fog over the lane | planned |
+| 10 | **The Long Passage** | **One chart, two sheets wide**, sailed in one night | The ink has to last the whole passage; everything met so far appears once, in order. Chart 100 is every feature at once. | all | — (one long night per chart) | planned |
 
-1. Play ten bays on the iPad. Note every moment the finger hides the stroke, a tap misfires, or the night drags.
-2. Listen to it; the audio has never been heard.
-3. Tune from that: ink ration, tide slack, dusk length, rock count, boat speed.
-4. Touch polish: a stroke offset above the fingertip (optional), palm rejection for Pencil, a haptic tick on a strike once wrapped natively.
-5. A home-screen icon and splash, and a service worker so it opens offline.
+**Why this order.** Each new feature needs the one before it to be interesting: the set makes position matter, the channel makes width matter, the tide's height makes *time* matter, fog makes *memory* matter, bars make *order* matter, floes and traffic make *timing* matter, and false lights turn the ink itself into a statement that can be true or false. The last coast is the exam.
 
-## P2 — The Coast (the first real reason to come back)
-1. ✅ **A coast of ten bays** (2026-11-22). Each bay is three nights; each night home lights one of its three lamps; two lamps open the next bay.
-2. ✅ **A difficulty curve** (2026-11-22): bay 1 has ten rocks and a generous bottle; bay 10 has twenty-two and a lean one. Seeds are bench-picked so a blank chart loses everywhere.
-3. ✅ **Progress saved** per bay: best lamps, tries, and a DRY mark for three nights without a strike (2026-11-22).
-4. ✅ **Start over** in a bay, and **Reset coast** (2026-11-22).
-5. ✅ Numbered lamp order, island harbours, town art, a larger bottle, and a supply wheel with an ad placeholder (2026-11-22, from iPad play).
-6. ✅ A drawn shoreline for the coast screen (2026-11-22).
-7. ✅ Two more mastery marks: *ink to spare* and *first light* (2026-11-22).
-8. ✅ Ragged terrain, varied bay shapes, and headlands and islands as hazards you flag (2026-11-22).
-9. The chart drawer: skipped for now at Jefferson's call.
+**What grows besides the charts.**
+- **Marks of the pen**, each earned on the coast that needs it: the stroke (1), the flag (1), the dashed stroke for drying rocks (4), the strike-through for a false light (8).
+- **Mastery marks** on every chart: DRY, SPARE, FIRST. A fourth, *QUIET* (home without using a supply), arrives with the App Store build.
+- **Pilots** (coast 5 onward): Bram keeps twice the margin; Wren cuts close and sails fast; Old Solveig remembers one rock a chart. Replaying an earlier coast with another pilot is a new problem on the same water.
 
-## P3 — New waters (one new idea per coast)
-Each coast is ten bays and introduces exactly one thing, alone at first and then mixed with what came before.
+## Shipped
 
-1. ✅ **The Set — The River Mouths** (2026-11-22, ten bays). A current runs across the bay, shown at dusk as a drift arrow. She is carried sideways as she sails, so a stroke that would have turned her safely now has to be drawn up-current.
-2. ✅ **The River** (2026-11-23, ten reaches; Jefferson's idea, taking the place of the next planned mechanic). The whole chart is one winding river sailed west to east, port by port; the terrain itself is the puzzle and it twists harder each reach. No current.
-3. **Drying rocks.** Some rocks are drawn dashed: they are covered on some nights and bare on others, and the almanac line at dusk says which. A mark that saves her tonight sends her the long way round tomorrow.
-4. **Fog.** Part of the bay is hidden at dusk and the hidden part moves each night, so the chart must be built from three partial looks.
-5. **The Drifter.** A wreck moves along a path shown at dusk. Ink cannot mark where it will be; it can only keep her out of the lane it crosses.
-6. **The Bar.** A sandbar closes the direct way to one lamp as the tide falls, so the order she visits lamps starts to matter and the chart has to leave her the long way open.
+- ✅ **P0 — The prototype** (2026-11-18). One verb, one pilot, one clock, three nights, dawn readback.
+- ✅ **Hosting** (2026-11-22). Public repo, GitHub Pages, home-screen meta tags.
+- ✅ **Coast 1 — The Strait** (2026-11-22). Ten charts, lamps, saved progress, Start over, Reset coast, mastery marks, drawn coast screen, ragged terrain, flags.
+- ✅ **From iPad play** (2026-11-22). Pencil precision, larger bottle, numbered lamps, harbours and towns, island harbours, supply wheel with an ad placeholder, developer mode.
+- ✅ **Coast 2 — The River Mouths** (2026-11-22). The current.
+- ✅ **Coast 3 — The River** (2026-11-23, reworked 2026-11-25). Winding channel, islets and forks, spurs; nights escalate to a contrary current and then barges at anchor.
 
-## P4 — Pilots and marks (the collection)
-1. **Pilots.** Each reads the same chart differently, which makes old bays new.
-   - *Odile*: the baseline.
-   - *Bram*, cautious: keeps twice the margin from ink, so strokes can be shorter and walls close more water than you meant.
-   - *Wren*, bold: cuts close and sails faster, so the tide is kinder and near-misses are not.
-   - *Old Solveig*: slow, but she remembers one rock per bay without being told.
-   Pilots are earned with lamps. Each has her own dawn lines and verdicts.
-2. **Marks.** New things the pen can do, each costing ink differently.
-   - *A buoy*: a tap-and-hold mark that she passes on a chosen side.
-   - *A lead line*: a dotted stroke she prefers to follow when it is safe, for threading a channel.
-   - *The scraper*: remove one stroke per dusk.
-3. **Papers and inks**: cosmetic only, earned with lamps or by streaks.
+## Next, in order
 
-## P5 — The day and the week
-1. **Tonight's bay** locks its first attempt, keeps a streak, and shares a result with the chart image.
-2. **The long passage**: once a week, seven nights on one large bay with one chart.
-3. **A friend's bay**: a link that hands someone the same water and shows both charts side by side at the end.
-4. **The almanac**: a page per coast recording charts kept, marks earned, and Odile's worst remarks.
+1. **Coast 4 — The Drying Shore.** Needs a tide height per night, dashed rocks, and the dashed stroke.
+2. **Bring the escalating nights back to coasts 1 and 2**, so no coast is three tries at one problem.
+3. **Coast 5 — The Fog Banks**, then pilots.
+4. **Coasts 6–10**, one at a time, each benched before it ships.
+5. **Hands on glass**, continuously: every coast gets an iPad session before the next is started.
 
-## P6 — The App Store
-1. **Wrap** the web build with Capacitor (the game stays one HTML file; the wrapper adds what Safari cannot): haptics, Game Center, in-app purchase, ads.
-2. **Ads, placed where they cost the game nothing:**
-   - *Rewarded*: "a second bottle" (one refill, once per bay) or "sail it again" (replay a lost night). Always the player's choice.
-   - *Interstitial*: only between bays, never between nights, never before the first three bays.
-   - *Sponsored*: tonight's bay can carry a "presented by" line.
-   - *Remove ads*: one purchase, which also unlocks the paper-and-ink set.
-3. **Game Center**: a leaderboard for tonight's bay and achievements that mirror the mastery marks.
-4. **Store work**: icon, screenshots that are finished charts, a fifteen-second preview that is one dusk and one strike, privacy labels, the tracking prompt that ad networks require.
-5. **TestFlight** with ten outside testers before submission.
+## The App Store build (can start any time)
 
-Needs from Jefferson before P6 starts: an Apple Developer account, an ad network account, and a check that a paid side product sits inside his employer's outside-activity policy.
+1. Wrap the web build with Capacitor: haptics, Game Center, in-app purchase, ads.
+2. **Ads where they cost the game nothing.** Rewarded: the supply wheel (already built, with a placeholder where the ad goes). Interstitial: only between charts, never between nights, never on coast 1. Sponsored: tonight's bay can carry a "presented by" line. One purchase removes ads.
+3. Game Center: a leaderboard for tonight's bay; achievements that mirror the mastery marks.
+4. Store work: icon, screenshots that are finished charts, a fifteen-second preview that is one dusk and one strike, privacy labels, the tracking prompt ad networks require.
+5. TestFlight with ten outside testers.
 
-## Order and why
-P1 is hands-on tuning and cannot be skipped. P2 is the smallest thing that makes a second session different from the first. P3 is where "more interesting the more you play" is actually delivered, and it is the bulk of the work. P4 multiplies P2 and P3 without new bays. P5 needs enough game underneath it to be worth a daily visit. P6 can start any time after P2, in parallel, because the wrapper does not depend on content.
+Needs from Jefferson before this starts: an Apple Developer account, an ad network account, and a check that a paid side product sits inside his employer's outside-activity policy.
+
+## Skipped for now
+
+The chart drawer (finished charts kept as images), at Jefferson's call.
