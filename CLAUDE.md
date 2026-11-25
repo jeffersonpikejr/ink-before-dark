@@ -5,6 +5,9 @@ One verb: draw. Read `README.md` for the six rules the pilot sails by and `ROADM
 ## Direction (set by Jefferson 2026-11-22)
 The target is an Apple App Store game with ads, and play that gets more interesting the longer you play. `ROADMAP.md` is the plan. The earlier "anything added deletes something" rule and closed cut list are retired; what replaces them are the three tests at the top of the roadmap (drawable, visible, benched).
 
+## Feature freeze (2026-11-25)
+Features are frozen at v0.14 until the playtest gate in `ROADMAP.md` passes (4 of 10 outside testers back within 48 hours). Bug fixes and fixes for drop-off points the play logs show are allowed; new mechanics, coasts and store features are not, unless Jefferson says otherwise.
+
 ## Ship
 Public repo `jeffersonpikejr/ink-before-dark`, GitHub Pages from `main` root: https://jeffersonpikejr.github.io/ink-before-dark/ . Ship with the `ship-verify` skill and prove the live URL serves the new `VERSION`. `notes/` is git-ignored and stays off GitHub.
 

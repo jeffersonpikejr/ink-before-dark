@@ -6,7 +6,7 @@ A single-file browser game with one verb: **draw**. You get twenty seconds of fa
 
 Your chart doesn't have to be true. It has to bring her home.
 
-**Status:** v0.13 (2026-11-25): all ten coasts, 100 charts; App Store wrapper prepared, not yet built.
+**Status:** v0.14 (2026-11-25): features frozen for a playtest. Ten coasts, 100 charts; App Store wrapper prepared, not yet built.
 
 **▶ Play in your browser: https://jeffersonpikejr.github.io/ink-before-dark/** — on an iPad or iPhone, Share → Add to Home Screen runs it full-screen.
 
@@ -53,6 +53,11 @@ One `index.html` (about 600 lines): canvas rendering, a Dijkstra pilot on an 8-u
 Debug API in the console: `IBD.start(seed)` · `IBD.step(seconds)` (drives time by hand when animation frames are asleep) · `IBD.pause()` · `IBD.still()` (no CSS transitions) · `IBD.pen([[x,y],…])` (draws through the real pointer handlers) · `IBD.castOff()` · `IBD.info()` · `IBD.bench(n)`.
 
 ## Changelog
+
+### v0.14 — Do they come back? (2026-11-25)
+- A play log kept on the device: sessions, charts started and finished, nights home, start-overs, mid-chart quits, wheel spins. "Send play log" on the title hands the player a text to pass on; nothing is sent anywhere by the game.
+- Ad rules tightened after a business review: five rewarded ads a day at most; no interstitial in a player's first session, then at most one for every three finished charts and only after a chart she got home from; tracking consent asked once after the first finished chart, never at launch.
+- Features are frozen here until ten outside testers have played.
 
 ### v0.13 — Ready to wrap (2026-11-25)
 - App icon, web manifest and an offline service worker (network first, so a new version always wins).

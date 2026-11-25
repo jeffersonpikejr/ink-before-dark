@@ -99,7 +99,8 @@ button.pri{border-width:2px}
   <p class="hook">Whatever you leave off the chart, she finds in the dark.</p>
   <p class="how">Twenty seconds of dusk. One bottle of ink. Then Odile sails the bay by your chart alone.</p>
   <div class="row"><button class="pri" id="bCoast">The Coast</button><button id="bDaily">Tonight's bay</button><button id="bRandom">Another bay</button></div>
-  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.13</p>
+  <p class="fine" style="opacity:.6;margin-top:14px"><a id="bLog" href="#" style="color:#efe6d0">Send play log</a></p>
+  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.14</p>
 </div>
 <div id="coast"><h2 id="cTitle">The Strait</h2><p id="cBlurb"></p><div id="bays"></div><div class="row"><button id="bBack">Back</button><button id="bPrev"></button><button id="bOther"></button><button id="bSpin">Spin for supplies</button><button id="bWipe">Reset coast</button></div><p id="invLine" style="margin-top:10px"></p></div>
 <div id="wheel"><h2>Supplies</h2><p id="wMsg"></p><div id="wWrap"><div id="wPtr"></div><div id="wDisc"></div></div><div class="row"><button class="pri" id="wGo">Watch an ad to spin</button><button id="wClose">Close</button></div><p class="fine2" id="wFine">Ads are a placeholder in this web build. Real rewarded ads arrive with the App Store version. <a href="privacy.html" style="color:inherit">Privacy</a></p></div>
@@ -112,7 +113,7 @@ button.pri{border-width:2px}
    Sections: config · rng · bay generator · chart · pilot · night sim
              · bots & bench · audio · store · game state · render · input · boot
    ============================================================ */
-const VERSION='0.13';
+const VERSION='0.14';
 const W=1000,H=640,CELL=8,GW=W/CELL|0,GH=H/CELL|0,NC=GW*GH;
 const CFG={
   DUSK:20,          // seconds of failing light
@@ -486,6 +487,19 @@ const Store={backend:'mem',mem:{},
 Store.init();
 const SAVE_KEY='ibd_save',SCHEMA=1;
 let META={schema:SCHEMA,muted:false,bays:0,nightsHome:0,nights:0,daily:{},coast:{bays:[]},coast2:{bays:[]},coast3:{bays:[]},inv:{ink:0,light:0,tide:0}};
+// The play log. It answers one question: do people come back? It lives on the device and goes nowhere
+// unless the player presses "Send play log", which hands them a text to paste to the developer.
+function plog(k,a,b){if(!META.log)META.log=[];META.log.push([Math.round(Date.now()/1000),k,a==null?0:a,b==null?0:b]);if(META.log.length>800)META.log.splice(0,META.log.length-800);saveMeta();}
+function playSummary(){const L=META.log||[],ses=L.filter(e=>e[1]==='S'),t0=ses.length?ses[0][0]:0,cnt=k=>L.filter(e=>e[1]===k).length;
+  const days=new Set(ses.map(e=>Math.floor(e[0]/86400))).size,back48=ses.some(e=>e[0]-t0>1800&&e[0]-t0<=172800),nights=L.filter(e=>e[1]==='N');
+  // minutes played: sum of gaps under five minutes between consecutive events
+  let secs=0;for(let i=1;i<L.length;i++){const d=L[i][0]-L[i-1][0];if(d>0&&d<300)secs+=d;}
+  return{v:VERSION,first:t0?new Date(t0*1000).toISOString().slice(0,16):'',sessions:ses.length,days,back48,minutes:Math.round(secs/60),baysStarted:cnt('B'),baysFinished:cnt('F'),nights:nights.length,nightsHome:nights.filter(e=>e[2]).length,
+    startOvers:cnt('R'),quitsMidBay:cnt('Q'),wheelSpins:cnt('W'),suppliesUsed:cnt('U'),furthest:L.filter(e=>e[1]==='B'&&e[2]>0).reduce((m,e)=>Math.max(m,e[2]*100+e[3]),0),touch:('ontouchstart' in window),w:innerWidth,h:innerHeight};}
+function sendLog(){const sm=playSummary(),txt='INK BEFORE DARK play log\n'+Object.entries(sm).map(([k,v])=>k+': '+v).join('\n')+'\n--\n'+btoa(JSON.stringify(META.log||[]));
+  const done=m=>{$('bLog').textContent=m;};
+  if(navigator.share){navigator.share({title:'Ink Before Dark play log',text:txt}).then(()=>done('Sent. Thank you.'),()=>{try{navigator.clipboard.writeText(txt).then(()=>done('Copied. Paste it to whoever sent you the game.'));}catch(e){}});}
+  else{try{navigator.clipboard.writeText(txt).then(()=>done('Copied. Paste it to whoever sent you the game.'),()=>done('Could not copy.'));}catch(e){done('Could not copy.');}}}
 async function loadMeta(){const raw=await Store.get(SAVE_KEY);if(!raw)return;try{const m=JSON.parse(raw);if(m&&m.schema===SCHEMA){META=Object.assign(META,m);META.daily=m.daily||{};META.coast=(m.coast&&Array.isArray(m.coast.bays))?m.coast:{bays:[]};META.coast2=(m.coast2&&Array.isArray(m.coast2.bays))?m.coast2:{bays:[]};META.coast3=(m.coast3&&Array.isArray(m.coast3.bays))?m.coast3:{bays:[]};META.inv=Object.assign({ink:0,light:0,tide:0},m.inv||{});}}catch(e){}}
 function saveMeta(){Store.set(SAVE_KEY,JSON.stringify(META));}
 
@@ -539,10 +553,11 @@ function startBay(daily,seed,ci){
   paintTruth(S.bay);
   el.title.style.display='none';$('coast').style.display='none';el.hud.classList.remove('hide');
   $('bLeave').classList.remove('hide');$('bOver').classList.remove('hide');$('bLeave').innerHTML=S.ci!=null?'&lsaquo; Coast':'&lsaquo; Leave';
+  plog('B',S.ci!=null?S.co+1:0,S.ci!=null?S.ci+1:(S.daily?-1:0));
   restartBay();}
 // Start over: the same bay from its first dusk, with a blank chart.
 function restartBay(){if(!S.bay)return;S.spareMin=1;S.chart=newChart(S.bay);S.ni=0;S.results=[];S.full=false;S.toldRed=false;S.N=null;disarm();startDusk();}
-function leave(){S.phase='title';timers.length=0;S.N=null;setSea(0);setPen(0);caption('','');buttons([]);hint('');disarm();
+function leave(){if(S.phase==='dusk'||S.phase==='night')plog('Q',S.ni+1,S.phase==='dusk'?0:1);S.phase='title';timers.length=0;S.N=null;setSea(0);setPen(0);caption('','');buttons([]);hint('');disarm();
   el.hud.classList.add('hide');$('bLeave').classList.add('hide');$('bOver').classList.add('hide');
   if(S.ci!=null)showCoast();else{$('coast').style.display='none';el.title.style.display='flex';}}
 function showCoast(){S.phase='title';if(S.co==null)S.co=0;el.title.style.display='none';$('coast').style.display='flex';
@@ -569,7 +584,7 @@ function showCoast(){S.phase='title';if(S.co==null)S.co=0;el.title.style.display
   $('bWipe').textContent='Reset coast';$('bWipe')._armed=false;$('invLine').textContent=invText();}
 // two-tap guard for anything that throws work away
 function disarm(){const o=$('bOver');o._armed=false;o.innerHTML='&#8634; Start over';}
-$('bOver').onclick=()=>{const o=$('bOver');if(!o._armed){o._armed=true;o.textContent='Tap again: night 1, blank chart';after(3,disarm);return;}audio();restartBay();};
+$('bOver').onclick=()=>{const o=$('bOver');if(!o._armed){o._armed=true;o.textContent='Tap again: night 1, blank chart';after(3,disarm);return;}audio();plog('R',S.ni+1);restartBay();};
 $('bLeave').onclick=()=>leave();
 $('bWipe').onclick=()=>{const w=$('bWipe');if(!w._armed){w._armed=true;w.textContent='Tap again to erase all lamps';return;}META[SKEY(S.co||0)]={bays:[]};saveMeta();showCoast();};
 // The wheel. In this web build the ad is a five-second placeholder; the App Store build swaps in a rewarded ad at the same point.
@@ -586,20 +601,26 @@ const Ads={
   ready:false,chartsSince:0,
   get plugin(){return window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.AdMob;},
   get off(){return!!META.noAds;},
-  async init(){if(!this.native||!this.plugin||this.ready)return;try{await this.plugin.initialize({initializeForTesting:true});try{await this.plugin.requestTrackingAuthorization();}catch(e){}this.ready=true;}catch(e){}},
-  // resolves true if the player earned the reward
-  async rewarded(say){
-    if(this.native&&this.plugin){try{await this.init();say('Loading\u2026');await this.plugin.prepareRewardVideoAd({adId:this.ids.rewarded});const r=await this.plugin.showRewardVideoAd();return!!(r&&(r.amount!=null||r.type));}catch(e){say('No ad to show just now.');return false;}}
-    for(let n=5;n>0;n--){say('Ad placeholder \u2014 '+n+'\u2026');await new Promise(r=>setTimeout(r,1000));}return true;},
-  // between charts only: never on the first coast, never two charts running, never if ads were bought off
-  async between(){this.chartsSince++;if(!this.native||!this.plugin||this.off||S.co===0||this.chartsSince<2)return;
+  async init(){if(!this.native||!this.plugin||this.ready)return;try{await this.plugin.initialize({initializeForTesting:true});this.ready=true;}catch(e){}},
+  // tracking consent is asked once, after the first finished chart, never at launch; nothing depends on the answer
+  async askTracking(){if(!this.native||!this.plugin||META.askedATT)return;META.askedATT=true;saveMeta();try{await this.plugin.requestTrackingAuthorization();}catch(e){}},
+  // resolves true if the player earned the reward. Five a day, and always the player's choice.
+  async rewarded(say){const day=dayKey();if(!META.adDay||META.adDay.k!==day)META.adDay={k:day,n:0};
+    if(META.adDay.n>=5){say('That is all the supplies the chandler has today.');return false;}
+    let ok=false;
+    if(this.native&&this.plugin){try{await this.init();say('Loading\u2026');await this.plugin.prepareRewardVideoAd({adId:this.ids.rewarded});const r=await this.plugin.showRewardVideoAd();ok=!!(r&&(r.amount!=null||r.type));}catch(e){say('No ad to show just now.');return false;}}
+    else{for(let n=5;n>0;n--){say('Ad placeholder \u2014 '+n+'\u2026');await new Promise(r=>setTimeout(r,1000));}ok=true;}
+    if(ok){META.adDay.n++;saveMeta();}return ok;},
+  // between charts only, and only after a chart she got home from (the Next button): none in a player's first session,
+  // at most one for every three finished charts, none for anyone who bought ads off
+  async between(){this.chartsSince++;if(!this.native||!this.plugin||this.off||(META.sessions||0)<2||this.chartsSince<3)return;
     try{await this.init();await this.plugin.prepareInterstitial({adId:this.ids.interstitial});await this.plugin.showInterstitial();this.chartsSince=0;}catch(e){}}
 };
 function spinWheel(){if(wSpinning)return;wSpinning=true;const go=$('wGo');go.disabled=true;
   Ads.rewarded(t=>{$('wMsg').textContent=t;}).then(ok=>{
     if(!ok){go.disabled=false;wSpinning=false;return;}
     const i=Math.floor(Math.random()*WHEEL.length),w=WHEEL[i];wTurns+=5;$('wDisc').style.transform='rotate('+(wTurns*360-(i*60+30))+'deg)';$('wMsg').textContent='\u2026';
-    setTimeout(()=>{META.inv[w[0]]+=w[1];saveMeta();$('wMsg').textContent='You won '+SUP[w[0]].name+(w[1]>1?' \u00d72':'')+' ('+SUP[w[0]].tip+'). '+invText();go.textContent=Ads.native?'Watch another ad':'Spin again';go.disabled=false;wSpinning=false;
+    setTimeout(()=>{META.inv[w[0]]+=w[1];saveMeta();plog('W');$('wMsg').textContent='You won '+SUP[w[0]].name+(w[1]>1?' \u00d72':'')+' ('+SUP[w[0]].tip+'). '+invText();go.textContent=Ads.native?'Watch another ad':'Spin again';go.disabled=false;wSpinning=false;
       if($('invLine'))$('invLine').textContent=invText();if(S.phase==='dusk')duskButtons();},3400);});}
 $('wGo').onclick=()=>{audio();spinWheel();};$('wClose').onclick=()=>{if(!wSpinning)$('wheel').style.display='none';};$('bSpin').onclick=()=>{audio();openWheel();};
 {let taps=0,last=0;$('fine').addEventListener('click',()=>{const now=Date.now();taps=now-last<600?taps+1:1;last=now;if(taps>=5){taps=0;setDev(!DEV);}});$('fine').style.pointerEvents='auto';}
@@ -608,7 +629,7 @@ $('bPrev').onclick=()=>{if($('bPrev').disabled)return;S.co=S.prevCo;showCoast();
 $('bBack').onclick=()=>{$('coast').style.display='none';el.title.style.display='flex';};
 // Supplies won on the wheel. Each is spent at dusk and lasts one night.
 const SUP={ink:{name:'Ink',tip:'+40% bottle'},light:{name:'Light',tip:'+6 s of dusk'},tide:{name:'Tide',tip:'+3 s tonight'}};
-function useSupply(k){if(S.phase!=='dusk'||!(META.inv[k]>0))return;META.inv[k]--;saveMeta();
+function useSupply(k){if(S.phase!=='dusk'||!(META.inv[k]>0))return;META.inv[k]--;saveMeta();plog('U');
   if(k==='ink'){const add=S.inkCap*0.4;S.chart.ink+=add;S.inkCap+=add;S.toldDry=false;}
   else if(k==='light'){S.duskT=Math.max(0,S.duskT-6);}
   else if(k==='tide'){S.tideBonus=(S.tideBonus||0)+3;}
@@ -646,7 +667,7 @@ function startDawn(){
   S.sweepDur=clamp(N.track.length*0.011,1.3,2.6);
   composeWake(N.track);
   const margin=N.limit-N.t,found=N.strikes;
-  S.results.push({made:N.made,margin,strikes:found});
+  S.results.push({made:N.made,margin,strikes:found});plog('N',N.made?1:0,found);
   META.nights++;if(N.made)META.nightsHome++;
   const marked=rocksMarked(bay,c),nR=bay.rocks.length,red=c.reds.size;
   const NUM=['no','one','two','three','four','five','six','seven','eight','nine'],num=n=>n<10?NUM[n]:String(n);
@@ -666,7 +687,7 @@ function startDawn(){
     if(S.ni<2)buttons([[ORD[S.ni+1]+' dusk',()=>{S.ni++;startDusk();}]]);
     else finish();});
   buttons([]);caption('','');}
-function finish(){
+function finish(){plog('F',S.results.filter(r=>r.made).length);Ads.askTracking();
   const home=S.results.filter(r=>r.made).length,strikes=S.results.reduce((a,r)=>a+r.strikes,0);
   S.share='Ink Before Dark · bay '+S.label+' · home '+home+'/3 · '+S.results.map(r=>r.made?'●':'○').join('')+' · '+strikes+' found in the dark';
   META.bays++;if(S.daily&&!META.daily[S.dayKey])META.daily[S.dayKey]={home,strikes};saveMeta();
@@ -923,7 +944,7 @@ function frame(now){const elp=Math.min(.1,(now-last)/1000);last=now;acc+=elp;
 
 /* ---------- debug API (headless-safe: step() drives time when rAF is asleep) ---------- */
 window.IBD={
-  get S(){return S;},CFG,VERSION,showCoast,coastDiff,setDev,get DEV(){return DEV;},openWheel,useSupply,bottle,get META(){return META;},genBay,newChart,runNight,bench,botSlash,botOmni,
+  get S(){return S;},CFG,VERSION,showCoast,coastDiff,playSummary,setDev,get DEV(){return DEV;},openWheel,useSupply,bottle,get META(){return META;},genBay,newChart,runNight,bench,botSlash,botOmni,
   start(seed){startBay(false,seed);},
   step(sec){const n=Math.round((sec||1)/DT);for(let i=0;i<n;i++)update(DT);render();return this.info();},
   line(x1,y1,x2,y2){const c=S.chart;if(S.phase!=='dusk')return false;S.began=true;return botLine(c,x1,y1,x2,y2);},
@@ -942,7 +963,9 @@ window.IBD={
 resize();
 if(Ads.native){const f=$('wFine');if(f)f.innerHTML='Watching is always your choice.';}
 if('serviceWorker' in navigator&&!Ads.native&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
-loadMeta().then(()=>{muted=!!META.muted;const k=dayKey();if(META.daily[k])$('fine').textContent='tonight’s bay, first try: home '+META.daily[k].home+'/3 · M mutes · prototype v'+VERSION;devMark();});
+$('bLog').onclick=e=>{e.preventDefault();sendLog();};
+let hidAt=0;document.addEventListener('visibilitychange',()=>{if(document.hidden)hidAt=Date.now();else if(hidAt&&Date.now()-hidAt>1800000){META.sessions=(META.sessions||0)+1;plog('S');}});
+loadMeta().then(()=>{META.sessions=(META.sessions||0)+1;plog('S');muted=!!META.muted;const k=dayKey();if(META.daily[k])$('fine').textContent='tonight’s bay, first try: home '+META.daily[k].home+'/3 · M mutes · prototype v'+VERSION;devMark();});
 requestAnimationFrame(frame);
 </script>
 </body>

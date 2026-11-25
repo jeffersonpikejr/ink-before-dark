@@ -15,7 +15,7 @@ const elem = () => ({ style: {}, classList: { add: noop, remove: noop, toggle: n
   getContext: () => ctx2d, getBoundingClientRect: () => ({ left: 0, top: 0, width: 1000, height: 640 }), firstChild: null, disabled: false, addEventListener: noop, appendChild: noop, querySelector: () => null, setPointerCapture: noop, width: 0, height: 0, textContent: '', innerHTML: '', click: noop });
 const sandbox = { console, performance: { now: () => 0 }, requestAnimationFrame: noop, setTimeout: noop, clearTimeout: noop, innerWidth: 1000, innerHeight: 640,
   addEventListener: noop, navigator: {}, localStorage: { getItem: () => null, setItem: noop, removeItem: noop },
-  document: { getElementById: elem, createElement: elem, body: { classList: { toggle: noop } } } };
+  document: { addEventListener: noop, hidden: false, getElementById: elem, createElement: elem, body: { classList: { toggle: noop } } } };
 sandbox.window = sandbox;
 vm.createContext(sandbox);
 vm.runInContext(src, sandbox);

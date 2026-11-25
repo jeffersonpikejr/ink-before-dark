@@ -69,11 +69,27 @@ All seven are playable and every chart passes `node test/charts.mjs`. They are f
 - **10 The Long Passage.** Six lamps a night on a normal-sized chart, not a chart two sheets wide.
 - **Not built:** pilots, the QUIET mark, and escalating nights on coasts 1 and 2.
 
-## Next, in order
+## Now: the playtest gate (set by the Business Council review, 2026-11-25)
 
-1. **Hands on glass for coasts 4–10.** One iPad session per coast; tune from it.
-2. **Escalating nights on coasts 1 and 2.**
-3. **The gaps above**, in the order play shows they matter: timed bars and real forks for the Delta, the dashed stroke, pilots.
+**Features are frozen at v0.14.** The Council scored the plan 4/10 as an ad business and 6/10 as a capped test, and named one thing: prove strangers come back before any more monetisation or store work beyond TestFlight. Nothing below the gate is built until the gate passes.
+
+| Week | Work | Gate |
+|---|---|---|
+| 1 | Send the web link to ten outside testers (not friends or family). Each presses "Send play log" after two days. | **4 of 10 start a second session within 48 hours.** If not: redesign once, then stop. |
+| 2 | Fix the top three drop-off points the logs show. Finish the TestFlight build (needs Xcode, the developer account). | Installs and keeps progress on iPad and iPhone. |
+| 3–4 | 20+ testers on TestFlight, wheel on test ads. | 8 of 20 back within 48 hours. |
+| 5 | Test price screens for Remove Ads and a supply pack that record taps and charge nothing; interstitials at the agreed cadence. | Signals only. |
+| 6 | Read results. | Go needs 10+ minutes a day and 5% of active testers tapping an offer. |
+
+**Soft launch (weeks 7–12, only after a go):** Canada, Australia or New Zealand. Stop if day-one retention is under 30% or day-seven under 7% after two updates; go on at 40% and 12%.
+
+**Budget and stops:** $2,000 and 60 hours to the gate; $1,500 and 100 hours more only if it passes. Pause if it takes more than 10 hours a week for three weeks. No paid installs unless projected 180-day revenue per install exceeds the cost of one. If the audience turns out to be children, drop ads and sell a one-time unlock.
+
+## After the gate, in order
+
+1. **Hybrid monetisation**: Remove Ads ($3.99; the wheel stays), supply packs ($0.99–$2.99), coast packs later.
+2. **Hands on glass for coasts 4–10**, tuned from play logs.
+3. **Escalating nights on coasts 1 and 2**; then the gaps listed above.
 
 ## The App Store build (can start any time)
 
