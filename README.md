@@ -6,7 +6,7 @@ A single-file browser game with one verb: **draw**. You get twenty seconds of fa
 
 Your chart doesn't have to be true. It has to bring her home.
 
-**Status:** v0.11 (2026-11-25).
+**Status:** v0.12 (2026-11-25): all ten coasts, 100 charts.
 
 **▶ Play in your browser: https://jeffersonpikejr.github.io/ink-before-dark/** — on an iPad or iPhone, Share → Add to Home Screen runs it full-screen.
 
@@ -53,6 +53,19 @@ One `index.html` (about 600 lines): canvas rendering, a Dijkstra pilot on an 8-u
 Debug API in the console: `IBD.start(seed)` · `IBD.step(seconds)` (drives time by hand when animation frames are asleep) · `IBD.pause()` · `IBD.still()` (no CSS transitions) · `IBD.pen([[x,y],…])` (draws through the real pointer handlers) · `IBD.castOff()` · `IBD.info()` · `IBD.bench(n)`.
 
 ## Changelog
+
+### v0.12 — Ten coasts (2026-11-25)
+- Seven new coasts, 70 new charts, each built round one new feature and combining earlier ones:
+  - **4 The Drying Shore**: dashed rocks are under water tonight and bare on a later night.
+  - **5 The Fog Banks**: fog hides part of the chart at dusk, off her course the first night, then moving and growing.
+  - **6 The Delta**: dotted sand closes once she has made the lamp numbered on it.
+  - **7 The Ice**: floes drift to and fro along lanes shown at dusk.
+  - **8 The Wreckers' Coast**: a light with no harbour is false; touch it with ink or she steers for it first.
+  - **9 The Roads**: ships keep to their lanes all night, without lights.
+  - **10 The Long Passage**: six lamps a night, one bottle, every feature.
+- Nights escalate on every new coast (more bare rocks, more fog, more false lights, more traffic).
+- Coast screen has previous and next buttons and numbers the coasts.
+- `node test/charts.mjs` checks all 100 charts: a blank chart loses the first night and a perfect chart wins all three. All 100 pass.
 
 ### v0.11 — Forks and barges (2026-11-25)
 - The River reworked to be harder: tighter meanders, islets mid-channel that fork it, rocky spurs off the banks, rougher shores, more rocks, a tighter tide.

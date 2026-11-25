@@ -33,13 +33,13 @@ Every coast is ten charts and follows the same shape, so a player always knows w
 | 1 | **The Strait** | Rocks, headlands, islands | Strike through rocks on her course; touch land that juts out to flag it. | — | new lamps | ✅ live |
 | 2 | **The River Mouths** | **The set**: a current | She is carried off her line, so what lies beside the course matters and strokes go up-current. | headlands · islands | new lamps | ✅ live |
 | 3 | **The River** | **The channel**: one winding river with islets and forks, sailed end to end | The straight course cuts every bend; a stroke too wide closes the channel; islets make her choose a side. | spurs · islets | the river against her · barges at anchor | ✅ live |
-| 4 | **The Drying Shore** | **The tide's height**: rocks drawn dashed are covered on some nights and bare on others | A mark that saves her tonight sends her the long way round tomorrow; a second ink (a dashed stroke she ignores at high water) is earned here. | current · headlands / river channel | half tide · low water | planned |
-| 5 | **The Fog Banks** | **Fog** over part of the chart at dusk | You draw part of the chart blind, from what earlier dawns showed you; the wake at dawn becomes the thing you study. | drying rocks · current / islets | fog moves · fog thickens | planned |
-| 6 | **The Delta** | **Bars**: sand that closes a channel as the tide falls | The order she visits lamps decides which channels are still open; ink can hold her back from a channel that will shut behind her. | river forks · current / drying rocks | an earlier ebb · two bars | planned |
-| 7 | **The Ice** | **Floes** that drift along a path shown at dusk | Ink cannot mark where a floe will be, only keep her out of the lane it crosses, and when. | current (floes ride it) · fog / bars | faster floes · a second lane | planned |
-| 8 | **The Wreckers' Coast** | **False lights**: a lamp ashore that she will steer for unless you strike it out | Ink gains a second meaning: a stroke through a light tells her it lies. Leave one unmarked and she sails for the rocks under it. | headlands · fog / drying rocks | a second false light · the true lamp dimmed | planned |
-| 9 | **The Roads** | **Traffic**: ships under way on fixed lanes and timetables | Her timing matters: a detour you draw can put her in a lane as a ship passes; the lane and its clock are on the chart. | current · bars / floes | more ships · fog over the lane | planned |
-| 10 | **The Long Passage** | **One chart, two sheets wide**, sailed in one night | The ink has to last the whole passage; everything met so far appears once, in order. Chart 100 is every feature at once. | all | — (one long night per chart) | planned |
+| 4 | **The Drying Shore** | **The tide's height**: rocks drawn dashed are covered on some nights and bare on others | A mark that saves her tonight sends her the long way round tomorrow; a second ink (a dashed stroke she ignores at high water) is earned here. | current · headlands / river channel | half tide · low water | ✅ live (first build) |
+| 5 | **The Fog Banks** | **Fog** over part of the chart at dusk | You draw part of the chart blind, from what earlier dawns showed you; the wake at dawn becomes the thing you study. | drying rocks · current / islets | fog moves · fog thickens | ✅ live (first build) |
+| 6 | **The Delta** | **Bars**: sand that closes a channel as the tide falls | The order she visits lamps decides which channels are still open; ink can hold her back from a channel that will shut behind her. | river forks · current / drying rocks | an earlier ebb · two bars | ✅ live (first build) |
+| 7 | **The Ice** | **Floes** that drift along a path shown at dusk | Ink cannot mark where a floe will be, only keep her out of the lane it crosses, and when. | current (floes ride it) · fog / bars | faster floes · a second lane | ✅ live (first build) |
+| 8 | **The Wreckers' Coast** | **False lights**: a lamp ashore that she will steer for unless you strike it out | Ink gains a second meaning: a stroke through a light tells her it lies. Leave one unmarked and she sails for the rocks under it. | headlands · fog / drying rocks | a second false light · the true lamp dimmed | ✅ live (first build) |
+| 9 | **The Roads** | **Traffic**: ships under way on fixed lanes and timetables | Her timing matters: a detour you draw can put her in a lane as a ship passes; the lane and its clock are on the chart. | current · bars / floes | more ships · fog over the lane | ✅ live (first build) |
+| 10 | **The Long Passage** | **Six lamps a night** on one bottle | The ink has to last twice the passage; every feature met so far is on the chart. Chart 100 is all of them at once. | all | more of each | ✅ live (first build) |
 
 **Why this order.** Each new feature needs the one before it to be interesting: the set makes position matter, the channel makes width matter, the tide's height makes *time* matter, fog makes *memory* matter, bars make *order* matter, floes and traffic make *timing* matter, and false lights turn the ink itself into a statement that can be true or false. The last coast is the exam.
 
@@ -57,13 +57,23 @@ Every coast is ten charts and follows the same shape, so a player always knows w
 - ✅ **Coast 2 — The River Mouths** (2026-11-22). The current.
 - ✅ **Coast 3 — The River** (2026-11-23, reworked 2026-11-25). Winding channel, islets and forks, spurs; nights escalate to a contrary current and then barges at anchor.
 
+## Shipped 2026-11-25: coasts 4–10, first build
+
+All seven are playable and every chart passes `node test/charts.mjs`. They are first builds: the rules work and are fair by simulation, but none has been played by a person. Where the build is simpler than the plan above, it says so here.
+
+- **4 The Drying Shore.** Built as planned, except the tide only falls (more rocks bare each night) and there is no dashed pen stroke yet.
+- **5 The Fog Banks.** Built as planned.
+- **6 The Delta.** Bars close by *order* (after a numbered lamp), not by the clock. No true branching channels yet; it uses river-mouth bays.
+- **7 The Ice** and **9 The Roads.** Floes go to and fro; ships keep one heading. A strike costs time and teaches her nothing, so the player's tools are keeping her off the lane or changing her timing with a detour.
+- **8 The Wreckers' Coast.** A false light is an extra stop she makes unless ink touches it. The planned "strike-through" is the same touch as a flag.
+- **10 The Long Passage.** Six lamps a night on a normal-sized chart, not a chart two sheets wide.
+- **Not built:** pilots, the QUIET mark, and escalating nights on coasts 1 and 2.
+
 ## Next, in order
 
-1. **Coast 4 — The Drying Shore.** Needs a tide height per night, dashed rocks, and the dashed stroke.
-2. **Bring the escalating nights back to coasts 1 and 2**, so no coast is three tries at one problem.
-3. **Coast 5 — The Fog Banks**, then pilots.
-4. **Coasts 6–10**, one at a time, each benched before it ships.
-5. **Hands on glass**, continuously: every coast gets an iPad session before the next is started.
+1. **Hands on glass for coasts 4–10.** One iPad session per coast; tune from it.
+2. **Escalating nights on coasts 1 and 2.**
+3. **The gaps above**, in the order play shows they matter: timed bars and real forks for the Delta, the dashed stroke, pilots.
 
 ## The App Store build (can start any time)
 
