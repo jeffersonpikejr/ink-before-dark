@@ -1,0 +1,10 @@
+{
+  "name": "ibd-native",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ink Before Dark's own native code: Game Center for tonight's bay, and a copy of the save kept outside the web view. Local package, wired in by `npx cap sync ios`.",
+  "license": "UNLICENSED",
+  "files": ["ios/Sources", "Package.swift"],
+  "capacitor": { "ios": { "src": "ios" } },
+  "peerDependencies": { "@capacitor/core": ">=8.0.0" }
+}

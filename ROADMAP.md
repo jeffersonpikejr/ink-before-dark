@@ -124,6 +124,16 @@ All seven are playable and every chart passes `node test/charts.mjs`. They are f
 | 5 | Test price screens for Remove Ads and a supply pack that record taps and charge nothing; interstitials at the agreed cadence. | Signals only. |
 | 6 | Read results. | Go needs 10+ minutes a day and 5% of active testers tapping an offer. |
 
+**The deliberate exception, v0.16 (2026-11-27): the tutorial cards.** Built during the freeze at Jefferson's direction, as the stage-2 drop-off fix done ahead of the logs: a stranger has to be able to draw a decent first chart or the 48-hour number measures confusion, not the game. It adds no mechanic, coast or rule. What it adds:
+
+- **Cards.** One small animated chart and one sentence each, drawn in the game's own hand. Two before the first dusk (Dusk, Draw), one at the first cast-off (Night), one at the first strike (What you leave off, she finds), two at the second dusk (Three nights, one chart; One bottle a night). After that, one card the first time each new thing is met: the current, the river, barges, the drying shore, cloud, bars, ice, false lights, shipping lanes, six lamps, supplies, lamps, marks, the log, the tide.
+- **A guided first night.** For the first night only, her course as the chart stands is pencilled in up to the first thing she would strike, the stroke to make is shown being made, and the light waits for the first stroke. The second night it is gone.
+- **A newcomer's first tap opens the first bay**, not the map.
+- **Off, and back.** "Tutorial cards: on/off" and "Replay the tutorial" on the title. Seen cards live in the save; a save from before v0.16 is credited with what its player has already met.
+- **Measured.** The play log counts cards shown and cards skipped, so the testers' logs show whether the tutorial is read.
+
+A new feature now needs a card: `test/cards.mjs` fails if any shipped chart asks for something that has none.
+
 **Soft launch (weeks 7–12, only after a go):** Canada, Australia or New Zealand. Stop if day-one retention is under 30% or day-seven under 7% after two updates; go on at 40% and 12%.
 
 **Budget and stops:** $2,000 and 60 hours to the gate; $1,500 and 100 hours more only if it passes. Pause if it takes more than 10 hours a week for three weeks. No paid installs unless projected 180-day revenue per install exceeds the cost of one. If the audience turns out to be children, drop ads and sell a one-time unlock.
@@ -136,9 +146,11 @@ All seven are playable and every chart passes `node test/charts.mjs`. They are f
 
 ## The App Store build (can start any time)
 
-1. Wrap the web build with Capacitor: haptics, Game Center, in-app purchase, ads.
+**State at v0.16 (2026-11-27):** everything that can be written without running Xcode is written: haptics, a Game Center leaderboard for tonight's bay, the Remove Ads purchase with restore, Google's consent form before the first ad, safe areas, a native copy of the save, an offline audit, Pencil palm rules. None of it has been compiled or run. Xcode 27.2 is on the Mac with its licence unaccepted and no simulator downloaded. `store/APP_STORE.md` is the handoff and says exactly where it stopped.
+
+1. Wrap the web build with Capacitor: haptics, Game Center, in-app purchase, ads. ✅ written, unbuilt.
 2. **Ads where they cost the game nothing.** Rewarded: the supply wheel (already built, with a placeholder where the ad goes). Interstitial: only between charts, never between nights, never on coast 1. Sponsored: tonight's bay can carry a "presented by" line. One purchase removes ads.
-3. Game Center: a leaderboard for tonight's bay; achievements that mirror the mastery marks.
+3. Game Center: a leaderboard for tonight's bay ✅ written, unbuilt; achievements that mirror the mastery marks (not built).
 4. Store work: icon, screenshots that are finished charts, a fifteen-second preview that is one dusk and one strike, privacy labels, the tracking prompt ad networks require.
 5. TestFlight with ten outside testers.
 

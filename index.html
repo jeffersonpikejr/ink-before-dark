@@ -16,10 +16,11 @@
 :root{--fg:#efe6d0;--bg:#0b0e13;--red:#b3261e}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:#0b0e13;overflow:hidden;color:var(--fg);
-  font-family:Georgia,'Iowan Old Style','Palatino Linotype','Times New Roman',serif;-webkit-user-select:none;user-select:none}
+  font-family:Georgia,'Iowan Old Style','Palatino Linotype','Times New Roman',serif;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+#safe{position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 body.light{--fg:#1c2430;--bg:#e9e0cc}
 canvas{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;display:block;touch-action:none;cursor:crosshair}
-#hud{position:fixed;left:0;right:0;top:0;padding:12px 16px;display:flex;gap:16px;align-items:center;
+#hud{position:fixed;left:0;right:0;top:0;padding:calc(12px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 12px calc(16px + env(safe-area-inset-left));display:flex;gap:16px;align-items:center;
   font-size:11px;letter-spacing:.16em;text-transform:uppercase;pointer-events:none;color:var(--fg);transition:color .6s;white-space:nowrap}
 #hud .sp{flex:1}
 .bar{width:min(132px,26vw);height:7px;border:1px solid var(--fg);position:relative;opacity:.9;transition:opacity .4s}
@@ -28,20 +29,21 @@ canvas{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;displa
 .meter{display:flex;gap:8px;align-items:center;transition:opacity .5s}
 .hide{opacity:0 !important;pointer-events:none !important}
 body.still *{transition:none !important}
-#cap{position:fixed;left:0;right:0;top:9%;text-align:center;pointer-events:none;color:var(--fg);transition:opacity .9s,color .6s;padding:0 18px;
+#cap{position:fixed;left:0;right:0;top:calc(9% + env(safe-area-inset-top));text-align:center;pointer-events:none;color:var(--fg);transition:opacity .9s,color .6s;padding:0 18px;
   text-shadow:0 0 3px var(--bg),0 0 7px var(--bg),0 0 12px var(--bg),0 0 20px var(--bg),0 0 28px var(--bg)}
 #cap b{display:block;font-weight:400;font-style:italic;font-size:clamp(21px,3.2vw,30px);letter-spacing:.02em;line-height:1.15}
 #cap span{display:block;margin-top:4px;font-size:clamp(13px,1.9vw,16px);line-height:1.38;opacity:.94}
 #cap span i{font-style:normal;opacity:.66}
-body.band #cap{top:40px}
+body.band #cap{top:calc(40px + env(safe-area-inset-top))}
 #btns{position:fixed;left:0;right:0;bottom:calc(12px + env(safe-area-inset-bottom));display:flex;gap:12px;justify-content:center;flex-wrap:wrap;transition:opacity .5s;padding:0 12px}
 button{font:inherit;font-size:15px;letter-spacing:.06em;color:var(--fg);background:transparent;border:1px solid var(--fg);
   padding:10px 20px;min-height:44px;cursor:pointer;border-radius:2px;transition:color .6s,border-color .6s,background .2s}
 button:hover{background:rgba(128,128,128,.16)}
 button.pri{border-width:2px}
+#hint.up{bottom:calc(74px + env(safe-area-inset-bottom))}
 #hint{position:fixed;left:0;right:0;bottom:calc(26px + env(safe-area-inset-bottom));text-align:center;font-size:12px;letter-spacing:.12em;
   text-transform:uppercase;opacity:.55;pointer-events:none;color:var(--fg);transition:opacity .6s}
-#title{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:10px;
+#title{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(24px + env(safe-area-inset-top)) calc(24px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left));gap:10px;overflow:auto;
   background:radial-gradient(ellipse at 50% 38%,#151b24 0%,#0b0e13 62%);transition:opacity .7s}
 #title h1{margin:0;font-weight:400;font-style:italic;font-size:clamp(38px,8vw,76px);letter-spacing:.01em;color:#efe6d0}
 #title p{margin:0;color:#efe6d0}
@@ -81,12 +83,35 @@ button.pri{border-width:2px}
 #wDisc span{position:absolute;left:50%;top:50%;font-size:13px;letter-spacing:.08em;text-transform:uppercase;transform-origin:0 0;white-space:nowrap}
 #wPtr{position:absolute;left:50%;top:-10px;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid var(--red);transform:translateX(-50%);z-index:2}
 #coast button{color:#efe6d0;border-color:#efe6d0}
+#card{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:8;background:rgba(11,14,19,.76);
+  padding:calc(12px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}
+#card.on{display:flex}
+#cardP{width:min(440px,100%);max-height:100%;background:#e9e0cc;color:#1c2430;border:1.5px solid #1c2430;outline:1px solid rgba(28,36,48,.4);outline-offset:-6px;
+  padding:14px 14px 8px;display:flex;flex-direction:column;gap:10px;text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.6)}
+#cardC{position:static;width:100%;height:auto;aspect-ratio:8/5;display:block;cursor:default;border:1px solid rgba(28,36,48,.6);touch-action:manipulation;flex:0 1 auto;min-height:0}
+#cardX{display:flex;flex-direction:column;gap:4px;min-width:0}
+#cardK{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;opacity:.62}
+#cardT{font-style:italic;font-size:clamp(20px,5.4vw,26px);line-height:1.15}
+#cardL{font-size:clamp(14.5px,3.9vw,16.5px);line-height:1.4;min-height:2.8em;padding:0 4px}
+#cardF{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#cardD{font-size:10px;opacity:.7;white-space:nowrap}
+#card button{color:#1c2430;border-color:#1c2430;min-width:104px}
+#card #cardS{border-color:transparent;opacity:.6;font-size:13px;text-align:left;padding-left:6px}
+@media (min-width:700px) and (min-height:700px){
+  #cardP{width:min(580px,100%);padding:18px 18px 12px;gap:12px} #cardK{font-size:12px} #cardT{font-size:31px} #cardL{font-size:18.5px} #card button{font-size:17px;padding:12px 26px}}
+@media (orientation:landscape) and (max-height:520px){
+  #cardP{flex-direction:row;align-items:center;width:min(760px,100%);gap:14px;padding:12px}
+  #cardC{width:auto;height:min(calc(100dvh - 60px),250px);flex:0 0 auto}
+  #cardX{flex:1;gap:6px} #cardL{min-height:0}}
+#title .links{display:flex;gap:2px 14px;flex-wrap:wrap;justify-content:center;margin-top:8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+#storeRow{display:none}
+#title .links a{color:#efe6d0;opacity:.6;padding:15px 6px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .mini{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));font-size:12px;letter-spacing:.08em;padding:8px 12px;min-height:40px;opacity:.72;border-width:1px}
-#bLeave{left:12px} #bOver{right:12px}
+#bLeave{left:calc(12px + env(safe-area-inset-left))} #bOver{right:calc(12px + env(safe-area-inset-right))}
 </style>
 </head>
 <body>
-<canvas id="cv"></canvas>
+<canvas id="cv"></canvas><div id="safe"></div>
 <div id="hud" class="hide">
   <span id="hNight"></span><span class="sp"></span>
   <span class="meter" id="mInk">ink <span class="bar" id="bInk"><i></i></span></span>
@@ -102,11 +127,13 @@ button.pri{border-width:2px}
   <p class="how">Twenty seconds of dusk. One bottle of ink. Then Odile sails the bay by your chart alone.</p>
   <div class="row"><button class="pri" id="bCoast">The Coast</button><button id="bDaily">Tonight's bay</button><button id="bRandom">Another bay</button></div>
   <p class="log" id="logline"></p>
-  <p class="fine" style="opacity:.6;margin-top:14px"><a id="bLog" href="#" style="color:#efe6d0">Send play log</a></p>
-  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.15</p>
+  <p class="links"><a id="bCards" href="#">Tutorial cards: on</a><a id="bReplay" href="#">Replay the tutorial</a><a id="bLog" href="#">Send play log</a></p>
+  <p class="links" id="storeRow"><a id="bBoard" href="#">Tonight&rsquo;s leaderboard</a><a id="bNoAds" href="#">Remove ads between charts</a><a id="bRestore" href="#">Restore purchases</a></p>
+  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.16</p>
 </div>
 <div id="coast"><h2 id="cTitle">The Strait</h2><p id="cBlurb"></p><div id="bays"></div><div class="row"><button id="bBack">Back</button><button id="bPrev"></button><button id="bOther"></button><button id="bSpin">Spin for supplies</button><button id="bWipe">Reset coast</button></div><p id="invLine" style="margin-top:10px"></p></div>
-<div id="wheel"><h2>Supplies</h2><p id="wMsg"></p><div id="wWrap"><div id="wPtr"></div><div id="wDisc"></div></div><div class="row"><button class="pri" id="wGo">Watch an ad to spin</button><button id="wClose">Close</button></div><p class="fine2" id="wFine">Ads are a placeholder in this web build. Real rewarded ads arrive with the App Store version. <a href="privacy.html" style="color:inherit">Privacy</a></p></div>
+<div id="wheel"><h2>Supplies</h2><p id="wMsg"></p><div id="wWrap"><div id="wPtr"></div><div id="wDisc"></div></div><div class="row"><button class="pri" id="wGo">Watch an ad to spin</button><button id="wClose">Close</button></div><p class="fine2" id="wFine">Ads are a placeholder in this web build. Real rewarded ads arrive with the App Store version. <a href="privacy.html" style="color:inherit">Privacy</a></p><p class="fine2" id="wOpt" style="display:none"><a id="bAdOpt" href="#" style="color:inherit">Ad privacy choices</a></p></div>
+<div id="card" role="dialog" aria-modal="true" aria-labelledby="cardT" aria-describedby="cardL"><div id="cardP"><canvas id="cardC" width="800" height="500" aria-hidden="true"></canvas><div id="cardX"><div id="cardK"></div><div id="cardT"></div><div id="cardL"></div><div id="cardF"><button id="cardS">Skip</button><span id="cardD"></span><button class="pri" id="cardN">Next</button></div></div></div></div>
 <button class="mini hide" id="bLeave">&lsaquo; Leave</button><button class="mini hide" id="bOver">&#8634; Start over</button>
 <script>
 'use strict';
@@ -116,7 +143,7 @@ button.pri{border-width:2px}
    Sections: config · rng · bay generator · chart · pilot · night sim
              · bots & bench · audio · store · game state · render · input · boot
    ============================================================ */
-const VERSION='0.15';
+const VERSION='0.16';
 const W=1000,H=640,CELL=8,GW=W/CELL|0,GH=H/CELL|0,NC=GW*GH;
 const CFG={
   DUSK:20,          // seconds of failing light
@@ -547,7 +574,7 @@ const Store={backend:'mem',mem:{},
   async set(k,v){try{if(this.backend==='ws'){await window.storage.set(k,v);return;}if(this.backend==='ls'){localStorage.setItem(k,v);return;}}catch(e){}this.mem[k]=v;}};
 Store.init();
 const SAVE_KEY='ibd_save',SCHEMA=1;
-let META={schema:SCHEMA,muted:false,bays:0,nightsHome:0,nights:0,daily:{},coast:{bays:[]},coast2:{bays:[]},coast3:{bays:[]},inv:{ink:0,light:0,tide:0}};
+let META={schema:SCHEMA,muted:false,bays:0,nightsHome:0,nights:0,daily:{},coast:{bays:[]},coast2:{bays:[]},coast3:{bays:[]},inv:{ink:0,light:0,tide:0},cards:{off:false,seen:{}}};
 // The play log. It answers one question: do people come back? It lives on the device and goes nowhere
 // unless the player presses "Send play log", which hands them a text to paste to the developer.
 function plog(k,a,b){if(!META.log)META.log=[];META.log.push([Math.round(Date.now()/1000),k,a==null?0:a,b==null?0:b]);if(META.log.length>800)META.log.splice(0,META.log.length-800);saveMeta();}
@@ -556,13 +583,22 @@ function playSummary(){const L=META.log||[],ses=L.filter(e=>e[1]==='S'),t0=ses.l
   // minutes played: sum of gaps under five minutes between consecutive events
   let secs=0;for(let i=1;i<L.length;i++){const d=L[i][0]-L[i-1][0];if(d>0&&d<300)secs+=d;}
   return{v:VERSION,first:t0?new Date(t0*1000).toISOString().slice(0,16):'',sessions:ses.length,days,back48,minutes:Math.round(secs/60),baysStarted:cnt('B'),baysFinished:cnt('F'),nights:nights.length,nightsHome:nights.filter(e=>e[2]).length,
-    startOvers:cnt('R'),quitsMidBay:cnt('Q'),wheelSpins:cnt('W'),suppliesUsed:cnt('U'),furthest:L.filter(e=>e[1]==='B'&&e[2]>0).reduce((m,e)=>Math.max(m,e[2]*100+e[3]),0),touch:('ontouchstart' in window),w:innerWidth,h:innerHeight};}
+    startOvers:cnt('R'),quitsMidBay:cnt('Q'),cardsShown:cnt('C'),cardsSkipped:cnt('K'),cardsOff:!!META.cards.off,wheelSpins:cnt('W'),suppliesUsed:cnt('U'),furthest:L.filter(e=>e[1]==='B'&&e[2]>0).reduce((m,e)=>Math.max(m,e[2]*100+e[3]),0),touch:('ontouchstart' in window),w:innerWidth,h:innerHeight};}
 function sendLog(){const sm=playSummary(),txt='INK BEFORE DARK play log\n'+Object.entries(sm).map(([k,v])=>k+': '+v).join('\n')+'\n--\n'+btoa(JSON.stringify(META.log||[]));
   const done=m=>{$('bLog').textContent=m;};
   if(navigator.share){navigator.share({title:'Ink Before Dark play log',text:txt}).then(()=>done('Sent. Thank you.'),()=>{try{navigator.clipboard.writeText(txt).then(()=>done('Copied. Paste it to whoever sent you the game.'));}catch(e){}});}
   else{try{navigator.clipboard.writeText(txt).then(()=>done('Copied. Paste it to whoever sent you the game.'),()=>done('Could not copy.'));}catch(e){done('Could not copy.');}}}
-async function loadMeta(){const raw=await Store.get(SAVE_KEY);if(!raw)return;try{const m=JSON.parse(raw);if(m&&m.schema===SCHEMA){META=Object.assign(META,m);META.daily=m.daily||{};META.coast=(m.coast&&Array.isArray(m.coast.bays))?m.coast:{bays:[]};META.coast2=(m.coast2&&Array.isArray(m.coast2.bays))?m.coast2:{bays:[]};META.coast3=(m.coast3&&Array.isArray(m.coast3.bays))?m.coast3:{bays:[]};META.inv=Object.assign({ink:0,light:0,tide:0},m.inv||{});}}catch(e){}}
-function saveMeta(){Store.set(SAVE_KEY,JSON.stringify(META));}
+async function loadMeta(){let raw=await Store.get(SAVE_KEY);
+  // in the App Store build, the copy kept outside the web view wins if the web view's own save is gone or older
+  const kept=await Native.vaultGet();if(kept){let a=null,b=null;try{a=raw?JSON.parse(raw):null;}catch(e){}try{b=JSON.parse(kept);}catch(e){}if(b&&b.schema===SCHEMA&&(!a||(b.stamp||0)>(a.stamp||0)))raw=kept;}
+  if(!raw)return;try{const m=JSON.parse(raw);if(m&&m.schema===SCHEMA){META=Object.assign(META,m);META.daily=m.daily||{};META.coast=(m.coast&&Array.isArray(m.coast.bays))?m.coast:{bays:[]};META.coast2=(m.coast2&&Array.isArray(m.coast2.bays))?m.coast2:{bays:[]};META.coast3=(m.coast3&&Array.isArray(m.coast3.bays))?m.coast3:{bays:[]};META.inv=Object.assign({ink:0,light:0,tide:0},m.inv||{});
+    META.cards={off:!!(m.cards&&m.cards.off),seen:Object.assign({},m.cards&&m.cards.seen)};
+    if(!m.cards&&((m.nights||0)>0||(m.bays||0)>0)){const sn=META.cards.seen,FEAT=[null,'current','river','drying','cloud','bars','ice','decoy','lanes','six'];
+      for(const id of['dusk','draw','ink','night','wreck','tide','again','guided'])sn[id]=1;
+      FEAT.forEach((f,i)=>{const st=m[i?'coast'+(i+1):'coast'];if(st&&Array.isArray(st.bays)&&st.bays.length){sn.lamps=1;sn.marks=1;if(f)sn[f]=1;if(f==='river')sn.barges=1;}});
+      if(m.daily&&Object.keys(m.daily).length)sn.log=1;if(m.inv&&(m.inv.ink||m.inv.light||m.inv.tide))sn.supplies=1;}
+  }}catch(e){}}
+function saveMeta(){META.stamp=Date.now();const j=JSON.stringify(META);Store.set(SAVE_KEY,j);Native.vaultSoon(j);}
 
 /* ---------- game state ---------- */
 const S={phase:'title',bay:null,chart:null,ni:0,dark:1,duskT:0,began:false,wait:0,N:null,results:[],label:'',daily:false,
@@ -577,7 +613,7 @@ let capId=0;
 function caption(big,small,hold){el.cap.firstElementChild.textContent=big||'';el.cap.lastElementChild.innerHTML=small||'';el.cap.classList.toggle('hide',!big&&!small);
   const id=++capId;if(hold)after(hold,()=>{if(capId===id)caption('','');});}
 function buttons(list){el.btns.innerHTML='';list.forEach((b,i)=>{const e=document.createElement('button');e.textContent=b[0];if(i===0)e.className='pri';e.onclick=ev=>{ev.stopPropagation();audio();b[1]();};el.btns.appendChild(e);});}
-function hint(t){el.hint.textContent=t||'';el.hint.classList.toggle('hide',!t);}
+function hint(t,up){el.hint.textContent=t||'';el.hint.classList.toggle('hide',!t);el.hint.classList.toggle('up',!!up);}
 const ORD=['First','Second','Third'];
 // timed captions ride the game clock, not setTimeout, so a backgrounded tab or a manual step() stays in sync
 const timers=[];function after(sec,fn){timers.push({t:sec,fn});}
@@ -637,14 +673,14 @@ function startBay(daily,seed,ci){
   plog('B',S.ci!=null?S.co+1:0,S.ci!=null?S.ci+1:(S.daily?-1:0));
   restartBay();}
 // Start over: the same bay from its first dusk, with a blank chart.
-function restartBay(){if(!S.bay)return;S.spareMin=1;S.chart=newChart(S.bay);S.ni=0;S.results=[];S.full=false;S.toldRed=false;S.N=null;disarm();startDusk();}
+function restartBay(){if(!S.bay)return;S.spareMin=1;S.chart=newChart(S.bay);S.ni=0;S.results=[];S.full=false;S.toldRed=false;S.wasGuided=false;S.N=null;disarm();startDusk();}
 function leave(){if(S.phase==='dusk'||S.phase==='night')plog('Q',S.ni+1,S.phase==='dusk'?0:1);S.phase='title';timers.length=0;S.N=null;setSea(0);setPen(0);caption('','');buttons([]);hint('');disarm();
   el.hud.classList.add('hide');$('bLeave').classList.add('hide');$('bOver').classList.add('hide');
   if(S.ci!=null)showCoast();else{$('coast').style.display='none';el.title.style.display='flex';showLog();}}
 function showCoast(){S.phase='title';if(S.co==null)S.co=0;el.title.style.display='none';$('coast').style.display='flex';
   const NC2=COASTS.length,nx=(S.co+1)%NC2,pv=(S.co+NC2-1)%NC2,C=COASTS[S.co],other=COASTS[nx],have=nx>0?lampsOn(STORES()[nx-1]):0,locked=!DEV&&nx>0&&have<other.need;S.nextCo=nx;S.prevCo=pv;
   const pLock=!DEV&&pv>0&&lampsOn(STORES()[pv-1])<12;$('bPrev').textContent='\u2039 '+COASTS[pv].name;$('bPrev').disabled=pLock;$('bPrev').style.opacity=pLock?.4:1;$('bPrev').style.display=S.co===0&&pLock?'none':'';
-  $('cTitle').textContent=(S.co+1)+'. '+C.name+(DEV?' \u00b7 dev':'');$('cBlurb').textContent=C.blurb+' Every night she gets home lights a lamp; two lamps open the next bay. Marks: DRY (no strikes), SPARE (a third of every bottle unused), FIRST (three lamps on the first try).';
+  $('cTitle').textContent=(S.co+1)+'. '+C.name+(DEV?' \u00b7 dev':'');$('cBlurb').textContent=C.blurb+(!cardsOn()||cardSeen('lamps')?' Every night she gets home lights a lamp; two lamps open the next bay.':'')+(!cardsOn()||cardSeen('marks')?' Marks: DRY (no strikes), SPARE (a third of every bottle unused), FIRST (three lamps on the first try).':'');
   $('bOther').textContent=locked?other.name+' \u2014 '+have+'/'+other.need+' lamps here':(nx===0?'\u2039 '+other.name:other.name+' \u203a');$('bOther').disabled=locked;$('bOther').style.opacity=locked?.4:1;
   let next=-1;for(let i=0;i<COAST_N;i++)if(bayOpen(i)&&bayRec(i).lamps<3&&next<0)next=i;
   // a strait: bays 1-5 in coves along the north shore, 6-10 back along the south
@@ -672,17 +708,59 @@ $('bWipe').onclick=()=>{const w=$('bWipe');if(!w._armed){w._armed=true;w.textCon
 const WHEEL=[['ink',1],['tide',1],['light',1],['ink',2],['tide',1],['light',2]];let wSpinning=false,wTurns=0;
 function invText(){const v=META.inv;return'Supplies: ink \u00d7'+v.ink+' \u00b7 light \u00d7'+v.light+' \u00b7 tide \u00d7'+v.tide;}
 function openWheel(){const d=$('wDisc');if(!d.firstChild)WHEEL.forEach((w,i)=>{const e=document.createElement('span');e.textContent=SUP[w[0]].name+(w[1]>1?' \u00d72':'');e.style.transform='rotate('+(i*60+30-90)+'deg) translate(34%,-50%)';e.style.left='50%';e.style.top='50%';e.style.transform='rotate('+(i*60+30-90)+'deg) translateX(46px) translateY(-50%)';d.appendChild(e);});
-  $('wMsg').textContent=invText();$('wGo').textContent='Watch an ad to spin';$('wGo').disabled=false;$('wheel').style.display='flex';}
+  $('wMsg').textContent=invText();$('wGo').textContent='Watch an ad to spin';$('wGo').disabled=false;$('wheel').style.display='flex';offerCards(['supplies']);}
+/* ---------- the App Store build: what the wrapper adds ----------
+   Every call here does nothing in a browser. Inside the Capacitor shell it reaches four plugins: Haptics,
+   NativePurchases (StoreKit 2), and this project's own GameCenter and Vault (native/ibd-native).
+   None of them is needed to play: if a plugin is missing or fails, the game carries on without it. */
+const PRODUCT_NOADS='com.jeffersonpike.inkbeforedark.removeads',BOARD_DAILY='com.jeffersonpike.inkbeforedark.tonight';
+const Native={
+  get on(){return!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());},
+  P(n){return this.on&&window.Capacitor.Plugins?window.Capacitor.Plugins[n]||null:null;},
+  quiet(r){if(r&&r.catch)r.catch(()=>{});},
+  // a strike is felt, a lamp is a tap, getting home is the long one
+  buzz(kind){const h=this.P('Haptics');if(!h)return;try{this.quiet(kind==='strike'?h.impact({style:'HEAVY'}):kind==='lamp'?h.impact({style:'LIGHT'}):kind==='home'?h.notification({type:'SUCCESS'}):kind==='late'?h.notification({type:'WARNING'}):kind==='dry'?h.notification({type:'ERROR'}):h.impact({style:'MEDIUM'}));}catch(e){}},
+  // the save, copied to a file outside the web view (iOS may clear a web view's storage when the device is short of space)
+  _vt:0,_vj:null,
+  vaultSoon(json){const v=this.P('Vault');if(!v)return;this._vj=json;if(this._vt)return;this._vt=setTimeout(()=>{this._vt=0;const j=this._vj;this._vj=null;try{this.quiet(v.set({key:SAVE_KEY,value:j}));}catch(e){}},1500);},
+  async vaultGet(){const v=this.P('Vault');if(!v)return null;try{const r=await v.get({key:SAVE_KEY});return r&&typeof r.value==='string'?r.value:null;}catch(e){return null;}},
+  // Game Center: one leaderboard, tonight's bay, first try. A night home is worth 1000, a strike costs 50, a second of tide in hand earns 10.
+  score(results){let p=0;for(const r of results)p+=(r.made?1000+Math.round(clamp(r.margin,0,30)*10):0)-r.strikes*50;return Math.max(0,p);},
+  // silent: only ask whether the player is already signed in; never put Game Center's sign-in sheet in front of them unasked
+  async gcSignIn(silent){const g=this.P('GameCenter');if(!g)return false;try{const r=await g.signIn({silent:!!silent}),ok=!!(r&&r.signedIn);if(ok!==!!META.gc){META.gc=ok;saveMeta();}return ok;}catch(e){return false;}},
+  async gcSubmit(points){const g=this.P('GameCenter');if(!g||!(await this.gcSignIn(true)))return false;try{const r=await g.submitScore({leaderboardID:BOARD_DAILY,score:points});return!!(r&&r.submitted);}catch(e){return false;}},
+  async gcShow(){const g=this.P('GameCenter');if(!g||!(await this.gcSignIn(false)))return false;try{const r=await g.showLeaderboard({leaderboardID:BOARD_DAILY});return!!(r&&r.shown);}catch(e){return false;}},
+  // the one purchase: no adverts between charts. The supply wheel stays, because watching it is the player's own choice.
+  // Ownership is only ever switched on from the App Store's answer, never off, so a slow or offline store cannot take it away.
+  price:'',
+  async storeCheck(){const st=this.P('NativePurchases');if(!st)return;
+    try{const r=await st.getPurchases({productType:'inapp',onlyCurrentEntitlements:true});if(((r&&r.purchases)||[]).some(t=>t.productIdentifier===PRODUCT_NOADS&&!t.revocationDate)&&!META.noAds){META.noAds=true;saveMeta();}}catch(e){}
+    if(!this.price){try{const r=await st.getProduct({productIdentifier:PRODUCT_NOADS,productType:'inapp'});if(r&&r.product)this.price=r.product.priceString||'';}catch(e){}}
+    nativeLine();},
+  async buy(){const st=this.P('NativePurchases');if(!st)return false;try{await st.purchaseProduct({productIdentifier:PRODUCT_NOADS,productType:'inapp',quantity:1});}catch(e){return false;}await this.storeCheck();return!!META.noAds;},
+  async restore(){const st=this.P('NativePurchases');if(!st)return false;try{await st.restorePurchases();}catch(e){}await this.storeCheck();return!!META.noAds;},
+  boot(){nativeLine();if(!this.on)return;document.body.classList.add('native');this.storeCheck();if(META.gc)this.gcSignIn(true);}
+};
+const noAdsLabel=()=>'Remove ads between charts'+(Native.price?' · '+Native.price:'');
+function nativeLine(){const row=$('storeRow');if(!row)return;row.style.display=Native.on?'flex':'none';const o=$('wOpt');if(o)o.style.display=Native.on&&Ads.privacyOpt?'block':'none';if(!Native.on)return;
+  $('bNoAds').textContent=META.noAds?'Ads between charts removed':noAdsLabel();$('bRestore').style.display=META.noAds?'none':'';}
+$('bNoAds').onclick=e=>{e.preventDefault();if(META.noAds)return;audio();$('bNoAds').textContent='Asking the App Store…';Native.buy().then(ok=>{nativeLine();if(!ok)$('bNoAds').textContent='Not bought · '+noAdsLabel();});};
+$('bRestore').onclick=e=>{e.preventDefault();$('bRestore').textContent='Checking…';Native.restore().then(ok=>{nativeLine();$('bRestore').textContent=ok?'Restored':'Nothing to restore';});};
+$('bBoard').onclick=e=>{e.preventDefault();audio();Native.gcShow().then(ok=>{$('bBoard').textContent=ok?'Tonight’s leaderboard':'Game Center is not signed in';});};
+$('bAdOpt').onclick=e=>{e.preventDefault();const p=Ads.plugin;if(p)try{Native.quiet(p.showPrivacyOptionsForm());}catch(_){}};
 // Ads. One interface for the whole game. On the web it is a five-second placeholder and no interstitials;
 // inside the App Store build (Capacitor + @capacitor-community/admob) the same calls show real ads.
 // The unit ids below are Google's public TEST ids. Real ids go in before submission, never before.
 const Ads={
-  native:!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()),
+  get native(){return Native.on;},privacyOpt:false,
   ids:{rewarded:'ca-app-pub-3940256099942544/1712485313',interstitial:'ca-app-pub-3940256099942544/4411468910'},
   ready:false,chartsSince:0,
   get plugin(){return window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.AdMob;},
   get off(){return!!META.noAds;},
-  async init(){if(!this.native||!this.plugin||this.ready)return;try{await this.plugin.initialize({initializeForTesting:true});this.ready=true;}catch(e){}},
+  // Before the first ad request: Google's consent form where the law asks for one (EEA, UK, Switzerland). Nothing in the game depends on the answer.
+  async init(){if(!this.native||!this.plugin||this.ready)return;
+    try{const ci=await this.plugin.requestConsentInfo();if(ci&&ci.isConsentFormAvailable&&ci.status==='REQUIRED')await this.plugin.showConsentForm();this.privacyOpt=!!(ci&&ci.privacyOptionsRequirementStatus==='REQUIRED');nativeLine();}catch(e){}
+    try{await this.plugin.initialize({initializeForTesting:true});this.ready=true;}catch(e){}},
   // tracking consent is asked once, after the first finished chart, never at launch; nothing depends on the answer
   async askTracking(){if(!this.native||!this.plugin||META.askedATT)return;META.askedATT=true;saveMeta();try{await this.plugin.requestTrackingAuthorization();}catch(e){}},
   // resolves true if the player earned the reward. Five a day, and always the player's choice.
@@ -717,22 +795,19 @@ function useSupply(k){if(S.phase!=='dusk'||!(META.inv[k]>0))return;META.inv[k]--
   caption('',SUP[k].name+' used: '+SUP[k].tip.replace('+','')+'.',1.8);SFX.bell();duskButtons();}
 function duskButtons(){const list=[['Cast off',()=>{if(S.phase==='dusk')startNight();}]];
   for(const k of['ink','light','tide'])if(META.inv[k]>0)list.push(['+'+SUP[k].name+' \u00d7'+META.inv[k],()=>useSupply(k)]);buttons(list);}
-function featHint(b){if(b.winding||S.co==null||S.co<3||S.ci==null)return'';
-  if(b.six)return'Six lamps tonight, and everything this coast has taught her.';
-  if(S.co===7)return'A light with no harbour is a wrecker\u2019s. Touch it with ink and she will not be fooled.';
-  if(S.co===8)return'Ships run the dotted lanes harbour to harbour, without lights. Trace a ship\u2019s length of a lane and she will give way to them.';
-  if(S.co===6)return'Ice drifts down the wind all night. The dotted track is where it will go; each tick is a quarter of the tide.';
-  if(S.co===5)return'Dotted sand closes once she has made the lamp numbered on it.';
-  if(S.co===4)return'Cloud is crossing the bay. Wait and it passes; the light will not.';
-  if(S.co===3)return'Dashed rocks are under water tonight. They will not be tomorrow.';return'';}
 function startDusk(){
   S.phase='dusk';S.duskT=0;S.cloudT=0;S.began=false;S.wait=0;S.dark=0;S.N=null;S.full=false;S.rings.length=0;S.capFade=false;S.toldDry=false;timers.length=0;
   S.chart.ink=bottle(S.bay,S.ni);S.inkCap=Math.max(S.chart.ink,1);S.tideBonus=0;
   el.hNight.textContent=(S.ci!=null?'Bay '+(S.ci+1)+' \u00b7 ':'')+'Night '+(S.ni+1)+' of 3';
   el.mInk.classList.remove('hide');el.mTide.classList.add('hide');
-  caption('Dusk',S.ni===0?(featHint(S.bay)||S.bay.winding?featHint(S.bay)||'She runs upriver, port to port. Touch each point of land and islet that crosses her course.':S.bay.cur?'The river\u2019s current carries her off her line. Mark what lies down-current of it.':'Strike through rocks on her course. Touch a headland or island to flag it.'):S.bay.winding?(S.ni===1?'Tonight the river runs against her and sets her west, onto what she cleared before.':'Barges lie at anchor in the channel, without lights. The river still runs.'):(S.ni===1?'Same bay, same chart. Three other lamps.':'Last night. What does the chart still owe her?'));
-  duskButtons();hint('');
-  SFX.dusk();setSea(0.012);}
+  S.guide=cardsOn()&&!cardSeen('guided');S.guideTrack=null;S.guideHit=null;if(S.guide)guideRefresh();
+  const fh=featHint(S.bay,S.ni);
+  caption('Dusk',S.guide?GUIDE_CAP
+    :S.ni===0?(fh||'Strike through rocks on her course. Touch a headland or island to flag it.')
+    :S.bay.winding?(S.ni===1?'Tonight the river runs against her and sets her west, onto what she cleared before.':'Barges lie at anchor in the channel, without lights. The river still runs.')
+    :S.ni===1?(S.wasGuided?'Same bay, same chart, three other lamps. Tonight her course is yours to judge.':'Same bay, same chart. Three other lamps.'):'Last night. What does the chart still owe her?');
+  duskButtons();hint(S.guide?'the light holds until your first stroke':'',true);
+  SFX.dusk();setSea(0.012);const dc=duskCards();offerCards(dc.ids,dc);}
 function startNight(){
   S.phase='night';S.dark=1;S.stroke=null;setPen(0);
   S.spareMin=Math.min(S.spareMin==null?1:S.spareMin,S.chart.ink/Math.max(1,S.inkCap));
@@ -741,10 +816,12 @@ function startNight(){
   caption('Night',S.ni===0?'She trusts blank paper.':'',2.6);
   buttons([]);hint('hold to hurry');
   SFX.cast();setSea(0.05);
-  after(3.5,()=>{if(S.phase==='night')hint('');});}
+  after(3.5,()=>{if(S.phase==='night')hint('');});
+  offerCards(['night'],{go:'Watch'});}
 function startDawn(){
   const N=S.N,c=S.chart,bay=S.bay;
   S.phase='dawn';S.dawnT=0;S.full=(S.ni===2);S.sweepK=0;S.sweepHits=0;
+  if(S.guide){META.cards.seen.guided=1;S.wasGuided=true;S.guide=false;}
   S.sweepDur=clamp(N.track.length*0.011,1.3,2.6);
   composeWake(N.track);
   const margin=N.limit-N.t,found=N.strikes;
@@ -764,15 +841,16 @@ function startDawn(){
   if(N.hits.some(h=>h.lane!=null))line2+='<br>A ship crossed her bows. Its lane is on the chart now, in red.';
   if(!N.made&&!S.toldTip&&S.ni<2){S.toldTip=true;line2+='<br>A stroke across her course is enough. She keeps clear of your ink.';}
   el.mTide.classList.add('hide');hint('');setSea(0.02);
-  if(N.made)SFX.home();else SFX.late();
+  if(N.made)SFX.home();else SFX.late();Native.buzz(N.made?'home':'late');
   after(0.6+S.sweepDur+0.35,()=>{if(S.phase!=='dawn')return;caption('Dawn',line1+line2);
-    if(S.ni<2)buttons([[ORD[S.ni+1]+' dusk',()=>{S.ni++;startDusk();}]]);
+    S.dawnIds=(N.strikes?['wreck']:[]).concat(N.made?[]:['tide']);
+    if(S.ni<2){buttons([[ORD[S.ni+1]+' dusk',()=>{S.ni++;startDusk();}]]);offerCards(S.dawnIds,{max:2,go:'Go on'});}
     else finish();});
   buttons([]);caption('','');}
-function finish(){plog('F',S.results.filter(r=>r.made).length);Ads.askTracking();
+function finish(){plog('F',S.results.filter(r=>r.made).length);Ads.askTracking();S.marks=[];
   const home=S.results.filter(r=>r.made).length,strikes=S.results.reduce((a,r)=>a+r.strikes,0);
   S.share='Ink Before Dark · bay '+S.label+' · home '+home+'/3 · '+S.results.map(r=>r.made?'●':'○').join('')+' · '+strikes+' found in the dark';
-  META.bays++;let logMsg='';if(S.daily&&!META.daily[S.dayKey]){META.daily[S.dayKey]={home,strikes};if(S.dayKey===dayKey())logMsg=keepLog();}saveMeta();
+  META.bays++;let logMsg='';if(S.daily&&!META.daily[S.dayKey]){META.daily[S.dayKey]={home,strikes};if(S.dayKey===dayKey()){logMsg=keepLog();Native.gcSubmit(Native.score(S.results));}}saveMeta();
   const VERDICT=['Odile has taken work ashore.','Odile is drawing her own chart.','Odile will take yours, and a lantern.','Odile would sail it blind.'];
   el.cap.lastElementChild.innerHTML+='<br>Home '+home+' of 3 nights. '+VERDICT[home]+(logMsg?'<br><i>'+logMsg+'</i>':'');
   const copy=['Copy result',()=>{const b=el.btns.lastElementChild;try{navigator.clipboard.writeText(S.share).then(()=>{b.textContent='Copied';},()=>{b.textContent=S.share;});}catch(e){b.textContent=S.share;}}];
@@ -781,16 +859,350 @@ function finish(){plog('F',S.results.filter(r=>r.made).length);Ads.askTracking()
     el.cap.lastElementChild.innerHTML+='<br><i>Lamps lit in this bay: '+'\u25cf'.repeat(r.lamps)+'\u25cb'.repeat(3-r.lamps)+(r.lamps>was?' (new best)':'')+(S.marks.length?' \u00b7 earned: '+S.marks.join(', '):'')+(S.ci<COAST_N-1&&r.lamps<2?' \u00b7 two open the next bay':'')+'</i>';
     const list=[];if(S.ci<COAST_N-1&&r.lamps>=2)list.push(['Next bay',()=>{Ads.between().then(()=>startBay(false,null,S.ci+1));}]);list.push(['Again',()=>restartBay()],['Spin for supplies',()=>openWheel()],['Coast',()=>leave()]);buttons(list);
   }else buttons([['Another bay',()=>startBay(false)],['Spin for supplies',()=>openWheel()],copy]);
-  S.phase='final';}
+  S.phase='final';
+  offerCards((S.dawnIds||[]).concat(S.ci!=null?['lamps']:[],S.ci!=null&&S.marks&&S.marks.length?['marks']:[],logMsg?['log']:[]),{max:2,go:'Go on'});}
+
+/* ---------- cards: the tutorial, and the first sight of each new thing ----------
+   A card is one small animated chart and one sentence. The first bay gets five, spread over the moments
+   they explain: two before the first dusk, one at the first cast-off, one at the first strike, one at the second dusk. After that
+   a card appears only the first time the player meets something new (a current, ice, a shipping lane...).
+   Seen cards are remembered in the save (META.cards). The title screen can turn cards off or bring them back.
+   Every picture is drawn here, by the same hand as the game: paper, ink, pencil, red, and failing light. */
+const VW=400,VH=250,vq=(t,a,b)=>clamp((t-a)/(b-a),0,1),vz=(t,a,b)=>smooth(vq(t,a,b));
+const vShoreY=x=>30+8*Math.sin(x/37)+5*Math.sin(x/13+1),vSee=d=>Math.pow(1-d,1.2);
+const vInkCol=d=>mixc(INK,CREAM,d),V_LAND='#d5c9ad',V_LINE='rgba(28,36,48,.92)';
+// a point p of the way along a polyline, and her heading there
+function vAt(pts,p){const seg=[];let L=0;for(let i=1;i<pts.length;i++){const s=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);seg.push(s);L+=s;}
+  let u=clamp(p,0,1)*L;for(let i=0;i<seg.length;i++){if(u<=seg[i]||i===seg.length-1){const f=seg[i]?clamp(u/seg[i],0,1):0,a=pts[i],b=pts[i+1];
+    return{x:a[0]+(b[0]-a[0])*f,y:a[1]+(b[1]-a[1])*f,h:Math.atan2(b[1]-a[1],b[0]-a[0]),i,L};}u-=seg[i];}
+  return{x:pts[0][0],y:pts[0][1],h:0,i:0,L:0};}
+function vTrace(c,pts,p0,p1){const a=vAt(pts,p0),b=vAt(pts,p1);c.beginPath();c.moveTo(a.x,a.y);for(let i=a.i+1;i<=b.i;i++)c.lineTo(pts[i][0],pts[i][1]);c.lineTo(b.x,b.y);return b;}
+function vPaper(c,d){c.globalAlpha=1;c.fillStyle=mixc(PAPER,NIGHT,d);c.fillRect(0,0,VW,VH);
+  if(d<.95){c.fillStyle=mixc(INK,INK,0,.16*(1-d));for(let y=12;y<VH;y+=25)for(let x=12;x<VW;x+=25)c.fillRect(x-.8,y-.8,1.6,1.6);}}
+// land above the line fn (or below it, for the far bank of a river), hatched as the charts are
+function vLand(c,d,fn,below){const a=vSee(d);if(a<=.01)return;c.save();c.globalAlpha=a;c.beginPath();c.moveTo(0,below?VH:0);for(let x=0;x<=VW;x+=4)c.lineTo(x,fn(x));c.lineTo(VW,below?VH:0);c.closePath();
+  c.fillStyle=V_LAND;c.fill();c.save();c.clip();c.strokeStyle='rgba(28,36,48,.26)';c.lineWidth=1;c.beginPath();for(let k=-VH;k<VW;k+=9){c.moveTo(k,0);c.lineTo(k+VH,VH);}c.stroke();c.restore();
+  c.strokeStyle=V_LINE;c.lineWidth=3;c.beginPath();for(let x=0;x<=VW;x+=4){const y=fn(x);x?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();c.restore();}
+function vRockPath(c,x,y,r,sd){c.beginPath();for(let k=0;k<11;k++){const a=k/11*6.283,q=r*(.8+.38*h1(k,sd));k?c.lineTo(x+Math.cos(a)*q,y+Math.sin(a)*q):c.moveTo(x+Math.cos(a)*q,y+Math.sin(a)*q);}c.closePath();}
+// a rock as the light shows it; 'dash' is one still under water; 'sand' is a bar; a>0 lays the bay's red over it (that stays through the night)
+function vRock(c,d,x,y,r,sd,kind,red){const a=vSee(d);
+  if(a>.01){c.save();c.globalAlpha=a;vRockPath(c,x,y,r,sd);
+    if(kind==='dash'){c.setLineDash([4,5]);c.strokeStyle='#1c2430';c.lineWidth=1.8;c.stroke();c.setLineDash([]);}
+    else if(kind==='sand'){c.save();c.clip();c.fillStyle='#1c2430';for(let yy=y-r-4;yy<y+r+4;yy+=6)for(let xx=x-r-4+((yy/6|0)%2)*3;xx<x+r+4;xx+=6)c.fillRect(xx,yy,1.5,1.5);c.restore();vRockPath(c,x,y,r,sd);c.setLineDash([1.5,4]);c.strokeStyle='#1c2430';c.lineWidth=1.8;c.stroke();c.setLineDash([]);}
+    else{c.fillStyle=V_LAND;c.fill();c.strokeStyle=V_LINE;c.lineWidth=2.4;c.stroke();c.lineWidth=1.6;c.beginPath();c.moveTo(x-4,y);c.lineTo(x+4,y);c.moveTo(x,y-4);c.lineTo(x,y+4);c.stroke();}
+    c.restore();}
+  if(red>0){c.save();c.globalAlpha=red;vRockPath(c,x,y,r,sd);c.save();c.clip();c.strokeStyle=RED;c.globalAlpha=.55*red;c.lineWidth=1.3;c.beginPath();for(let k=-r*2;k<r*2;k+=6){c.moveTo(x+k-r,y-r*1.3);c.lineTo(x+k+r,y+r*1.3);}c.stroke();c.restore();
+    vRockPath(c,x,y,r,sd);c.strokeStyle=RED;c.lineWidth=2.8;c.stroke();c.restore();}}
+// your ink: the first p of a stroke, with the faint margin she keeps out of
+function vInk(c,d,pts,p){if(p<=0)return;c.save();c.lineCap='round';c.lineJoin='round';vTrace(c,pts,0,p);c.strokeStyle=mixc(INK,CREAM,d,d>.5?.1:.06);c.lineWidth=CFG.CLR*2;c.stroke();
+  vTrace(c,pts,0,p);c.strokeStyle=vInkCol(d);c.lineWidth=3.4;c.stroke();c.restore();}
+function vDab(c,d,x,y){c.save();c.fillStyle=mixc(INK,CREAM,d,d>.5?.1:.06);c.beginPath();c.arc(x,y,CFG.CLR,0,7);c.fill();c.fillStyle=vInkCol(d);c.beginPath();c.arc(x,y,3,0,7);c.fill();c.restore();}
+// the pen: nib at x,y, lifted off the paper by 'lift'
+function vPen(c,d,x,y,lift,al){if(al!=null&&al<=0)return;c.save();c.globalAlpha=al==null?1:al;
+  if(lift>0){c.fillStyle='rgba(28,36,48,'+(.16*(1-d)*(1-lift*.6))+')';c.beginPath();c.ellipse(x+lift*5,y+2,5+lift*3,2.2,0,0,7);c.fill();}
+  c.translate(x+lift*4,y-lift*12);c.rotate(-.95);const col=vInkCol(d);c.fillStyle=col;c.strokeStyle=col;
+  c.beginPath();c.moveTo(0,0);c.lineTo(10,-3.6);c.lineTo(17,0);c.lineTo(10,3.6);c.closePath();c.fill();
+  c.lineWidth=4;c.lineCap='round';c.beginPath();c.moveTo(18,0);c.lineTo(52,0);c.stroke();c.strokeStyle=mixc(PAPER,NIGHT,d);c.lineWidth=1;c.beginPath();c.moveTo(7,0);c.lineTo(15,0);c.stroke();c.restore();}
+// keyframes [time,x,y,lift]: where the pen is at t
+function vKey(t,K){if(t<=K[0][0])return K[0];for(let i=1;i<K.length;i++)if(t<=K[i][0]){const a=K[i-1],b=K[i],f=smooth((t-a[0])/((b[0]-a[0])||1));return[t,a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f,a[3]+(b[3]-a[3])*f];}return K[K.length-1];}
+function vPenK(c,d,t,K,out){const k=vKey(t,K),end=K[K.length-1][0],a=Math.min(vq(t,K[0][0]-.01,K[0][0]+.3),1-vq(t,end,end+(out||.4)));vPen(c,d,k[1],k[2],k[3],a);}
+// her pencilled course
+function vCourse(c,d,pts,t,p0,p1,al){c.save();c.globalAlpha=al==null?1:al;vTrace(c,pts,p0||0,p1==null?1:p1);c.strokeStyle=d>.5?'rgba(150,156,166,.85)':mixc([92,100,114],CREAM,d,.9);c.lineWidth=1.8;c.lineCap='butt';c.setLineDash([3,7]);c.lineDashOffset=-(t||0)*22;c.stroke();c.setLineDash([]);c.restore();}
+// a harbour lamp: the mark on the chart by day, the light itself by night
+function vLamp(c,d,x,y,num,o){o=o||{};c.save();if(o.al!=null)c.globalAlpha=o.al;
+  if(o.pier){c.save();c.globalAlpha*=vSee(d);c.strokeStyle=V_LINE;c.lineWidth=5;c.lineCap='butt';c.beginPath();c.moveTo(o.pier[0],o.pier[1]);c.lineTo(x,y);c.stroke();c.restore();}
+  const col=mixc(INK,CREAM,d,Math.max(.3,1-d*.8));c.strokeStyle=col;c.fillStyle=col;c.lineWidth=2.2;c.beginPath();c.arc(x,y,6.5,0,7);c.stroke();c.beginPath();c.arc(x,y,2.6,0,7);c.fill();
+  c.lineWidth=1.7;c.beginPath();for(let a=0;a<8;a++){const an=a*Math.PI/4;c.moveTo(x+Math.cos(an)*10,y+Math.sin(an)*10);c.lineTo(x+Math.cos(an)*15,y+Math.sin(an)*15);}c.stroke();
+  if(num){c.font='italic bold 20px Georgia,serif';c.textAlign='center';c.textBaseline='middle';c.fillText(String(num),x+(o.nx||0),y+(o.ny==null?27:o.ny));}
+  if(o.pulse>0&&o.pulse<1){c.globalAlpha*=.6*(1-o.pulse);c.lineWidth=1.8;c.beginPath();c.arc(x,y,16+o.pulse*24,0,7);c.stroke();}
+  c.restore();
+  if(o.lit>0){c.save();const g=c.createRadialGradient(x,y,0,x,y,72);g.addColorStop(0,'rgba(239,230,208,'+(.55*o.lit)+')');g.addColorStop(.25,'rgba(239,230,208,'+(.14*o.lit)+')');g.addColorStop(1,'rgba(239,230,208,0)');
+    c.fillStyle=g;c.beginPath();c.arc(x,y,72,0,7);c.fill();c.globalAlpha=o.lit;c.fillStyle='#fff7e2';c.beginPath();c.arc(x,y,4.2,0,7);c.fill();c.restore();}}
+function vBoat(c,d,x,y,h,al){c.save();if(al!=null)c.globalAlpha=al;drawBoat(c,x,y,h,d>.5?'#efe6d0':vInkCol(d),d>.5);c.restore();}
+function vWake(c,pts,p,L){c.save();c.lineCap='round';const n=14,back=Math.min(p,60/(L||300));for(let i=0;i<n;i++){const a=vAt(pts,p-back*(1-i/n)),b=vAt(pts,p-back*(1-(i+1)/n));c.strokeStyle='rgba(239,230,208,'+(.04+.3*i/n)+')';c.lineWidth=1.4;c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}c.restore();}
+// a strike: the red ring, and the cross the dawn leaves
+function vRing(c,x,y,p,col){if(p<=0||p>=1)return;c.save();c.strokeStyle=col||RED;c.globalAlpha=1-p;c.lineWidth=3*(1-p)+1;c.beginPath();c.arc(x,y,8+p*44,0,7);c.stroke();c.restore();}
+function vCross(c,x,y,al,col){if(al<=0)return;c.save();c.globalAlpha=al;c.strokeStyle=col||RED;c.lineWidth=2.6;c.lineCap='round';c.beginPath();c.moveTo(x-6,y-6);c.lineTo(x+6,y+6);c.moveTo(x+6,y-6);c.lineTo(x-6,y+6);c.stroke();c.restore();}
+// the ink and tide meters, as the top of the screen shows them
+function vBar(c,d,x,y,w,f,label,low,gone){c.save();const col=low?RED:mixc(INK,CREAM,d);c.fillStyle=mixc(PAPER,NIGHT,d,.9);c.fillRect(x-40,y-6,w+48,20);c.fillStyle=mixc(INK,CREAM,d);c.font='10px Georgia,serif';c.textAlign='right';c.textBaseline='middle';
+  c.fillText(label.split('').join(' '),x-7,y+4);c.strokeStyle=col;c.lineWidth=1;c.strokeRect(x+.5,y+.5,w,7);c.fillStyle=col;c.fillRect(x+.5,y+.5,w*clamp(f,0,1),7);
+  if(gone&&gone[1]>0){c.fillStyle=RED;c.globalAlpha=gone[1];c.fillRect(x+.5+w*clamp(f,0,1),y+.5,w*gone[0],7);}c.restore();}
+function vText(c,s,x,y,px,col,al,style){c.save();if(al!=null)c.globalAlpha=al;c.fillStyle=col;c.font=(style||'italic')+' '+px+'px Georgia,serif';c.textAlign='center';c.textBaseline='middle';c.fillText(s,x,y);c.restore();}
+function vBell(c,x,y,p){if(p<=0||p>=1)return;c.save();c.strokeStyle='#efe6d0';c.globalAlpha=.7*(1-p);c.lineWidth=1.6;c.beginPath();c.arc(x,y,10+p*34,0,7);c.stroke();c.restore();}
+const vLen=pts=>{let L=0;for(let i=1;i<pts.length;i++)L+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);return L;};
+
+/* ---- the first night ---- */
+function vDusk(c,t){const d=.97*vz(t,1.9,5.6),fn=x=>vShoreY(x)+56*Math.exp(-Math.pow((x-250)/19,2));
+  vPaper(c,d);vLand(c,d,fn);
+  vRock(c,d,118,130,17,3);vRock(c,d,205,162,14,7);vRock(c,d,312,180,15,11);vRock(c,d,66,190,12,5);
+  const L=[[62,fn(62)+30],[338,fn(338)+30],[176,fn(176)+30]];
+  L.forEach((p,k)=>vLamp(c,d,p[0],p[1],k+1,{pier:[p[0],fn(p[0])],pulse:vq(t,.3+.45*k,1+.45*k)}));
+  vLamp(c,d,L[0][0],L[0][1],0,{al:0,lit:vq(d,.75,.97)*(.8+.2*Math.sin(t*5))});
+  vBoat(c,d*.98,200,232,-Math.PI/2);}
+function vDraw(c,t){const d=.05,fn=x=>vShoreY(x)+82*Math.exp(-Math.pow((x-262)/21,2)),S0=[70,222],Lm=[336,66];
+  vPaper(c,d);vLand(c,d,fn);
+  const fl=vq(t,3.1,3.4);if(fl>0){c.save();c.strokeStyle='#1c2430';c.lineWidth=5.5;c.globalAlpha=fl;c.beginPath();for(let x=224;x<=300;x+=3){const y=fn(x);x===224?c.moveTo(x,y):c.lineTo(x,y);}c.stroke();c.restore();}
+  vRock(c,d,160,168,17,4);vRock(c,d,300,192,13,9);vRock(c,d,92,118,12,2);
+  const A=[S0,Lm],B=[S0,[139,134],Lm],C=[S0,[139,134],[266,138],Lm];
+  vCourse(c,d,A,t,0,1,1-vq(t,1.9,2.2));vCourse(c,d,B,t,0,1,vq(t,1.9,2.2)*(1-vq(t,3.1,3.4)));vCourse(c,d,C,t,0,1,vq(t,3.1,3.4));
+  vInk(c,d,[[147,147],[173,189]],vz(t,.9,1.9));if(t>2.95)vDab(c,d,262,106);vRing(c,262,106,vq(t,2.95,3.7),'#1c2430');
+  vLamp(c,d,Lm[0],Lm[1],1,{pier:[336,fn(336)],pulse:vq(t,7.5,8.3),nx:24,ny:10});
+  const e=vAt(C,vq(t,3.9,7.5)),h0=vAt(t<2.05?A:t<3.25?B:C,0).h;vBoat(c,d,e.x,e.y,t<3.9?h0:e.h);
+  vPenK(c,d,t,[[.2,150,138,1],[.9,147,147,0],[1.9,173,189,0],[2.25,186,176,1],[2.75,262,100,1],[2.95,262,106,0],[3.15,262,106,0],[3.5,270,98,1]]);}
+function vInkCard(c,t){const d=.06,S0=[40,222],Lm=[362,60];vPaper(c,d);vLand(c,d,vShoreY);
+  vRock(c,d,122,182,15,3);vRock(c,d,201,140,16,8);vRock(c,d,282,101,15,12);
+  vCourse(c,d,[S0,Lm],t);vLamp(c,d,Lm[0],Lm[1],1,{pier:[362,vShoreY(362)],nx:-24,ny:6});vBoat(c,d,S0[0],S0[1],vAt([S0,Lm],0).h);
+  const p1=vz(t,.6,1.3),p2=vz(t,1.7,2.4),p3=vq(t,2.9,4.7),wall=[[232,212],[262,198],[292,208],[322,196],[352,206],[384,194]];
+  vInk(c,d,[[112,162],[132,202]],p1);vInk(c,d,[[191,120],[211,160]],p2);vInk(c,d,wall,p3*.72);
+  const f=1-.2*p1-.2*p2-.6*p3,dry=f<=.001,bl=dry?(.55+.45*Math.sin(t*9)):1;c.save();c.globalAlpha=bl;vBar(c,d,54,16,120,f,'INK',f<.15);c.restore();
+  const w=vAt(wall,p3*.72),tap=Math.abs(Math.sin((t-5.1)*5.2));
+  vPenK(c,d,t,[[.1,112,150,1],[.6,112,162,0],[1.3,132,202,0],[1.5,150,170,1],[1.7,191,120,0],[2.4,211,160,0],[2.7,222,196,1],[2.9,232,212,0],[4.7,w.x,w.y,0],[5.0,274,84,1],[5.1,274,88,.4],[6.3,274,88,.4]]);
+  if(t>5.1&&t<6.3){c.save();c.strokeStyle='#1c2430';c.globalAlpha=.5*(1-tap);c.lineWidth=1.2;c.beginPath();c.arc(274,88-4,4+tap*5,0,7);c.stroke();c.restore();}}
+function vNightCard(c,t){const d=1,P=[[200,236],[287,174],[320,70],[92,60]],L=vLen(P),f1=(vLen([P[0],P[1]])+vLen([P[1],P[2]]))/L,p=vq(t,.7,6.4),e=vAt(P,p),at2=p>=f1;
+  vPaper(c,d);vInk(c,d,[[236,136],[274,164]],1);
+  vLamp(c,d,P[2][0],P[2][1],0,{al:0,lit:at2?.35:.8+.2*Math.sin(t*5)});vLamp(c,d,P[3][0],P[3][1],0,{al:0,lit:at2?.8+.2*Math.sin(t*5):.12});
+  if(p<1)vCourse(c,d,P,t,p,at2?1:f1);if(p>0)vWake(c,P,p,L);vBoat(c,d,e.x,e.y,e.h);
+  vBell(c,P[2][0],P[2][1],vq(p,f1,f1+.12));vBell(c,P[3][0],P[3][1],vq(t,6.4,7.3));
+  vBar(c,d,270,16,110,1-.8*vq(t,.7,6.4),'TIDE',false);}
+function vWreck(c,t){const d=t<5.9?1:1-.94*vz(t,5.9,7.3),S0=[90,226],Lm=[345,60],hit=[199,155],A=[S0,hit],B=[[191,160],[197,116],Lm],fn=vShoreY;
+  const sh=t>2&&t<2.45?(1-vq(t,2,2.45))*4:0;c.save();c.translate(Math.sin(t*90)*sh,Math.cos(t*70)*sh);
+  vPaper(c,d);vLand(c,d,fn);vRock(c,d,110,128,13,6);vRock(c,d,300,178,15,2);vRock(c,d,215,144,18,5,null,vq(t,2,2.15));
+  vLamp(c,d,Lm[0],Lm[1],d<.5?1:0,{al:d<.5?1:0,pier:[345,fn(345)],nx:-24,ny:6});if(d>.5)vLamp(c,d,Lm[0],Lm[1],0,{al:0,lit:(t<5.6?.8+.2*Math.sin(t*5):.4)*vq(d,.5,1)});
+  const pa=vq(t,.5,2),pb=vq(t,3.3,5.6);let x,y,h;
+  if(t<2){const e=vAt(A,pa);x=e.x;y=e.y;h=e.h;if(d>.5){vCourse(c,d,[S0,Lm],t,pa*vLen(A)/vLen([S0,Lm]),1);vWake(c,A,pa,vLen(A));}}
+  else if(t<3.3){const k=vz(t,2.9,3.3);x=hit[0]+(B[0][0]-hit[0])*k;y=hit[1]+(B[0][1]-hit[1])*k;h=vAt(A,1).h+Math.sin(t*38)*.22*(1-k);}
+  else{const e=vAt(B,pb);x=e.x;y=e.y;h=e.h;if(d>.5&&pb<1){vCourse(c,d,B,t,pb,1);vWake(c,B,pb,vLen(B));}}
+  if(d<.5){vCourse(c,d,A,0,0,1,1-d*2);vCourse(c,d,B,0,0,1,1-d*2);vCross(c,hit[0],hit[1],1-d*2);}
+  vBoat(c,d,x,y,h);vRing(c,hit[0],hit[1],vq(t,2,3));vBell(c,Lm[0],Lm[1],vq(t,5.6,6.4));c.restore();
+  if(d>.5){const lost=t>=2?.17:0,f=1-.5*vq(t,.5,5.6)-lost;vBar(c,d,270,16,110,f,'TIDE',t>=2&&t<2.9,[.17,t>=2?1-vq(t,2,2.9):0]);}}
+function vTideCard(c,t){const d=1,two=t>=4.5,u=two?t-4.5:t,wall=[[92,150],[140,142],[200,148],[262,141],[318,150]],P=two?[[200,236],[236,152],[200,46]]:[[200,236],[338,162],[200,46]],L=vLen(P),run=2.9*90;
+  const fade=Math.min(vq(u,0,.35),1-vq(u,4.15,4.5));vPaper(c,d);c.save();c.globalAlpha=fade;
+  if(two)vInk(c,d,[[180,146],[220,146]],1);else vInk(c,d,wall,1);
+  const dist=90*clamp(u-.5,0,10),p=Math.min(dist,two?L:run)/L,e=vAt(P,p),tide=clamp(1-dist/run,0,1),late=!two&&dist>=run,home=two&&dist>=L;
+  vLamp(c,d,200,46,0,{al:0,lit:home?.45:.8+.2*Math.sin(t*5)});if(!late&&!home)vCourse(c,d,P,t,p,1);if(p>0)vWake(c,P,p,L);
+  c.globalAlpha=fade*(late?.55:1);vBoat(c,d,e.x,e.y,e.h);c.globalAlpha=fade;vBell(c,200,46,vq(dist,L,L+70));
+  vBar(c,d,270,16,110,home?clamp(1-L/run,0,1):tide,'TIDE',tide<.2&&!home);c.restore();}
+
+/* ---- things met later ---- */
+function vAgain(c,t){const d=.06+.5*vz(t,5.2,7),fn=vShoreY,X=[50,115,180,245,310,370],was=[0,2,4],now=[5,1,3],yy=x=>fn(x)+28;
+  vPaper(c,d);vLand(c,d,fn);
+  vRock(c,d,140,150,16,4);vRock(c,d,222,122,15,8,null,1);vRock(c,d,318,150,14,12);vRock(c,d,70,186,12,6);
+  vInk(c,d,[[127,132],[153,168]],1);vInk(c,d,[[300,138],[336,162]],vz(t,3.7,4.6));
+  X.forEach((x,i)=>{c.save();c.globalAlpha=vSee(d);c.strokeStyle=V_LINE;c.lineWidth=5;c.lineCap='butt';c.beginPath();c.moveTo(x,fn(x));c.lineTo(x,yy(x));c.stroke();c.fillStyle=V_LINE;c.beginPath();c.arc(x,yy(x),3,0,7);c.fill();c.restore();});
+  const out=1-vq(t,.5,1.4);was.forEach((i,k)=>vLamp(c,d,X[i],yy(X[i]),k+1,{al:out*.55}));
+  now.forEach((i,k)=>{const a=vq(t,1.5+.5*k,1.8+.5*k);if(a>0)vLamp(c,d,X[i],yy(X[i]),k+1,{al:a,pulse:vq(t,1.6+.5*k,2.4+.5*k)});});
+  vBoat(c,d,130,232,-Math.PI/2,out);vBoat(c,d,270,232,-Math.PI/2,vq(t,1.2,1.8));
+  vPenK(c,d,t,[[3.2,296,128,1],[3.7,300,138,0],[4.6,336,162,0],[5,346,150,1]]);}
+function vLampsCard(c,t){const d=1;vPaper(c,d);const X=[90,200,310],y=128,pips=t<.9?0:t<1.9?1:t<3.9?2:3,open=vz(t,2.3,3);
+  c.save();c.strokeStyle='rgba(239,230,208,.5)';c.lineWidth=2;c.setLineDash([3,9]);c.beginPath();c.moveTo(40,y+58);c.lineTo(360,y+58);c.stroke();c.setLineDash([]);
+  X.forEach((x,i)=>{const lock=i===0?0:i===1?1-open:1;c.save();c.globalAlpha=1-.7*lock;
+    if(i===1&&open>0&&open<1){c.shadowColor='rgba(239,230,208,.8)';c.shadowBlur=18*Math.sin(open*3.14);}
+    c.fillStyle='#0b0e13';c.strokeStyle='#efe6d0';c.lineWidth=i===1&&open>=1?3.5:2;if(lock>.5)c.setLineDash([5,6]);c.beginPath();c.arc(x,y,36,0,7);c.fill();c.stroke();c.setLineDash([]);c.shadowBlur=0;
+    vText(c,String(i+1),x,y-4,28,'#efe6d0');const n=i===0?pips:0;vText(c,'●'.repeat(n)+'○'.repeat(3-n),x,y+19,12,'#efe6d0',1,'normal');c.restore();});
+  c.restore();[.9,1.9,3.9].forEach(k=>vBell(c,X[0],y,vq(t,k,k+.7)));vBell(c,X[1],y,vq(t,2.5,3.4));}
+function vMarks(c,t){const d=1;vPaper(c,d);const X=[72,200,328],on=Math.floor(t/2.5)%3,u=t%2.5,name=['DRY','SPARE','FIRST'];
+  X.forEach((x,i)=>{c.save();const a=i===on?1:.3,k=i===on?u:2.5;c.globalAlpha=a;
+    if(i===0){const P=[[x-44,150],[x-16,112],[x+40,84]],e=vAt(P,vq(k,.2,1.7));c.globalAlpha=a*.9;vRock(c,.05,x+6,128,11,4);c.globalAlpha=a;vCourse(c,d,P,i===on?t:0);vLamp(c,d,P[2][0],P[2][1],0,{al:0,lit:.8});drawBoat(c,e.x,e.y,e.h,'#efe6d0',true);}
+    if(i===1){const f=1-.6*vz(k,.2,1.7);c.strokeStyle='#efe6d0';c.lineWidth=1.2;c.strokeRect(x-42,112,84,10);c.fillStyle='#efe6d0';c.fillRect(x-42,112,84*f,10);c.strokeStyle=RED;c.lineWidth=1.6;c.beginPath();c.moveTo(x-42+28,104);c.lineTo(x-42+28,130);c.stroke();}
+    if(i===2){const n=k<.4?0:k<.8?1:k<1.2?2:3;vText(c,'●'.repeat(n)+'○'.repeat(3-n),x,112,22,'#efe6d0',a,'normal');vText(c,'first try',x,140,13,'#efe6d0',a*.7);}
+    vText(c,name[i].split('').join(' '),x,186,13,'#d9534a',a,'normal');c.restore();});}
+function vSupplies(c,t){const d=.05;vPaper(c,d);const X=[72,200,328],on=Math.floor(t/2.5)%3,u=t%2.5,name=['+Ink','+Light','+Tide'],tip=['+40% bottle','+6 s of dusk','+3 s tonight'],ink=vInkCol(d);
+  X.forEach((x,i)=>{c.save();const a=i===on?1:.32,k=i===on?vz(u,.8,1.6):0;c.globalAlpha=a;
+    if(i===0){c.strokeStyle=ink;c.lineWidth=1.2;c.strokeRect(x-42,82,60+24*k,10);c.fillStyle=ink;c.fillRect(x-42,82,30+54*k,10);vText(c,'I N K',x,68,10,ink,a,'normal');}
+    if(i===1){const dd=.86-.72*k;c.fillStyle=mixc(PAPER,NIGHT,dd);c.fillRect(x-40,54,80,50);c.save();c.beginPath();c.rect(x-40,54,80,50);c.clip();c.translate(x-40,54);vRock(c,dd,24,30,10,3);vRock(c,dd,56,18,8,7);c.restore();c.strokeStyle=ink;c.lineWidth=1.2;c.strokeRect(x-40,54,80,50);}
+    if(i===2){c.strokeStyle=ink;c.lineWidth=1.2;c.strokeRect(x-42,82,60+24*k,10);c.fillStyle=ink;c.fillRect(x-42,82,12+24*k,10);vText(c,'T I D E',x,68,10,ink,a,'normal');}
+    vText(c,tip[i],x,126,12.5,ink,a*.85);
+    c.strokeStyle=ink;c.lineWidth=i===on?2:1.2;c.strokeRect(x-36,152,72,32);vText(c,name[i],x,169,15,ink,a,'normal');
+    if(i===on){vRing(c,x,168,vq(u,.3,1.1),ink);vPen(c,d,x+22,178,1-vq(u,.1,.35)+vq(u,.5,.8),1-vq(u,1.2,1.6));}c.restore();});}
+function vLogCard(c,t){const d=1;vPaper(c,d);const n=7,x0=80,st=40,y=112;
+  for(let i=0;i<n;i++){const x=x0+st*i,at=.4+.42*i;let ch='○',a=.45;
+    if(i===3){if(t>3.6){ch='◐';a=1;}}else if(i===6){if(t>4.7){ch='●';a=1;}else{ch='◌';a=.5+.4*Math.sin(t*5);}}else if(t>at){ch='●';a=1;}
+    vText(c,ch,x,y,20,'#efe6d0',a,'normal');if(i===3)vBell(c,x,y,vq(t,3.6,4.3));if(i===6)vBell(c,x,y,vq(t,4.7,5.5));}
+  vText(c,'a lay day',x0+st*3,y+32,12,'#efe6d0',.7*vq(t,3.6,4),'italic');vText(c,'tonight',x0+st*6,y+32,12,'#efe6d0',.7,'italic');
+  vText(c,'7 nights running',200,190,17,'#efe6d0',vq(t,4.9,5.4));}
+
+/* ---- one card for each thing a coast can add ---- */
+function vArrows(c,d,t,ux,uy,al,wet){c.save();c.strokeStyle=mixc(INK,CREAM,d,al);c.lineWidth=1.5;c.beginPath();
+  for(let k=0;k<26;k++){const bx=(k*97.3)%VW,by=(k*61.7)%VH,ph=(t*26+k*31)%110,x=bx+ux*ph,y=by+uy*ph,L=11;if(x<0||x>VW||y>VH||(wet?!wet(x,y):y<vShoreY(x)+10))continue;
+    c.moveTo(x,y);c.lineTo(x+ux*L,y+uy*L);c.moveTo(x+ux*L,y+uy*L);c.lineTo(x+ux*(L-4)-uy*3,y+uy*(L-4)+ux*3);c.moveTo(x+ux*L,y+uy*L);c.lineTo(x+ux*(L-4)+uy*3,y+uy*(L-4)-ux*3);}c.stroke();c.restore();}
+function vCurrent(c,t){const d=.05,S0=[50,150],Lm=[352,112],two=t>=4.6,pen=[S0,[200,80],Lm],str=[S0,Lm];vPaper(c,d);vLand(c,d,vShoreY);vArrows(c,d,t,.2,.98,.42);
+  vRock(c,d,200,168,16,5);vRock(c,d,300,60,11,3);vRock(c,d,96,214,12,9);
+  vInk(c,d,[[200,124],[200,190]],vz(t,3.4,4.3));
+  vLamp(c,d,Lm[0],Lm[1],1,{pier:[392,Lm[1]],pulse:vq(t,7.4,8.2),ny:-24});
+  const P=two?pen:str,sag=two?16:36,p=two?vq(t,4.9,7.4):vq(t,.5,2.3)*.5,e=vAt(P,p),s=Math.sin(Math.PI*clamp(p,0,1))*sag;
+  vCourse(c,d,P,t);vBoat(c,d,e.x+.2*s,e.y+s,e.h+.25*Math.cos(Math.PI*p)*(sag/36));
+  if(!two){vRing(c,196,150,vq(t,2.3,3.1),'#1c2430');vCross(c,196,150,vq(t,2.3,2.4)*(1-vq(t,4.2,4.6)),'#1c2430');}
+  vPenK(c,d,t,[[2.9,196,112,1],[3.4,200,124,0],[4.3,200,190,0],[4.7,212,180,1]]);}
+const vRiv=x=>125+50*Math.sin((x-20)/60);
+function vRiverCard(c,t){const d=.05,top=x=>vRiv(x)-38,bot=x=>vRiv(x)+38,S0=[14,vRiv(14)],L1=[208,110],L2=[378,134];vPaper(c,d);vLand(c,d,top);vLand(c,d,bot,true);
+  const f1=vq(t,1.15,1.45),f2=vq(t,2.35,2.65),bold=(fn,a,b,al)=>{if(al<=0)return;c.save();c.strokeStyle='#1c2430';c.lineWidth=5.5;c.globalAlpha=al;c.beginPath();for(let x=a;x<=b;x+=3){const y=fn(x);x===a?c.moveTo(x,y):c.lineTo(x,y);}c.stroke();c.restore();};
+  bold(top,78,150,f1);bold(bot,268,338,f2);
+  const A=[S0,L1,L2],B=[S0,[114,152],L1,L2],C=[S0,[114,152],L1,[303,99],L2];
+  vCourse(c,d,A,t,0,1,1-f1);vCourse(c,d,B,t,0,1,f1*(1-f2));vCourse(c,d,C,t,0,1,f2);
+  if(t>1.1)vDab(c,d,114,131);if(t>2.3)vDab(c,d,303,121);vRing(c,114,131,vq(t,1.1,1.8),'#1c2430');vRing(c,303,121,vq(t,2.3,3),'#1c2430');
+  const fa=(vLen([S0,[114,152]])+vLen([[114,152],L1]))/vLen(C),p=vq(t,3.1,7.6),e=vAt(C,p);
+  vLamp(c,d,L1[0],L1[1],1,{pier:[208,top(208)],pulse:vq(p,fa,fa+.12),ny:24});vLamp(c,d,L2[0],L2[1],2,{pier:[378,bot(378)],pulse:vq(t,7.6,8.3),ny:-24});
+  vBoat(c,d,e.x,e.y,t<3.1?0:e.h);
+  vPenK(c,d,t,[[.5,110,118,1],[1.1,114,131,0],[1.3,114,131,0],[1.6,160,110,1],[2.1,300,134,1],[2.3,303,121,0],[2.5,303,121,0],[2.9,312,112,1]]);}
+function vBarge(c,d,x,y,ang,al){c.save();c.globalAlpha=vSee(d)*(al==null?1:al);c.translate(x,y);c.rotate(ang);c.fillStyle='#1c2430';c.beginPath();c.ellipse(0,0,23,7.5,0,0,7);c.fill();c.strokeStyle='#e9e0cc';c.lineWidth=1.2;c.beginPath();c.moveTo(-14,0);c.lineTo(14,0);c.stroke();c.restore();}
+function vBarges(c,t){const d=.05,top=x=>vRiv(x)-38,bot=x=>vRiv(x)+38,S0=[14,vRiv(14)],L1=[378,134];vPaper(c,d);vLand(c,d,top);vLand(c,d,bot,true);vArrows(c,d,t,-1,0,.34,(x,y)=>y>top(x)+8&&y<bot(x)-8);
+  vBarge(c,d,128,158,.35);vBarge(c,d,292,96,.3);
+  const A=[S0,[114,152],[210,118],[303,99],L1],B=[S0,[104,176],[210,118],[296,74],L1],sw=vq(t,3.5,3.9);
+  vCourse(c,d,A,t,0,1,1-sw);vCourse(c,d,B,t,0,1,sw);
+  vInk(c,d,[[118,140],[140,176]],vz(t,1,1.8));vInk(c,d,[[282,80],[304,114]],vz(t,2.5,3.3));
+  vLamp(c,d,L1[0],L1[1],1,{pier:[378,bot(378)],pulse:vq(t,7.4,8.2),ny:-24});const e=vAt(B,vq(t,4.2,7.4));vBoat(c,d,e.x,e.y,t<4.2?0:e.h);
+  vPenK(c,d,t,[[.5,114,128,1],[1,118,140,0],[1.8,140,176,0],[2.1,170,150,1],[2.5,282,80,0],[3.3,304,114,0],[3.7,316,104,1]]);}
+function vDrying(c,t){const day=vz(t,3.1,3.6)*(1-vz(t,3.8,4.3)),d=.05+.93*day,two=t>=3.7,S0=[60,216],Lm=[340,62],A=[S0,Lm],B=[S0,[176,112],Lm];vPaper(c,d);vLand(c,d,vShoreY);
+  vRock(c,d,104,120,13,3);vRock(c,d,296,180,14,9);vRock(c,d,200,138,17,6,two?null:'dash');
+  vInk(c,d,[[188,118],[212,160]],vz(t,2,2.8));
+  const pa=vq(t,.3,1.7),e=two?vAt(B,vq(t,4.8,7.6)):vAt(A,pa);
+  vLamp(c,d,Lm[0],Lm[1],1,{pier:[340,vShoreY(340)],nx:-24,ny:6,pulse:two?vq(t,7.6,8.4):vq(t,1.7,2.4)});
+  vCourse(c,d,two?B:A,t);vBoat(c,d,e.x,e.y,e.h,two?1:1-vq(t,2.6,3));
+  vText(c,two?'tomorrow':'tonight',52,234,13,vInkCol(d),.8*(1-day));
+  vPenK(c,d,t,[[1.6,184,104,1],[2,188,118,0],[2.8,212,160,0],[3.1,224,150,1]]);}
+function vCloudBank(c,d,x,y,r){const lob=[[0,0,.62],[-.5,.05,.5],[.5,.02,.52],[-.2,-.22,.48],[.25,-.2,.5],[0,.2,.5]],fill=mixc([248,245,236],NIGHT,d),edge=mixc(INK,CREAM,d,.5),path=()=>{c.beginPath();for(const l of lob){c.moveTo(x+l[0]*r+l[2]*r,y+l[1]*r);c.arc(x+l[0]*r,y+l[1]*r,l[2]*r,0,6.2832);}};
+  path();c.strokeStyle=edge;c.lineWidth=2.4;c.stroke();path();c.fillStyle=fill;c.fill();}
+function vCloud(c,t){const d=.7*vq(t,1,7.6),cx=150+46*t;vPaper(c,d);vLand(c,d,vShoreY);
+  vRock(c,d,110,150,16,4);vRock(c,d,212,122,15,8);vRock(c,d,304,166,15,2);vRock(c,d,60,208,11,6);
+  vCloudBank(c,d,cx,138,84);vCloudBank(c,d,cx-330,170,70);
+  vInk(c,d,[[98,130],[122,170]],vz(t,1.9,2.6));vInk(c,d,[[200,102],[224,142]],vz(t,3.9,4.6));vInk(c,d,[[292,146],[316,186]],vz(t,5.9,6.6));
+  vLamp(c,d,350,64,1,{pier:[350,vShoreY(350)],nx:-24,ny:6});vBoat(c,d,40,226,-.6);
+  const bob=3*Math.sin(t*4);
+  vPenK(c,d,t,[[.3,96,118+bob,1],[1.6,96,118+bob,1],[1.9,98,130,0],[2.6,122,170,0],[2.9,200,92+bob,1],[3.6,200,92+bob,1],[3.9,200,102,0],[4.6,224,142,0],[4.9,292,136+bob,1],[5.6,292,136+bob,1],[5.9,292,146,0],[6.6,316,186,0],[7,326,176,1]]);}
+function vBars(c,t){const d=.05,two=t>=4.4,u=two?t-4.4:t,S0=[50,214],L1=[120,72],L2=[352,152],bar=[236,112],A=[S0,L1,L2],B=[S0,L1,[254,84],L2],P=two?B:A;vPaper(c,d);vLand(c,d,vShoreY);
+  const f1=vLen([S0,L1])/vLen(P),hitP=(vLen([S0,L1])+98)/vLen(A),p=two?vq(u,.6,4):Math.min(vq(u,.5,3.3)*.86,hitP),shut=p>=f1,e=vAt(P,p),fade=Math.min(1,vq(u,0,.3),two?1:1-vq(t,4.1,4.4));
+  vRock(c,d,196,170,13,3);vRock(c,d,290,70,12,8);vRock(c,d,bar[0],bar[1],19,5,shut?null:'sand');
+  c.save();c.globalAlpha=vSee(d);c.fillStyle='#e9e0cc';c.beginPath();c.arc(bar[0],bar[1],9,0,7);c.fill();vText(c,'1',bar[0],bar[1]+1,15,'#1c2430',1,'italic bold');c.restore();
+  if(two)vInk(c,d,[[226,90],[246,134]],1);
+  vCourse(c,d,P,t,0,1,fade);vLamp(c,d,L1[0],L1[1],1,{pier:[120,vShoreY(120)],pulse:vq(p,f1,f1+.1),nx:-22,ny:4});vLamp(c,d,L2[0],L2[1],2,{pier:[392,152],pulse:two?vq(u,4,4.6):0,ny:-24});
+  c.save();c.globalAlpha=fade;vBoat(c,d,e.x,e.y,e.h);c.restore();
+  if(!two){vRing(c,e.x,e.y,vq(u,3.3,4.1),'#1c2430');vCross(c,e.x,e.y,vq(u,3.3,3.4)*fade,'#1c2430');}}
+function vBergPath(c,x,y,r,rot){c.beginPath();const R=[1,.82,1.12,.86,1.05,.9];for(let k=0;k<6;k++){const a=rot+k/6*6.283;k?c.lineTo(x+Math.cos(a)*r*R[k],y+Math.sin(a)*r*R[k]):c.moveTo(x+Math.cos(a)*r*R[k],y+Math.sin(a)*r*R[k]);}c.closePath();}
+function vIce(c,t){const d=.05,two=t>=4.6,u=two?t-4.6:t,B0=[70,95],B1=[330,142],S0=[150,226],Lm=[290,50],X=[231,124],A=[S0,Lm],P=two?[S0,[196,96],Lm]:A,col=vInkCol(d);vPaper(c,d);vLand(c,d,vShoreY);
+  vRock(c,d,110,180,13,4);vRock(c,d,330,200,12,8);
+  c.save();c.strokeStyle=col;c.lineWidth=1.5;c.setLineDash([2,6]);c.beginPath();c.moveTo(B0[0],B0[1]);c.lineTo(B1[0],B1[1]);c.stroke();c.setLineDash([]);c.beginPath();
+  for(let q=1;q<=4;q++){const x=B0[0]+(B1[0]-B0[0])*q/4,y=B0[1]+(B1[1]-B0[1])*q/4;c.moveTo(x-1.4,y-8);c.lineTo(x+1.4,y+8);}c.stroke();
+  vBergPath(c,B1[0],B1[1],19,.4);c.setLineDash([3,4]);c.stroke();c.setLineDash([]);c.restore();
+  if(two)vInk(c,d,[[212,110],[250,140]],1);else vInk(c,d,[[212,110],[250,140]],vz(t,3.5,4.3));
+  const k=vq(u,.5,4),gx=B0[0]+(B1[0]-B0[0])*k,gy=B0[1]+(B1[1]-B0[1])*k,meet=.62,p=two?k:Math.min(k,meet)/meet*.575,e=vAt(P,two?k:p);
+  c.save();c.globalAlpha=.5;vBergPath(c,gx,gy,19,.4);c.strokeStyle=col;c.lineWidth=1.6;c.stroke();c.restore();
+  vBergPath(c,B0[0],B0[1],19,.4);c.fillStyle=mixc([250,247,238],NIGHT,d);c.fill();c.strokeStyle=col;c.lineWidth=2.2;c.stroke();c.lineWidth=1.1;c.beginPath();for(let q=0;q<6;q+=2){const a=.4+q/6*6.283;c.moveTo(B0[0]+3,B0[1]);c.lineTo(B0[0]+Math.cos(a)*18,B0[1]+Math.sin(a)*18);}c.stroke();
+  vCourse(c,d,P,t);vLamp(c,d,Lm[0],Lm[1],1,{pier:[290,vShoreY(290)],nx:-24,ny:6,pulse:two?vq(u,4,4.6):0});vBoat(c,d,e.x,e.y,e.h);
+  if(!two){vRing(c,X[0],X[1],vq(t,2.67,3.4),'#1c2430');vCross(c,X[0],X[1],vq(t,2.67,2.75)*(1-vq(t,4.3,4.6)),'#1c2430');}
+  vPenK(c,d,t,[[3.1,208,98,1],[3.5,212,110,0],[4.3,250,140,0],[4.6,260,130,1]]);}
+function vDecoy(c,t){const d=.05,two=t>=4.4,u=two?t-4.4:t,S0=[60,222],L1=[92,vShoreY(92)+30],T=[304,vShoreY(304)+30],F=[214,156],A=[S0,L1,F,T],B=[S0,L1,T],P=two?B:A;vPaper(c,d);vLand(c,d,vShoreY);
+  vRock(c,d,150,196,12,4);vRock(c,d,330,186,13,8);
+  const p=vq(u,.4,two?3.4:3.9),e=vAt(P,p),fF=(vLen([S0,L1])+vLen([L1,F]))/vLen(A),stall=!two&&p>=fF&&p<fF+.05;
+  vCourse(c,d,P,t);vLamp(c,d,L1[0],L1[1],1,{pier:[92,vShoreY(92)],ny:26});vLamp(c,d,T[0],T[1],2,{pier:[304,vShoreY(304)],ny:26,pulse:vq(u,two?3.4:3.9,two?4.1:4.4)});
+  vLamp(c,d,F[0],F[1],2,{ny:26,al:two?.45:1});
+  if(two){vDab(c,d,F[0],F[1]);c.save();c.strokeStyle=vInkCol(d);c.lineWidth=3;c.lineCap='round';c.beginPath();c.moveTo(F[0]-13,F[1]+13);c.lineTo(F[0]+13,F[1]-13);c.stroke();c.restore();}
+  vBoat(c,d,e.x,e.y,e.h+(stall?Math.sin(t*30)*.3:0));if(!two)vRing(c,F[0],F[1],vq(p,fF,fF+.12),'#1c2430');
+  if(!two)vPenK(c,d,t,[[3.9,220,140,1],[4.2,F[0],F[1],0],[4.4,F[0],F[1],0]],.01);else vPenK(c,d,t,[[4.4,F[0],F[1],0],[4.8,228,142,1]]);}
+function vLanes(c,t){const d=.05,two=t>=4.9,u=two?t-4.9:t,LN=[[8,124],[130,152],[262,98],[392,112]],S0=[204,234],Lm=[214,44],P=[S0,Lm],col=vInkCol(d);vPaper(c,d);vLand(c,d,x=>vShoreY(x)-8);
+  vRock(c,d,150,196,12,4);vRock(c,d,300,170,13,8);
+  const firm=two?1:vq(t,4.3,4.6);c.save();c.strokeStyle=col;c.lineWidth=1.4+firm;c.lineCap='butt';c.setLineDash(firm>.5?[10,5]:[2,7]);vTrace(c,LN,0,1);c.stroke();c.setLineDash([]);c.restore();
+  vInk(c,d,[[40,131],[84,141]],two?1:vz(t,3.5,4.3));
+  // she reaches the lane at 1.9 s (and again at 1.9 s of the second showing); a ship is there both times
+  const cross=.5,hold=two&&u>1.5&&u<2.6,pb=two?(u<1.5?vq(u,.4,1.5)*.5:u<2.6?.5:.5+vq(u,2.6,4)*.5):vq(u,.4,1.9)*.56,e=vAt(P,pb);
+  for(let j=0;j<3;j++){const s=((.5+(two?(u-2.05)*.16:(u-1.9)*.16)+j/3)%1+1)%1,a=vAt(LN,s),b=vAt(LN,Math.min(1,s+.02));if(s<.04||s>.96)continue;drawShip(c,{x:a.x,y:a.y,ax:a.x,ay:a.y,bx:b.x,by:b.y},col);}
+  vCourse(c,d,P,t);vLamp(c,d,Lm[0],Lm[1],1,{pulse:two?vq(u,4,4.6):0,nx:-24,ny:6});vBoat(c,d,e.x,e.y,e.h);
+  if(!two){vRing(c,e.x,e.y,vq(t,1.9,2.7),'#1c2430');vCross(c,e.x,e.y,vq(t,1.9,2)*(1-vq(t,4.6,4.9)),'#1c2430');}
+  if(hold)vText(c,'gives way',e.x+46,e.y+2,12,col,.8);
+  vPenK(c,d,t,[[3.1,36,118,1],[3.5,40,131,0],[4.3,84,141,0],[4.6,94,130,1]]);}
+function vSix(c,t){const d=.05,fn=vShoreY;vPaper(c,d);vLand(c,d,fn);const L=[[62,fn(62)+28],[150,156],[252,fn(252)+28],[344,128],[298,196],[104,196]],S0=[200,234],P=[S0].concat(L);
+  vRock(c,d,108,112,12,4);vRock(c,d,204,108,13,8);vRock(c,d,300,88,11,2);vRock(c,d,224,176,12,6);
+  const p=vq(t,.3,4.6);vCourse(c,d,P,t,0,p);
+  L.forEach((q,k)=>{const at=.3+4.3*vLen(P.slice(0,k+2))/vLen(P);vLamp(c,d,q[0],q[1],k+1,{al:.35+.65*vq(t,at-.2,at),pulse:vq(t,at,at+.7),ny:k===1||k===3?-24:26});});
+  vBoat(c,d,S0[0],S0[1],-2.4);vBar(c,d,54,10,120,1,'INK',false);}
+
+// k: the small line above the picture, t: title, l: the one sentence, h: the reminder the dusk caption gives, len: seconds before the picture repeats,
+// s: the moment shown, held still, to a player who has asked their device for less motion
+const CARDS={
+  dusk:{k:'How it works',t:'Dusk',l:'Twenty seconds of light. Then she sails for the lamps, in order.',len:7,s:1.2,draw:vDusk},
+  draw:{k:'How it works',t:'Draw what is in her way',l:'Strike through rocks. Touch land that juts out. She keeps clear of ink.',len:8.6,s:3.6,draw:vDraw},
+  ink:{k:'Second night',t:'One bottle a night',l:'Every stroke spends ink. Short strokes across her course go furthest.',len:7,s:4.9,draw:vInkCard},
+  night:{k:'Before she sails',t:'Night',l:'She sails exactly what you drew. The tide is her clock.',len:8,s:3.5,draw:vNightCard},
+  wreck:{k:'What happened',t:'What you leave off, she finds',l:'Each strike costs her tide. The bay marks it in red. She never hits it twice.',len:9,s:2.3,draw:vWreck},
+  tide:{k:'What happened',t:'The tide is her clock',l:'Every detour costs tide. A short stroke beats a long wall.',len:9,s:6.6,draw:vTideCard},
+  again:{k:'Second night',t:'Three nights, one chart',l:'Your ink and her red marks stay. Three other lamps are lit tonight.',len:7.4,s:2.6,draw:vAgain},
+  lamps:{k:'The coast',t:'Lamps',l:'Each night home lights a lamp. Two lamps open the next bay.',len:5.6,s:3,draw:vLampsCard},
+  marks:{k:'The coast',t:'Three marks',l:'Dry: no strikes. Spare: a third of each bottle left. First: three lamps, first try.',len:7.5,s:1.2,draw:vMarks},
+  supplies:{k:'The chandler',t:'Supplies',l:'Each lasts one night. Tap one at dusk: more ink, light, or tide.',len:7.5,s:1.5,draw:vSupplies},
+  log:{k:'The log',t:'Nights in a row',l:'Draw tonight\u2019s bay each night. A lay day covers one you miss.',len:6.4,s:5.6,draw:vLogCard},
+  river:{k:'New on this coast',t:'The river',l:'Upriver, port to port. Touch each point of land her course cuts across.',h:'She runs upriver, port to port. Touch each point of land and islet that crosses her course.',len:8.6,s:2.9,draw:vRiverCard},
+  current:{k:'New on this coast',t:'The current',l:'It sets her off her line. Mark what lies just down-current.',h:'The current carries her off her line. Mark what lies down-current of it.',len:8.6,s:6.2,draw:vCurrent},
+  barges:{k:'New tonight',t:'Barges at anchor',l:'Unlit, on the inside of the bends. Strike through them like rocks.',h:'Barges lie at anchor in the channel, without lights. The river still runs.',len:8.6,s:3.4,draw:vBarges},
+  drying:{k:'New on this coast',t:'The drying shore',l:'Dashed rocks are under water tonight, bare tomorrow. Spare ink can mark them early.',h:'Dashed rocks are under water tonight. They will not be tomorrow.',len:8.6,s:2.6,draw:vDrying},
+  bars:{k:'New on this coast',t:'Bars',l:'Sand shuts once she has made its numbered lamp. Then it is rock.',h:'Dotted sand closes once she has made the lamp numbered on it.',len:9,s:7.4,draw:vBars},
+  cloud:{k:'New on this coast',t:'Low cloud',l:'Cloud hides what lies under it. Wait and it passes. The light won\u2019t.',h:'Cloud is crossing the bay. Wait and it passes; the light will not.',len:7.8,s:2.2,draw:vCloud},
+  ice:{k:'New on this coast',t:'Ice',l:'It drifts all night. Ink where it will be, not where it lies.',h:'Ice drifts down the wind all night. The dotted track is where it will go; each tick is a quarter of the tide.',len:9.2,s:7.2,draw:vIce},
+  decoy:{k:'New on this coast',t:'False lights',l:'A light with no harbour is a wrecker\u2019s. Touch it with ink.',h:'A light with no harbour is a wrecker’s. Touch it with ink and she will not be fooled.',len:8.8,s:6.6,draw:vDecoy},
+  lanes:{k:'New on this coast',t:'Shipping lanes',l:'Trace a ship\u2019s length of a lane and she gives way to its ships.',h:'Ships run the dotted lanes harbour to harbour, without lights. Trace a ship’s length of a lane and she will give way to them.',len:9.6,s:6.9,draw:vLanes},
+  six:{k:'New on this coast',t:'The long passage',l:'Six lamps a night, one bottle. Ink only where her course runs.',h:'Six lamps tonight, and everything this coast has taught her.',len:6,s:4.8,draw:vSix}
+};
+const CARD_IDS=Object.keys(CARDS),FIRST_CARDS=['dusk','draw','ink','night','wreck'];
+// what this bay asks of the chart tonight, oldest idea first; the last is the newest, and names the coast
+function feats(b,ni){const f=[];if(b.winding)f.push('river');if(b.nightCur[ni])f.push('current');if(ni>=2&&b.rocks.some(q=>q.kind==='barge'))f.push('barges');
+  if(b.rocks.some(q=>q.kind==='dry'))f.push('drying');if(b.rocks.some(q=>q.kind==='bar'))f.push('bars');if(b.clouds[ni].length)f.push('cloud');if(b.bergs.length)f.push('ice');
+  if(b.decoys[ni].length)f.push('decoy');if(b.lanes.some(l=>ni>=l.from))f.push('lanes');if(b.six)f.push('six');return f;}
+function featHint(b,ni){const f=feats(b,ni||0);return f.length?CARDS[f[f.length-1]].h:'';}
+const Cards={open:false,deck:[],i:0,t:0,done:null,go:null};
+let CALM=false;try{CALM=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);}catch(e){}
+const cardsOn=()=>!META.cards.off,cardSeen=id=>!!META.cards.seen[id];
+// Show the cards in ids the player has not seen (all of them with o.force), at most o.max. The game clock stands still while a card is up.
+function offerCards(ids,o){o=o||{};let list=ids.filter(id=>CARDS[id]&&(o.force||(cardsOn()&&!cardSeen(id))));if(o.max)list=list.slice(0,o.max);
+  if(!list.length||Cards.open){if(o.done)o.done();return false;}
+  Cards.deck=list;Cards.i=0;Cards.done=o.done||null;Cards.go=o.go||null;Cards.open=true;S.stroke=null;setPen(0);$('card').classList.add('on');showCard();return true;}
+function showCard(){const id=Cards.deck[Cards.i],d=CARDS[id],n=Cards.deck.length,end=Cards.i===n-1;Cards.t=0;
+  $('cardK').textContent=d.k+(n>1?' · '+(Cards.i+1)+' of '+n:'');$('cardT').textContent=d.t;$('cardL').textContent=d.l;
+  $('cardD').textContent=n>1?Cards.deck.map((_,k)=>k===Cards.i?'●':'○').join(' '):'';
+  $('cardN').textContent=end?(Cards.go||'Got it'):'Next';$('cardS').style.visibility=n>1&&!end?'visible':'hidden';
+  plog('C',CARD_IDS.indexOf(id));drawCard();}
+function nextCard(skip){if(!Cards.open)return;const seen=META.cards.seen;
+  if(skip){for(let k=Cards.i;k<Cards.deck.length;k++)seen[Cards.deck[k]]=1;plog('K',CARD_IDS.indexOf(Cards.deck[Cards.i]));Cards.i=Cards.deck.length;}
+  else{seen[Cards.deck[Cards.i]]=1;Cards.i++;}
+  saveMeta();
+  if(Cards.i<Cards.deck.length){SFX.tick();showCard();return;}
+  Cards.open=false;$('card').classList.remove('on');last=performance.now();const f=Cards.done;Cards.done=null;if(f)f();}
+const cardCv=$('cardC'),cardCtx=cardCv.getContext('2d');
+function drawCard(){if(!Cards.open)return;const d=CARDS[Cards.deck[Cards.i]],c=cardCtx,w=cardCv.clientWidth||320,dpr=Math.min(window.devicePixelRatio||1,2),pw=Math.max(2,Math.round(w*dpr)),ph=Math.round(pw*VH/VW);
+  if(cardCv.width!==pw||cardCv.height!==ph){cardCv.width=pw;cardCv.height=ph;}
+  c.setTransform(pw/VW,0,0,pw/VW,0,0);c.save();c.beginPath();c.rect(0,0,VW,VH);c.clip();c.globalAlpha=1;c.lineCap='round';c.lineJoin='round';d.draw(c,CALM?d.s:Cards.t%d.len);c.restore();}
+$('cardN').onclick=e=>{e.stopPropagation();audio();nextCard();};$('cardS').onclick=e=>{e.stopPropagation();audio();nextCard(true);};
+function cardsLine(){const b=$('bCards');if(b)b.textContent='Tutorial cards: '+(cardsOn()?'on':'off');}
+$('bCards').onclick=e=>{e.preventDefault();META.cards.off=!META.cards.off;saveMeta();cardsLine();};
+// Replay: every card is unseen again (so each new thing is introduced afresh), cards are on, and the five first-night cards play now.
+$('bReplay').onclick=e=>{e.preventDefault();audio();META.cards={off:false,seen:{}};saveMeta();cardsLine();offerCards(FIRST_CARDS,{go:'Done'});};
+// the cards a dusk owes: the three that open the first night, or else whatever is new tonight (two at most; the rest keep)
+function duskCards(){if(!cardSeen('dusk'))return{ids:['dusk','draw'],go:'Draw'};
+  const ids=[];if(S.ni>0)ids.push('again','ink');ids.push(...feats(S.bay,S.ni).reverse());if(['ink','light','tide'].some(k=>META.inv[k]>0))ids.push('supplies');return{ids,max:2,go:'Draw'};}
+// The first night only: her course as the chart stands is pencilled in, up to the first thing she would strike, and the light waits for the first stroke.
+const GUIDE_CAP='Tonight only, her course is pencilled in. Strike through whatever it runs into.';
+function guideRefresh(){if(!S.guide||!S.bay)return;const cc=cloneChart(S.chart),N=nightNew(S.bay,cc,S.ni);let hit=null,g=0;
+  while(!N.done&&g++<20000){nightStep(N,S.bay,cc,1/30);hit=N.events.find(e=>e.k==='strike');if(hit)break;N.events.length=0;}
+  S.guideTrack=N.track.slice();if(hit)S.guideTrack.push({x:hit.x,y:hit.y});
+  S.guideHit=hit?{x:hit.x,y:hit.y,hdg:hit.hdg,rock:hit.rock!=null?S.bay.rocks[hit.rock]:null}:null;
+  if(S.phase==='dusk'&&S.chart.strokes.length)caption('Dusk',hit?GUIDE_CAP:N.made?'Her course runs clean. Cast off when you are ready.':'Too much ink in her way: she would miss the tide.');}
+function drawGuide(c,d){const tr=S.guideTrack;if(!tr||tr.length<2)return;const col=mixc([84,92,106],CREAM,d,.92),T=S.cloudT||0;
+  c.save();c.strokeStyle=col;c.lineWidth=2.4;c.lineCap='butt';c.setLineDash([5,8]);c.lineDashOffset=-T*24;c.beginPath();tr.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.stroke();c.setLineDash([]);c.lineDashOffset=0;
+  const h=S.guideHit;if(h){const pu=(T%1.4)/1.4;c.lineWidth=2.6;c.globalAlpha=.9*(1-pu);c.beginPath();c.arc(h.x,h.y,14+pu*30,0,7);c.stroke();c.globalAlpha=1;
+    if(!S.chart.strokes.length){ // until the first stroke, the stroke to make is shown being made
+      const k=(T%2.8)/2.8,q=h.rock;
+      if(q){const px=-Math.sin(h.hdg),py=Math.cos(h.hdg),hl=q.rmax+8,a=[q.x-px*hl,q.y-py*hl],b=[q.x+px*hl,q.y+py*hl],p=smooth(clamp((k-.2)/.45,0,1)),al=1-clamp((k-.8)/.2,0,1);
+        c.save();c.globalAlpha=.4*al;c.strokeStyle=mixc(INK,CREAM,d);c.lineWidth=3.4;c.lineCap='round';c.beginPath();c.moveTo(a[0],a[1]);c.lineTo(a[0]+(b[0]-a[0])*p,a[1]+(b[1]-a[1])*p);c.stroke();c.restore();
+        vPen(c,d,a[0]+(b[0]-a[0])*p,a[1]+(b[1]-a[1])*p,1-clamp(k/.2,0,1),al);}
+      else{const dn=smooth(clamp(k/.3,0,1)),al=1-clamp((k-.75)/.25,0,1);if(k>.3){c.save();c.globalAlpha=.4*al;c.fillStyle=mixc(INK,CREAM,d);c.beginPath();c.arc(h.x,h.y,3.4,0,7);c.fill();c.restore();}vPen(c,d,h.x,h.y,1-dn,al);}}}
+  c.restore();}
 
 /* ---------- update ---------- */
 let lastTide=-1;
 function update(dt){
+  if(Cards.open)return; // a card holds the clock
   for(let i=timers.length-1;i>=0;i--){const tm=timers[i];tm.t-=dt;if(tm.t<=0){timers.splice(i,1);tm.fn();}}
   if(S.shake>0)S.shake=Math.max(0,S.shake-dt*22);
   for(const r of S.rings)r.t+=dt;while(S.rings.length&&S.rings[0].t>1.2)S.rings.shift();
   if(S.phase==='dusk'){S.cloudT+=dt;
-    if(!S.began){S.wait+=dt;if(S.wait>(S.ni===0?3.5:0.6))S.began=true;}
+    if(!S.began){S.wait+=dt;if(!S.guide&&S.wait>(S.ni===0?3.5:0.6))S.began=true;}
     if(S.began)S.duskT+=dt;
     S.dark=smooth((S.duskT-CFG.GRACE)/(CFG.DUSK-CFG.GRACE))*0.985;
     if(S.duskT>CFG.DUSK-6&&S.duskT-dt<=CFG.DUSK-6)caption('','The light is going.',4);
@@ -799,9 +1211,9 @@ function update(dt){
     const N=S.N,steps=S.ff?4:1;
     for(let k=0;k<steps&&!N.done;k++)nightStep(N,S.bay,S.chart,dt);
     while(N.events.length){const e=N.events.shift();
-      if(e.k==='strike'){SFX.crunch();S.shake=7;S.rings.push({x:e.x,y:e.y,t:0});
+      if(e.k==='strike'){SFX.crunch();Native.buzz('strike');S.shake=7;S.rings.push({x:e.x,y:e.y,t:0});
         if(!S.toldRed){S.toldRed=true;caption('','The bay marks what you didn’t.',2.8);}}
-      else if(e.k==='lamp'){SFX.bell();}
+      else if(e.k==='lamp'){SFX.bell();Native.buzz('lamp');}
       else if(e.k==='hold'){SFX.dry();if(!S.toldHold){S.toldHold=true;caption('','She gives way to the ship.',2.4);}}
     }
     const left=Math.max(0,N.limit-N.t),sec=Math.ceil(left);
@@ -821,11 +1233,13 @@ function update(dt){
 
 /* ---------- render ---------- */
 let VIEW={s:1,ox:0,oy:0,rot:false,dpr:1};
-function resize(){const box=cv.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2),w=Math.max(1,box.width||innerWidth),h=Math.max(1,box.height||innerHeight);
+// the notch, the home bar and the rounded corners: the chart keeps inside them
+function safeArea(){try{const cs=getComputedStyle($('safe')),f=v=>parseFloat(v)||0;return{t:f(cs.paddingTop),r:f(cs.paddingRight),b:f(cs.paddingBottom),l:f(cs.paddingLeft)};}catch(e){return{t:0,r:0,b:0,l:0};}}
+function resize(){const box=cv.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2),w=Math.max(1,box.width||innerWidth),h=Math.max(1,box.height||innerHeight),sa=safeArea();
   cv.width=Math.max(1,(w*dpr)|0);cv.height=Math.max(1,(h*dpr)|0);
-  const rot=h>w*1.08,band=h>=540,top=band?Math.round(clamp(h*0.2,126,150)):0,bot=band?68:0,ah=h-top-bot;
-  const s=rot?Math.min(w/H,ah/W):Math.min(w/W,ah/H);
-  const was=VIEW.rot;VIEW={s,rot,dpr,ox:rot?(w-H*s)/2:(w-W*s)/2,oy:top+(rot?(ah-W*s)/2:(ah-H*s)/2),left:box.left||0,topPx:box.top||0};
+  const rot=h>w*1.08,band=h>=540,top=(band?Math.round(clamp(h*0.2,126,150)):0)+sa.t,bot=(band?68:0)+sa.b,ah=h-top-bot,aw=w-sa.l-sa.r;
+  const s=rot?Math.min(aw/H,ah/W):Math.min(aw/W,ah/H);
+  const was=VIEW.rot;VIEW={s,rot,dpr,ox:sa.l+(rot?(aw-H*s)/2:(aw-W*s)/2),oy:top+(rot?(ah-W*s)/2:(ah-H*s)/2),left:box.left||0,topPx:box.top||0};
   document.body.classList.toggle('band',band);if(was!==rot&&S.bay)paintTruth(S.bay);}
 function applyView(c){const{s,ox,oy,rot,dpr}=VIEW,sh=S.shake,jx=sh?(Math.random()-.5)*sh:0,jy=sh?(Math.random()-.5)*sh:0;
   if(rot)c.setTransform(0,s*dpr,-s*dpr,0,(ox+H*s+jx)*dpr,(oy+jy)*dpr);else c.setTransform(s*dpr,0,0,s*dpr,(ox+jx)*dpr,(oy+jy)*dpr);}
@@ -959,6 +1373,7 @@ function render(){
     const CL=bay.clouds[S.ni];if(CL.length){const fill=mixc([248,245,236],NIGHT,d),edge=mixc(INK,CREAM,d,.5),lob=f=>{const x=cloudX(f,tt);c.beginPath();for(const l of f.lobes){c.moveTo(x+l.dx+l.r,f.y+l.dy);c.arc(x+l.dx,f.y+l.dy,l.r,0,6.2832);}};
       for(const f of CL){lob(f);c.strokeStyle=edge;c.lineWidth=2.4;c.stroke();}for(const f of CL){lob(f);c.fillStyle=fill;c.fill();}
       drawInk(c,ch,d);}}
+  if(S.phase==='dusk'&&S.guide)drawGuide(c,d);
   const curNow=bay.nightCur[S.ni];
   if(curNow&&(S.phase==='dusk'||S.phase==='night')){const cu=curNow,t0=performance.now()/1000,al=S.phase==='night'?0.16:0.5*(1-d)+0.08,ux=cu.x/cu.mag,uy=cu.y/cu.mag;
     c.strokeStyle=mixc(INK,CREAM,d,al);c.lineWidth=1.6;c.beginPath();
@@ -999,19 +1414,23 @@ function render(){
 }
 
 /* ---------- input: one pointer path for mouse, pen and thumb ---------- */
+let penId=null,penSeen=0;
 function penDown(e){
   audio();
   if(S.phase==='night'){S.ff=true;return;}
   if(S.phase!=='dusk')return;
+  // a stroke in progress belongs to the pointer that began it; and for a moment after an Apple Pencil has been down, a touch is taken for the resting hand
+  if(S.stroke&&penId!==null&&e.pointerId!==penId)return;
+  if(e.pointerType==='pen')penSeen=performance.now();else if(e.pointerType==='touch'&&performance.now()-penSeen<900)return;
   const p=toWorld(e.clientX,e.clientY),c=S.chart;
   if(p.x<0||p.y<0||p.x>W||p.y>H)return;
-  if(c.ink<CFG.BLOT){SFX.dry();if(!S.toldDry){S.toldDry=true;caption('','The bottle is dry.',2.2);}return;}
-  S.began=true;c.ink-=CFG.BLOT;c.spent+=CFG.BLOT;
-  S.stroke=[p.x,p.y];c.strokes.push(S.stroke);inkStamp(c,p.x,p.y);
+  if(c.ink<CFG.BLOT){SFX.dry();Native.buzz('dry');if(!S.toldDry){S.toldDry=true;caption('','The bottle is dry.',2.2);}return;}
+  if(S.guide&&!S.began)hint('');S.began=true;c.ink-=CFG.BLOT;c.spent+=CFG.BLOT;
+  S.stroke=[p.x,p.y];penId=e.pointerId;c.strokes.push(S.stroke);inkStamp(c,p.x,p.y);
   try{cv.setPointerCapture(e.pointerId);}catch(_){}
   if(!S.capFade){S.capFade=true;const id=capId;after(1.4,()=>{if(capId===id)caption('','');});}}
 function penMove(ev){
-  if(S.phase!=='dusk'||!S.stroke)return;
+  if(S.phase!=='dusk'||!S.stroke||(penId!==null&&ev.pointerId!==penId))return;if(ev.pointerType==='pen')penSeen=performance.now();
   const list=ev.getCoalescedEvents?ev.getCoalescedEvents():null;for(const e of(list&&list.length?list:[ev]))penPoint(e);}
 function penPoint(e){
   if(!S.stroke)return;
@@ -1023,17 +1442,20 @@ function penPoint(e){
   if(d>c.ink){const t=c.ink/d;p.x=lx+(p.x-lx)*t;p.y=ly+(p.y-ly)*t;d=c.ink;}
   c.ink-=d;c.spent+=d;st.push(p.x,p.y);inkSeg(c,lx,ly,p.x,p.y);
   setPen(Math.min(.16,.04+d*.012));clearTimeout(penPoint._t);penPoint._t=setTimeout(()=>setPen(0),70);}
-function penUp(){S.stroke=null;S.ff=false;setPen(0);}
+function penUp(ev){if(ev&&S.stroke&&penId!==null&&ev.pointerId!=null&&ev.pointerId!==penId)return;const had=!!S.stroke;penId=null;S.stroke=null;S.ff=false;setPen(0);if(had&&S.guide&&S.phase==='dusk')guideRefresh();}
 cv.addEventListener('pointerdown',penDown);cv.addEventListener('pointermove',penMove);
 addEventListener('pointerup',penUp);addEventListener('pointercancel',penUp);
 addEventListener('keydown',e=>{
+  if(Cards.open){if(e.key===' '||e.key==='Enter'){e.preventDefault();if(!e.repeat)nextCard();}else if(e.key==='Escape')nextCard(true);return;}
   if(e.key==='m'||e.key==='M'){muted=!muted;META.muted=muted;saveMeta();if(MG)MG.gain.value=muted?0:0.9;return;}
   if(e.key===' '||e.key==='Enter'){e.preventDefault();audio();
     if(S.phase==='night'){S.ff=true;return;}
     const b=el.btns.querySelector('button');if(S.phase==='title'){if(el.title.style.display!=='none')$('bCoast').click();}else if(b&&!e.repeat)b.click();}});
 addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter')S.ff=false;});
+document.addEventListener('gesturestart',e=>e.preventDefault()); // no pinch-zoom of the page inside the app
 addEventListener('resize',resize);addEventListener('orientationchange',()=>setTimeout(resize,250));if(window.visualViewport)visualViewport.addEventListener('resize',resize);setTimeout(resize,400);
-$('bCoast').onclick=()=>{audio();showCoast();};
+// someone who has never played is not shown a map first: the first bay opens, and the map is there when they come back from it
+$('bCoast').onclick=()=>{audio();if(cardsOn()&&!DEV&&!META.nights&&!lampsOn(STORES()[0])){S.co=0;startBay(false,null,0);}else showCoast();};
 $('bDaily').onclick=()=>{audio();startBay(true);};
 $('bRandom').onclick=()=>{audio();startBay(false);};
 
@@ -1041,6 +1463,7 @@ $('bRandom').onclick=()=>{audio();startBay(false);};
 const DT=1/60;let last=performance.now(),acc=0;
 function frame(now){const elp=Math.min(.1,(now-last)/1000);last=now;acc+=elp;
   while(acc>=DT){acc-=DT;if(!S.paused)update(DT);}
+  if(Cards.open){Cards.t+=elp;drawCard();}
   render();requestAnimationFrame(frame);}
 
 /* ---------- debug API (headless-safe: step() drives time when rAF is asleep) ---------- */
@@ -1048,7 +1471,16 @@ window.IBD={
   get S(){return S;},CFG,VERSION,showCoast,coastDiff,playSummary,setDev,showLog,logRun,get DEV(){return DEV;},openWheel,useSupply,bottle,get META(){return META;},genBay,newChart,runNight,bench,botSlash,botOmni,
   start(seed){startBay(false,seed);},
   bay(co,ci){S.co=co;startBay(false,null,ci);},
-  step(sec){const n=Math.round((sec||1)/DT);for(let i=0;i<n;i++)update(DT);render();return this.info();},
+  step(sec){if(Cards.open){Cards.t+=(sec||1);render();drawCard();return this.info();}const n=Math.round((sec||1)/DT);for(let i=0;i<n;i++){if(Cards.open)break;update(DT);}render();drawCard();return this.info();},
+  Cards,CARDS,CARD_IDS,offerCards,nextCard,feats,Native,Ads,loadMeta,resize,
+  card(){return Cards.open?Cards.deck[Cards.i]:null;},
+  cardAt(id,t){if(Cards.open){Cards.open=false;$('card').classList.remove('on');}offerCards([id],{force:true});Cards.t=t||0;drawCard();},
+  // a contact sheet of card pictures at chosen moments, for looking them over: cells = [[id,seconds],...]
+  sheet(cells,cols,sc){cols=cols||4;sc=sc||.5;let v=$('sheet');if(!v){v=document.createElement('canvas');v.id='sheet';document.body.appendChild(v);}
+    const rows=Math.ceil(cells.length/cols),cw=VW*sc,ch=VH*sc+14;v.width=cols*(cw+6)*2;v.height=rows*(ch+6)*2;v.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#666;width:'+cols*(cw+6)+'px;height:'+rows*(ch+6)+'px';
+    const c=v.getContext('2d');cells.forEach(([id,t],k)=>{const x=(k%cols)*(cw+6)+3,y=Math.floor(k/cols)*(ch+6)+3;c.setTransform(2*sc,0,0,2*sc,2*x,2*y);c.save();c.beginPath();c.rect(0,0,VW,VH);c.clip();c.globalAlpha=1;c.lineCap='round';c.lineJoin='round';CARDS[id].draw(c,t);c.restore();
+      c.setTransform(2,0,0,2,2*x,2*y);c.fillStyle='#fff';c.font='11px monospace';c.textAlign='left';c.textBaseline='alphabetic';c.fillText(id+' @'+t,2,VH*sc+11);});return cells.length;},
+  unsheet(){const e=$('sheet');if(e)e.remove();},
   line(x1,y1,x2,y2){const c=S.chart;if(S.phase!=='dusk')return false;S.began=true;return botLine(c,x1,y1,x2,y2);},
   castOff(){if(S.phase==='dusk')startNight();},
   pause(on){S.paused=on!==false;return S.paused;},
@@ -1063,11 +1495,11 @@ window.IBD={
 
 /* ---------- boot ---------- */
 resize();
-if(Ads.native){const f=$('wFine');if(f)f.innerHTML='Watching is always your choice.';}
+if(Ads.native){const f=$('wFine');if(f)f.innerHTML='Watching is always your choice. <a href="privacy.html" style="color:inherit">Privacy</a>';}
 if('serviceWorker' in navigator&&!Ads.native&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 $('bLog').onclick=e=>{e.preventDefault();sendLog();};
 let hidAt=0;document.addEventListener('visibilitychange',()=>{if(document.hidden)hidAt=Date.now();else if(hidAt&&Date.now()-hidAt>1800000){META.sessions=(META.sessions||0)+1;plog('S');}});
-loadMeta().then(()=>{META.sessions=(META.sessions||0)+1;plog('S');muted=!!META.muted;const k=dayKey();if(META.daily[k])$('fine').textContent='tonight’s bay, first try: home '+META.daily[k].home+'/3 · M mutes · prototype v'+VERSION;devMark();showLog();});
+loadMeta().then(()=>{META.sessions=(META.sessions||0)+1;plog('S');muted=!!META.muted;const k=dayKey();if(META.daily[k])$('fine').textContent='tonight’s bay, first try: home '+META.daily[k].home+'/3 · M mutes · prototype v'+VERSION;devMark();showLog();cardsLine();Native.boot();});
 requestAnimationFrame(frame);
 </script>
 </body>

@@ -1,18 +1,22 @@
 {
   "name": "ink-before-dark",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "private": true,
   "description": "Ink Before Dark: the web game is index.html; this file only exists to wrap it for the App Store.",
   "scripts": {
     "build": "node scripts/build.mjs",
     "sync": "npm run build && npx cap sync ios",
     "ios": "npm run sync && npx cap open ios",
-    "test": "node test/charts.mjs && node test/bench.mjs 100"
+    "test": "node test/charts.mjs && node test/cards.mjs && node test/native.mjs && node test/offline.mjs && node test/bench.mjs 100",
+    "pretest": "node scripts/build.mjs"
   },
   "dependencies": {
     "@capacitor-community/admob": "^8.0.0",
     "@capacitor/core": "^8.0.0",
-    "@capacitor/ios": "^8.0.0"
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.0.0",
+    "@capgo/native-purchases": "^8.11.0",
+    "ibd-native": "file:native/ibd-native"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.0.0"

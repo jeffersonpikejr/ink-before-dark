@@ -6,7 +6,7 @@ A single-file browser game with one verb: **draw**. You get twenty seconds of fa
 
 Your chart doesn't have to be true. It has to bring her home.
 
-**Status:** v0.15 (2026-11-25): cloud, ice and shipping lanes rebuilt from play notes; a daily log. Otherwise frozen for a playtest. Ten coasts, 100 charts; App Store wrapper prepared, not yet built.
+**Status:** v0.16 (2026-11-27): tutorial cards and a guided first night; the App Store wrapper's code written (haptics, Game Center, Remove Ads), not yet built. Otherwise frozen for a playtest. Ten coasts, 100 charts; App Store wrapper prepared, not yet built.
 
 **▶ Play in your browser: https://jeffersonpikejr.github.io/ink-before-dark/** — on an iPad or iPhone, Share → Add to Home Screen runs it full-screen.
 
@@ -53,6 +53,14 @@ One `index.html` (about 600 lines): canvas rendering, a Dijkstra pilot on an 8-u
 Debug API in the console: `IBD.start(seed)` · `IBD.step(seconds)` (drives time by hand when animation frames are asleep) · `IBD.pause()` · `IBD.still()` (no CSS transitions) · `IBD.pen([[x,y],…])` (draws through the real pointer handlers) · `IBD.castOff()` · `IBD.info()` · `IBD.bench(n)`.
 
 ## Changelog
+
+### v0.16 — The first night (2026-11-27)
+- **Tutorial cards.** One small animated chart and one sentence each, in the game's own ink and failing light. The first bay has five, each shown at the moment it explains: Dusk and Draw before the first dusk, Night at the first cast-off, why she wrecks at the first strike, ink at the second dusk. After that a card appears only the first time something new is met (a current, the river, ice, shipping lanes, bars, supplies, marks and the rest).
+- **A guided first night.** Her course is pencilled in up to the first thing she would strike, the stroke to make is shown being made, and the light holds until the first stroke. It tells you when her course runs clean. The second night you judge it yourself.
+- A newcomer's first tap on The Coast opens the first bay.
+- "Tutorial cards: on/off" and "Replay the tutorial" on the title. Cards honour the device's reduce-motion setting. Seen cards are kept in the save; older saves are credited with what their players already know.
+- **For the App Store build** (written, not yet compiled): haptics, a Game Center leaderboard for tonight's bay, a Remove Ads purchase with restore, Google's consent form before the first ad, safe areas, a copy of the save outside the web view. A stroke now belongs to the pointer that began it, so a resting hand cannot add to a Pencil line.
+- `npm test` now also checks the cards, the native code against stand-in plugins, and that nothing is loaded from another host.
 
 ### v0.15 — One gesture each (2026-11-25)
 - **Cloud replaces fog.** Banks of cloud cross the bay on the wind while you draw. Nothing under them stays hidden; waiting shows it, and waiting costs light. Your ink and the lamps always show through.
