@@ -58,7 +58,7 @@ The game is `index.html`. Everything under `ios/` and `native/` only wraps it. *
 
    The `DEVELOPER_DIR=…` prefix in the commands below is now harmless and no longer needed.
 2. **From the command line, add `-packageAuthorizationProvider netrc`.** Without it `xcodebuild` asks the macOS keychain for the saved GitHub password before downloading public packages, a prompt appears on the Mac's screen, and the build hangs silently until someone answers. If that prompt is still showing from the first attempt, deny it. Building from the Xcode window does not have this problem in the same way: it asks once and you can deny.
-3. **Disk.** The iOS Simulator and build files took about 20 GB. There were 21 GB free on 2026-11-28.
+3. **Disk.** The iOS Simulator and build files took about 20 GB. There were 13 GB free after the 2026-11-28 session (both simulators had been booted).
 
 A command-line build looks like this:
 
