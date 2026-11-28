@@ -146,11 +146,11 @@ A new feature now needs a card: `test/cards.mjs` fails if any shipped chart asks
 
 ## The App Store build (can start any time)
 
-**State at v0.16 (2026-11-27):** everything that can be written without running Xcode is written: haptics, a Game Center leaderboard for tonight's bay, the Remove Ads purchase with restore, Google's consent form before the first ad, safe areas, a native copy of the save, an offline audit, Pencil palm rules. None of it has been compiled or run. Xcode 27.2 is on the Mac with its licence unaccepted and no simulator downloaded. `store/APP_STORE.md` is the handoff and says exactly where it stopped.
+**State at v0.17 (2026-11-27):** the app builds and runs in the iOS Simulator on an iPhone 18 Pro and an iPad Pro 11-inch, with haptics, a Game Center leaderboard for tonight's bay, the Remove Ads purchase with restore, Google's consent form before the first ad, safe areas, a native copy of the save, an offline audit and Pencil palm rules. All five plugins answer and the tutorial walk passes inside the real web view. Not yet done: a real device, a purchase, a signed-in Game Center player, an ad shown, landscape, signing. `store/APP_STORE.md` is the handoff.
 
-1. Wrap the web build with Capacitor: haptics, Game Center, in-app purchase, ads. ✅ written, unbuilt.
+1. Wrap the web build with Capacitor: haptics, Game Center, in-app purchase, ads. ✅ builds and runs in the Simulator (2026-11-27).
 2. **Ads where they cost the game nothing.** Rewarded: the supply wheel (already built, with a placeholder where the ad goes). Interstitial: only between charts, never between nights, never on coast 1. Sponsored: tonight's bay can carry a "presented by" line. One purchase removes ads.
-3. Game Center: a leaderboard for tonight's bay ✅ written, unbuilt; achievements that mirror the mastery marks (not built).
+3. Game Center: a leaderboard for tonight's bay ✅ built, untested with a signed-in player; achievements that mirror the mastery marks (not built).
 4. Store work: icon, screenshots that are finished charts, a fifteen-second preview that is one dusk and one strike, privacy labels, the tracking prompt ad networks require.
 5. TestFlight with ten outside testers.
 

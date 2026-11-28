@@ -18,40 +18,62 @@ public class GameCenterPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "showLeaderboard", returnType: CAPPluginReturnPromise)
     ]
 
-    /// The first `signIn` call waiting for Game Center's answer. The handler can fire more than once.
+    /// The `signIn` call waiting for Game Center's answer. The handler can fire more than once, or not at all.
     private var pendingSignIn: CAPPluginCall?
     private var pendingSilent = false
+    private var signInAttempt = 0
 
     @objc func signIn(_ call: CAPPluginCall) {
-        DispatchQueue.main.async {
+        let silent = call.getBool("silent") ?? false
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             let player = GKLocalPlayer.local
             if player.isAuthenticated {
                 call.resolve(["signedIn": true, "alias": player.alias])
                 return
             }
+            // An earlier call still waiting is answered first, so no call is ever left hanging.
+            self.finishSignIn(signedIn: false, reason: "superseded")
             self.pendingSignIn = call
-            self.pendingSilent = call.getBool("silent") ?? false
+            self.pendingSilent = silent
+            self.signInAttempt += 1
+            let attempt = self.signInAttempt
+            // Game Center does not always answer (a simulator; a device with Game Center switched off).
+            // Give up quietly: soon for a silent check, later when its sign-in sheet may be on screen.
+            DispatchQueue.main.asyncAfter(deadline: .now() + (silent ? 4 : 30)) { [weak self] in
+                guard let self = self, self.signInAttempt == attempt else { return }
+                self.finishSignIn(signedIn: false, reason: "no answer from Game Center")
+            }
             player.authenticateHandler = { [weak self] viewController, error in
-                guard let self = self else { return }
-                if let viewController = viewController {
-                    // Game Center wants to show its own sign-in sheet. A silent check does not let it.
-                    if self.pendingSilent {
-                        let waiting = self.pendingSignIn
-                        self.pendingSignIn = nil
-                        waiting?.resolve(["signedIn": false, "reason": "not signed in"])
-                    } else {
-                        self.bridge?.viewController?.present(viewController, animated: true)
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    if let viewController = viewController {
+                        // Game Center wants to show its own sign-in sheet. A silent check does not let it,
+                        // and neither does a call that has already been answered.
+                        if self.pendingSilent || self.pendingSignIn == nil {
+                            self.finishSignIn(signedIn: false, reason: "not signed in")
+                        } else {
+                            self.bridge?.viewController?.present(viewController, animated: true)
+                        }
+                        return
                     }
-                    return
-                }
-                let waiting = self.pendingSignIn
-                self.pendingSignIn = nil
-                if GKLocalPlayer.local.isAuthenticated {
-                    waiting?.resolve(["signedIn": true, "alias": GKLocalPlayer.local.alias])
-                } else {
-                    waiting?.resolve(["signedIn": false, "reason": error?.localizedDescription ?? "not signed in"])
+                    if GKLocalPlayer.local.isAuthenticated {
+                        self.finishSignIn(signedIn: true, reason: nil)
+                    } else {
+                        self.finishSignIn(signedIn: false, reason: error?.localizedDescription ?? "not signed in")
+                    }
                 }
             }
+        }
+    }
+
+    private func finishSignIn(signedIn: Bool, reason: String?) {
+        guard let call = pendingSignIn else { return }
+        pendingSignIn = nil
+        if signedIn {
+            call.resolve(["signedIn": true, "alias": GKLocalPlayer.local.alias])
+        } else {
+            call.resolve(["signedIn": false, "reason": reason ?? "not signed in"])
         }
     }
 

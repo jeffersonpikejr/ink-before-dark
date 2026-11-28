@@ -1,44 +1,70 @@
 # App Store build — the handoff
 
-_Last updated 2026-11-27, at v0.16._
+_Last updated 2026-11-27 (evening), at v0.17._
 
-The game is `index.html`. Everything under `ios/` and `native/` only wraps it. **The iOS app has never been compiled or run.** This file says what is built, how far each piece was checked, and the exact point where the work stopped.
+The game is `index.html`. Everything under `ios/` and `native/` only wraps it. **The iOS app now builds and runs in the iOS Simulator** (Xcode 27.2, iOS 27.2 SDK) on an iPhone 18 Pro and an iPad Pro 11-inch. It has not been on a real device, signed, or submitted. This file says what was proved, what was not, and what is left.
 
-## Where it stopped
+## Where it stands
 
-Xcode 27.2 was installed on this Mac at 18:59 on 2026-11-27, part-way through this work. Two things then blocked the build, and both need Jefferson's Mac password:
+**Proved in the Simulator, on both devices, 2026-11-27:**
 
-1. **Xcode's licence has not been accepted.** Every `xcodebuild` and `simctl` call answers "You have not agreed to the Xcode license agreements".
-2. **No iOS Simulator runtime is downloaded.** The iOS 27.2 SDK is inside Xcode, but there is nothing to run an app on.
+- The project resolves its packages and compiles first time: Capacitor 8.6.2, Google Mobile Ads 13.11.0, Google's consent SDK 3.1.0, and this project's own Swift package.
+- The app launches, loads the bundled game from `capacitor://localhost`, and all five plugins answer: Haptics, NativePurchases, GameCenter, Vault, AdMob.
+- The save copy round-trips through the native file, rejects a bad key, and holds the real save after play.
+- A **test** rewarded ad loads from Google. The tracking prompt appears once, after the first finished chart, with the right sentence.
+- The game keeps inside the notch and home bar (iPhone: 62 pt top, 34 pt bottom; iPad: 20 pt bottom). The status bar is hidden.
+- The whole tutorial walk (26 cards, all 21 kinds, a guided first night) passes inside the real web view at 402×874 and 834×1210, with nothing off-screen or clipped.
 
-To clear both, in Terminal:
+**Found and fixed by running it:**
+
+| Found | Fix |
+|---|---|
+| The silent Game Center check never answered when nobody is signed in | The plugin now gives up after 4 s (30 s when its sign-in sheet may be up), and the game has its own timeout |
+| At night on a phone the tide meter was pushed off the right edge (the hidden ink meter still took room). This was in the web game too. | A hidden meter takes no room. Shipped to the web in v0.17. |
+| The status bar showed over the game | Hidden at launch through Capacitor's own `SystemBars` |
+| The first-night hint was hard to read over the chart | It now has the same halo as the caption |
+
+**Not proved:**
+
+- Anything on a real device: haptics (the Simulator has none), a real Pencil, a real notch, airplane mode.
+- A purchase. The store answered "Product not found", as it must until the product exists in App Store Connect or `Products.storekit` is attached to the scheme in Xcode. The game handled that quietly.
+- A signed-in Game Center player, a posted score, the leaderboard screen.
+- An ad being shown and closed (only loaded), Google's consent form, an interstitial.
+- Landscape. Nothing here can rotate the Simulator from the command line.
+- Signing, archiving, TestFlight.
+
+**How it was tested without taps.** The Simulator panel in this app refused to open because `xcode-select` still points at the command-line tools. So the build ran through `xcodebuild` and `simctl` directly, and the app tested itself: `node scripts/selftest.mjs` puts a script into the synced bundle that calls every plugin, plays the whole tutorial walk, and prints results to the app's console; `scripts/sim-selftest.sh` installs, launches, reads that console and photographs each scene. `npx cap copy ios` (or `npm run sync`) takes the script out again. It is never in the shipped game.
+
+## Three things about this Mac
+
+1. **`xcode-select` still points at the command-line tools.** For the live Simulator panel in this app, and for plain `xcodebuild` in Terminal, run:
+
+   ```bash
+   sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+   ```
+
+   Until then, prefix commands with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
+2. **From the command line, add `-packageAuthorizationProvider netrc`.** Without it `xcodebuild` asks the macOS keychain for the saved GitHub password before downloading public packages, a prompt appears on the Mac's screen, and the build hangs silently until someone answers. If that prompt is still showing from the first attempt, deny it. Building from the Xcode window does not have this problem in the same way: it asks once and you can deny.
+3. **Disk.** The iOS Simulator and build files took about 20 GB. There were 17 GB free afterwards.
+
+A command-line build looks like this:
 
 ```bash
-sudo xcodebuild -license accept
+cd ios/App && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild build -project App.xcodeproj -scheme App -destination 'platform=iOS Simulator,name=iPhone 18 Pro' -packageAuthorizationProvider netrc
 ```
-
-```bash
-sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-```
-
-```bash
-xcodebuild -runFirstLaunch && xcodebuild -downloadPlatform iOS
-```
-
-The last one downloads several gigabytes. After that the first build is `npm run ios`, or ask Claude to build and run it in the Simulator on an iPhone and an iPad.
 
 ## What is built, and how far each piece was checked
 
 | Piece | Where | Checked how | Not checked |
 |---|---|---|---|
-| Capacitor 8.6 iOS project, Swift Package Manager, iPhone + iPad, all orientations on iPad | `ios/` | `npx cap sync ios` runs clean and lists four plugins; the project file passes `plutil -lint` | Never opened in Xcode |
-| **Haptics**: a heavy tap on a strike, a light one on a lamp, a notification at dawn, an error tap on a dry bottle | `Native.buzz` in `index.html`; `@capacitor/haptics` 8.0.2 | `test/native.mjs` counts the calls against a stand-in plugin | On a device |
-| **Game Center**: one leaderboard, tonight's bay, first try only | `native/ibd-native/…/GameCenterPlugin.swift`; `Native.gc*` | Swift type-checks against the Mac's GameKit headers and a stand-in Capacitor module; the JavaScript side is tested with a stand-in | Compiled for iOS; a real sign-in; a real leaderboard |
-| **Remove Ads** purchase (StoreKit 2), with Restore Purchases, the price read from the store, sets `META.noAds` | `Native.storeCheck/buy/restore`; `@capgo/native-purchases` 8.11.0 | `test/native.mjs`: cancelled purchase, purchase, restore, and that an empty answer never takes ownership away | A real or sandbox purchase |
-| **Ads** (AdMob 8.4.2): rewarded on the supply wheel, interstitials between charts; Google's consent form before the first ad request; an "Ad privacy choices" link where required | `Ads` in `index.html` | `test/native.mjs`: consent, then initialise, then the first request; no interstitial in a first session; one per three charts; none after Remove Ads; five rewarded a day | A real ad |
-| **Save kept outside the web view**: a file in Application Support, restored at launch if the web view's storage is gone or older | `VaultPlugin.swift`; `Native.vault*`, `loadMeta` | Swift type-checks; the JavaScript is tested for newer-wins, restore and a damaged copy | On a device |
-| **Safe areas**: the chart, meters, captions, buttons and cards keep inside the notch, home bar and corners | CSS `env(safe-area-inset-*)`; `safeArea()` and `resize()` | Layout walked in a browser at 375×812, 812×375, 768×1024 and 1024×768 | A real notch (a browser reports no insets) |
-| **Fully offline**: nothing is loaded from another host; the service worker is skipped inside the app | `test/offline.mjs` (part of `npm test`) | Passes on the game file and on the `www/` bundle | Airplane mode on a device |
+| Capacitor 8.6 iOS project, Swift Package Manager, iPhone + iPad, all orientations on iPad | `ios/` | **Builds and runs** on iPhone 18 Pro and iPad Pro 11-inch simulators | A device; landscape |
+| **Haptics**: a heavy tap on a strike, a light one on a lamp, a notification at dawn, an error tap on a dry bottle | `Native.buzz` in `index.html`; `@capacitor/haptics` 8.0.2 | The real plugin answers in the Simulator; `test/native.mjs` counts the calls | Felt on a device |
+| **Game Center**: one leaderboard, tonight's bay, first try only | `native/ibd-native/…/GameCenterPlugin.swift`; `Native.gc*` | **Compiles and answers** in the Simulator ("not signed in"); the JavaScript side is tested with a stand-in | A real sign-in; a posted score; the leaderboard screen |
+| **Remove Ads** purchase (StoreKit 2), with Restore Purchases, the price read from the store, sets `META.noAds` | `Native.storeCheck/buy/restore`; `@capgo/native-purchases` 8.11.0 | The real plugin answers in the Simulator (no purchases; "Product not found"); `test/native.mjs` covers cancel, buy, restore | A real or sandbox purchase |
+| **Ads** (AdMob 8.4.2): rewarded on the supply wheel, interstitials between charts; Google's consent form before the first ad request; an "Ad privacy choices" link where required | `Ads` in `index.html` | In the Simulator the SDK starts and a **test** rewarded ad loads; `test/native.mjs` covers consent order and cadence | An ad shown and closed; the consent form; an interstitial |
+| **Save kept outside the web view**: a file in Application Support, restored at launch if the web view's storage is gone or older | `VaultPlugin.swift`; `Native.vault*`, `loadMeta` | **Round-trips in the Simulator** and holds the real save; the JavaScript is tested for newer-wins, restore and a damaged copy | Web storage actually being cleared |
+| **Safe areas**: the chart, meters, captions, buttons and cards keep inside the notch, home bar and corners | CSS `env(safe-area-inset-*)`; `safeArea()` and `resize()` | **Measured in the Simulator** with real insets, portrait, on both devices; browser walk at four sizes | Landscape with a notch |
+| **Fully offline**: nothing is loaded from another host; the service worker is skipped inside the app | `test/offline.mjs` (part of `npm test`) | Passes on the game file and the bundle; the app loads from `capacitor://localhost` | Airplane mode on a device |
 | **Pencil**: strokes mapped through the canvas's real box; every coalesced sample used; a stroke belongs to the pointer that began it; a touch within 0.9 s of the Pencil is taken for the resting hand; no pinch-zoom or callout | `penDown/penMove/penUp` | The stroke path is exercised by the browser walk | A real Pencil with a hand resting on the glass |
 | Game Center entitlement | `ios/App/App/App.entitlements`, `CODE_SIGN_ENTITLEMENTS` in the project | Lint only | Signing |
 | StoreKit test product, so the purchase can be tried in the Simulator before the App Store Connect record exists | `ios/App/App/Products.storekit` | Valid JSON, written by hand from memory of Xcode's format | Whether Xcode accepts it. If it does not, make a new one in Xcode: File › New › StoreKit Configuration File. |
@@ -48,7 +74,7 @@ The last one downloads several gigabytes. After that the first build is `npm run
 
 ## What only Jefferson can do
 
-1. **Accept the Xcode licence and download the iOS platform** (above).
+1. **Point `xcode-select` at Xcode** (above), if you want the live Simulator panel.
 2. **Enrol in the Apple Developer Program** (individual, $99 a year) and the **Small Business Program**. Create the app record with bundle id `com.jeffersonpike.inkbeforedark`.
 3. **In App Store Connect, create two things with exactly these ids** (the code looks for them by name):
 
@@ -71,11 +97,10 @@ npm install
 npm run ios
 ```
 
-1. **Package resolution.** Xcode fetches Capacitor, Google Mobile Ads (pinned to 13.11.0 by the AdMob plugin) and Google's consent SDK. This is the first place it can fail. If it does, read the error before changing versions: do not add a second Google Mobile Ads dependency.
-2. **Compile.** Expected warnings: `GKGameCenterViewController` is deprecated in iOS 26 (it is only used on iOS 15 to 17; iOS 18 and later use `GKAccessPoint`), and `@UIApplicationMain` in the template's `AppDelegate.swift`. Capacitor 8.6.2 has not been confirmed on Xcode 27; if the Capacitor package itself fails, run `npm update @capacitor/core @capacitor/ios @capacitor/cli` and `npx cap sync ios`.
-3. **Signing.** Pick the team under Signing & Capabilities. Xcode should add the Game Center capability from the entitlements file.
-4. **Run on an iPhone simulator and an iPad simulator.** To try the purchase without App Store Connect: add `App/Products.storekit` to the project (File › Add Files, no target), then Product › Scheme › Edit Scheme › Run › Options › StoreKit Configuration.
-5. **Check, on a simulator and then on the real iPad:**
+1. **Package resolution and compile.** Done; they work. Expected warnings are in the plugins, not in this project's code. If a later Capacitor or AdMob update breaks resolution, read the error before changing versions, and do not add a second Google Mobile Ads dependency.
+2. **Signing.** Pick the team under Signing & Capabilities. Xcode should add the Game Center capability from the entitlements file.
+3. **Try the purchase in the Simulator.** To do it without App Store Connect: add `App/Products.storekit` to the project (File › Add Files, no target), then Product › Scheme › Edit Scheme › Run › Options › StoreKit Configuration.
+4. **Check on the real iPad and an iPhone** (the first three are already proved in the Simulator):
    - The first launch goes title, The Coast, two cards, a guided first night. Tutorial cards can be turned off and replayed from the title.
    - Nothing sits under the notch or the home bar, in portrait and landscape.
    - The title shows "Tonight's leaderboard", "Remove ads between charts · price" and "Restore purchases".
@@ -121,4 +146,6 @@ npm run ios
 | `ios/App/App/App.entitlements` | Game Center |
 | `ios/App/App/Products.storekit` | A local test product for the Simulator |
 | `scripts/build.mjs` | Copies the game into `www/` for Capacitor |
-| `test/native.mjs`, `test/offline.mjs` | The checks that stand in for a device until there is one |
+| `test/native.mjs`, `test/offline.mjs` | Checks that run without Xcode |
+| `scripts/selftest.mjs`, `scripts/sim-selftest.sh`, `test/selftest.js` | The app testing itself in the Simulator, with screenshots, when nothing can tap it |
+| `ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved` | The package versions Xcode resolved. Committed, so every build uses the same ones. |

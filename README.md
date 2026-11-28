@@ -6,7 +6,7 @@ A single-file browser game with one verb: **draw**. You get twenty seconds of fa
 
 Your chart doesn't have to be true. It has to bring her home.
 
-**Status:** v0.16 (2026-11-27): tutorial cards and a guided first night; the App Store wrapper's code written (haptics, Game Center, Remove Ads), not yet built. Otherwise frozen for a playtest. Ten coasts, 100 charts; App Store wrapper prepared, not yet built.
+**Status:** v0.17 (2026-11-27): tutorial cards and a guided first night; the App Store wrapper builds and runs in the iOS Simulator on iPhone and iPad (not yet on a device). Otherwise frozen for a playtest. Ten coasts, 100 charts; App Store wrapper prepared, not yet built.
 
 **▶ Play in your browser: https://jeffersonpikejr.github.io/ink-before-dark/** — on an iPad or iPhone, Share → Add to Home Screen runs it full-screen.
 
@@ -53,6 +53,11 @@ One `index.html` (about 600 lines): canvas rendering, a Dijkstra pilot on an 8-u
 Debug API in the console: `IBD.start(seed)` · `IBD.step(seconds)` (drives time by hand when animation frames are asleep) · `IBD.pause()` · `IBD.still()` (no CSS transitions) · `IBD.pen([[x,y],…])` (draws through the real pointer handlers) · `IBD.castOff()` · `IBD.info()` · `IBD.bench(n)`.
 
 ## Changelog
+
+### v0.17 — It builds (2026-11-27)
+- The iOS app compiles and runs in the Simulator on an iPhone 18 Pro and an iPad Pro 11-inch (Xcode 27.2). `store/APP_STORE.md` says what that proved and what it did not.
+- Fixed, from running it: at night on a phone the tide meter was pushed off the right edge of the screen (web and app); the Game Center check could wait for ever when nobody is signed in; the status bar showed over the game; the first-night hint was hard to read over the chart.
+- The app can test itself in the Simulator without anyone tapping it: `scripts/selftest.mjs` and `scripts/sim-selftest.sh`.
 
 ### v0.16 — The first night (2026-11-27)
 - **Tutorial cards.** One small animated chart and one sentence each, in the game's own ink and failing light. The first bay has five, each shown at the moment it explains: Dusk and Draw before the first dusk, Night at the first cast-off, why she wrecks at the first strike, ink at the second dusk. After that a card appears only the first time something new is met (a current, the river, ice, shipping lanes, bars, supplies, marks and the rest).
