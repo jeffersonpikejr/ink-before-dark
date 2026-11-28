@@ -20,7 +20,7 @@ The game is `index.html`. Everything under `ios/` and `native/` only wraps it. *
 - **Landscape on a phone.** The title fits one screen. The coast opens at its top and keeps clear of the Dynamic Island. In play the chart, meters and buttons are all clear of it, and a stroke lands where the finger was. Cards and the supply wheel fit.
 - **A test rewarded ad from tap to payout.** It loads, plays, shows "Reward granted", closes, and only then does the wheel spin and the supply land in the locker.
 - **Remove Ads with no product behind it.** The link reads "Not bought · Remove ads between charts" and the game carries on.
-- **iPad:** v0.18 launches to the title (portrait). It was not driven by hand: the Simulator panel asks Jefferson for access to each simulator the first time, and the iPad's request went unanswered.
+- **iPad Pro 11-inch, by hand, later the same day.** Portrait and landscape: title, coast (all ten bays, the buttons and the locker on one screen), a card, dusk with a stroke landing where the finger was, night, the supply wheel. A test rewarded ad loaded (its first load took about twelve seconds), played, closed, and then the wheel spun and paid out. Nothing needed fixing.
 
 **Found and fixed by running it:**
 
@@ -42,8 +42,7 @@ The game is `index.html`. Everything under `ios/` and `native/` only wraps it. *
 - Anything on a real device: haptics (the Simulator has none), a real Pencil, a real notch, airplane mode.
 - A purchase. The store answered "Product not found", as it must until the product exists in App Store Connect or `Products.storekit` is attached to the scheme in Xcode. The game handled that quietly. **There is no command-line way to use `Products.storekit`** (checked 2026-11-28): the file is only read when the app is started with Xcode's Run button and the scheme option set, so `simctl` launches never see it.
 - A signed-in Game Center player, a posted score, the leaderboard screen.
-- An interstitial on screen (its timing is now tested against a stand-in, but none has been seen: it needs a second session and three finished charts). Google's consent form. A rewarded ad on the iPad.
-- Landscape on the iPad, and anything else there by hand (see the access note above).
+- An interstitial on screen (its timing is now tested against a stand-in, but none has been seen: it needs a second session and three finished charts). Google's consent form.
 - Signing, archiving, TestFlight.
 
 **How it was tested.** Since 2026-11-28 `xcode-select` points at Xcode, so the live Simulator panel in the Claude app works and can tap, draw and rotate. Before that the build ran through `xcodebuild` and `simctl` directly, and the app tested itself: `node scripts/selftest.mjs` puts a script into the synced bundle that calls every plugin, plays the whole tutorial walk, and prints results to the app's console; `scripts/sim-selftest.sh` installs, launches, reads that console and photographs each scene. `npx cap copy ios` (or `npm run sync`) takes the script out again. It is never in the shipped game.
@@ -70,13 +69,13 @@ cd ios/App && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuil
 
 | Piece | Where | Checked how | Not checked |
 |---|---|---|---|
-| Capacitor 8.6 iOS project, Swift Package Manager, iPhone + iPad, all orientations on iPad | `ios/` | **Builds and runs** on iPhone 18 Pro and iPad Pro 11-inch simulators; driven by hand on the iPhone in both orientations | A device; the iPad by hand |
+| Capacitor 8.6 iOS project, Swift Package Manager, iPhone + iPad, all orientations on iPad | `ios/` | **Builds and runs** on iPhone 18 Pro and iPad Pro 11-inch simulators; driven by hand on both, in both orientations | A device |
 | **Haptics**: a heavy tap on a strike, a light one on a lamp, a notification at dawn, an error tap on a dry bottle | `Native.buzz` in `index.html`; `@capacitor/haptics` 8.0.2 | The real plugin answers in the Simulator; `test/native.mjs` counts the calls | Felt on a device |
 | **Game Center**: one leaderboard, tonight's bay, first try only | `native/ibd-native/…/GameCenterPlugin.swift`; `Native.gc*` | **Compiles and answers** in the Simulator ("not signed in"); the JavaScript side is tested with a stand-in | A real sign-in; a posted score; the leaderboard screen |
 | **Remove Ads** purchase (StoreKit 2), with Restore Purchases, the price read from the store, sets `META.noAds` | `Native.storeCheck/buy/restore`; `@capgo/native-purchases` 8.11.0 | The real plugin answers in the Simulator (no purchases; "Product not found"); `test/native.mjs` covers cancel, buy, restore | A real or sandbox purchase |
-| **Ads** (AdMob 8.4.2): rewarded on the supply wheel, interstitials between charts; Google's consent form before the first ad request; an "Ad privacy choices" link where required | `Ads` in `index.html` | In the Simulator a **test** rewarded ad loads, plays, closes and pays out, twice; `test/native.mjs` covers consent order, cadence, and both kinds of ad holding the game until they close | An interstitial on screen; the consent form |
+| **Ads** (AdMob 8.4.2): rewarded on the supply wheel, interstitials between charts; Google's consent form before the first ad request; an "Ad privacy choices" link where required | `Ads` in `index.html` | In the Simulator a **test** rewarded ad loads, plays, closes and pays out, on the iPhone and the iPad; `test/native.mjs` covers consent order, cadence, and both kinds of ad holding the game until they close | An interstitial on screen; the consent form |
 | **Save kept outside the web view**: a file in Application Support, restored at launch if the web view's storage is gone or older | `VaultPlugin.swift`; `Native.vault*`, `loadMeta` | **Round-trips in the Simulator** and holds the real save; the JavaScript is tested for newer-wins, restore and a damaged copy | Web storage actually being cleared |
-| **Safe areas**: the chart, meters, captions, buttons and cards keep inside the notch, home bar and corners | CSS `env(safe-area-inset-*)`; `safeArea()` and `resize()` | **Measured in the Simulator** with real insets, portrait, on both devices; seen in landscape on the iPhone 18 Pro (Dynamic Island on the left); browser walk at four sizes | iPad landscape |
+| **Safe areas**: the chart, meters, captions, buttons and cards keep inside the notch, home bar and corners | CSS `env(safe-area-inset-*)`; `safeArea()` and `resize()` | **Measured in the Simulator** with real insets, portrait, on both devices; seen in landscape on the iPhone 18 Pro (Dynamic Island on the left) and the iPad; browser walk at four sizes | A real notch |
 | **Fully offline**: nothing is loaded from another host; the service worker is skipped inside the app | `test/offline.mjs` (part of `npm test`) | Passes on the game file and the bundle; the app loads from `capacitor://localhost` | Airplane mode on a device |
 | **Pencil**: strokes mapped through the canvas's real box; every coalesced sample used; a stroke belongs to the pointer that began it; a touch within 0.9 s of the Pencil is taken for the resting hand; no pinch-zoom or callout | `penDown/penMove/penUp` | The stroke path is exercised by the browser walk | A real Pencil with a hand resting on the glass |
 | Game Center entitlement | `ios/App/App/App.entitlements`, `CODE_SIGN_ENTITLEMENTS` in the project | Lint only | Signing |
@@ -87,7 +86,7 @@ cd ios/App && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuil
 
 ## What only Jefferson can do
 
-1. ~~Point `xcode-select` at Xcode.~~ Done 2026-11-28. Still his: **allow the Simulator panel to use the iPad simulator** when it asks, so the iPad can be driven by hand.
+1. ~~Point `xcode-select` at Xcode.~~ Done 2026-11-28, and both simulators are now allowed in the Simulator panel.
 2. **Enrol in the Apple Developer Program** (individual, $99 a year) and the **Small Business Program**. Create the app record with bundle id `com.jeffersonpike.inkbeforedark`.
 3. **In App Store Connect, create two things with exactly these ids** (the code looks for them by name):
 

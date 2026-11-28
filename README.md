@@ -6,7 +6,7 @@ A single-file browser game with one verb: **draw**. You get twenty seconds of fa
 
 Your chart doesn't have to be true. It has to bring her home.
 
-**Status:** v0.18 (2026-11-28): tutorial cards and a guided first night; the App Store wrapper builds and runs in the iOS Simulator on iPhone and iPad, and has been played by hand there on the iPhone in both orientations, test ad included (not yet on a device). Otherwise frozen for a playtest. Ten coasts, 100 charts; App Store wrapper prepared, not yet built.
+**Status:** v0.18 (2026-11-28): tutorial cards and a guided first night; the App Store wrapper builds and runs in the iOS Simulator on iPhone and iPad, and has been played by hand there on an iPhone and an iPad in both orientations, test ad included (not yet on a device). Otherwise frozen for a playtest. Ten coasts, 100 charts; App Store wrapper prepared, not yet built.
 
 **▶ Play in your browser: https://jeffersonpikejr.github.io/ink-before-dark/** — on an iPad or iPhone, Share → Add to Home Screen runs it full-screen.
 
