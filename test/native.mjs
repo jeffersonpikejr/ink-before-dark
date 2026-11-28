@@ -7,7 +7,8 @@ const html=fs.readFileSync(path.join(here,'..','index.html'),'utf8');const src=h
 const noop=()=>{};const ctx2d=new Proxy({},{get:(t,k)=>(k in t?t[k]:(k==='createRadialGradient'?()=>({addColorStop:noop}):noop)),set:(t,k,v)=>{t[k]=v;return true;}});
 const made={};const elem=id=>{if(id&&made[id])return made[id];const e={id,style:{},classList:{add:noop,remove:noop,toggle:noop},firstElementChild:{style:{},textContent:''},lastElementChild:{innerHTML:''},getContext:()=>ctx2d,getBoundingClientRect:()=>({left:0,top:0,width:1000,height:640}),addEventListener:noop,appendChild:noop,querySelector:()=>null,querySelectorAll:()=>[],setPointerCapture:noop,width:0,height:0,textContent:'',innerHTML:''};if(id)made[id]=e;return e;};
 const store={},timers=[],calls=[];
-const world={owned:false,buyFails:false,gcSignedIn:true,vault:null,consent:'REQUIRED'};
+const world={owned:false,buyFails:false,gcSignedIn:true,vault:null,consent:'REQUIRED',adHolds:false,cancelAd:false};
+const ears={},fire=ev=>{(ears[ev]||[]).slice().forEach(f=>f({}));};
 const rec=(p,m,a)=>{calls.push([p,m,a]);};
 const Plugins={
   Haptics:{impact:async a=>rec('Haptics','impact',a),notification:async a=>rec('Haptics','notification',a)},
@@ -20,9 +21,11 @@ const Plugins={
   Vault:{get:async a=>{rec('Vault','get',a);return{value:world.vault};},set:async a=>{rec('Vault','set',a);world.vault=a.value;}},
   AdMob:{requestConsentInfo:async()=>{rec('AdMob','requestConsentInfo');return{status:world.consent,isConsentFormAvailable:true,canRequestAds:true,privacyOptionsRequirementStatus:'REQUIRED'};},showConsentForm:async()=>{rec('AdMob','showConsentForm');},
     initialize:async a=>{rec('AdMob','initialize',a);},requestTrackingAuthorization:async()=>{rec('AdMob','requestTrackingAuthorization');},
-    prepareInterstitial:async a=>{rec('AdMob','prepareInterstitial',a);},showInterstitial:async()=>{rec('AdMob','showInterstitial');},
-    prepareRewardVideoAd:async a=>{rec('AdMob','prepareRewardVideoAd',a);},showRewardVideoAd:async()=>{rec('AdMob','showRewardVideoAd');return{type:'supply',amount:1};},showPrivacyOptionsForm:async()=>{rec('AdMob','showPrivacyOptionsForm');}}};
-const sb={console,performance:{now:()=>0},requestAnimationFrame:noop,setTimeout:(fn)=>{timers.push(fn);return timers.length;},clearTimeout:noop,innerWidth:1000,innerHeight:640,addEventListener:noop,navigator:{},location:{search:'',protocol:'capacitor:'},
+    addListener:(ev,fn)=>{(ears[ev]=ears[ev]||[]).push(fn);return Promise.resolve({remove:()=>{ears[ev]=ears[ev].filter(f=>f!==fn);}});},
+    // like the real plugin: an interstitial's call answers when the ad goes UP, a rewarded ad's when the reward is earned; the ad closes later
+    prepareInterstitial:async a=>{rec('AdMob','prepareInterstitial',a);},showInterstitial:async()=>{rec('AdMob','showInterstitial');if(!world.adHolds)Promise.resolve().then(()=>fire('interstitialAdDismissed'));},
+    prepareRewardVideoAd:async a=>{rec('AdMob','prepareRewardVideoAd',a);},showRewardVideoAd:async()=>{rec('AdMob','showRewardVideoAd');if(world.cancelAd){const e=new Error('Rewarded ad dismissed before earning a reward.');e.code='REWARDED_AD_CANCELLED';throw e;}if(!world.adHolds)Promise.resolve().then(()=>fire('onRewardedVideoAdDismissed'));return{type:'supply',amount:1};},showPrivacyOptionsForm:async()=>{rec('AdMob','showPrivacyOptionsForm');}}};
+const sb={console,performance:{now:()=>0},requestAnimationFrame:noop,setTimeout:(fn)=>{timers.push(fn);return timers.length;},clearTimeout:noop,innerWidth:1000,innerHeight:640,addEventListener:noop,removeEventListener:noop,navigator:{},location:{search:'',protocol:'capacitor:'},
   Capacitor:{isNativePlatform:()=>true,Plugins},
   localStorage:{getItem:k=>(k in store?store[k]:null),setItem:(k,v)=>{store[k]=String(v);},removeItem:k=>{delete store[k];}},
   document:{addEventListener:noop,hidden:false,getElementById:elem,createElement:()=>elem(),body:{classList:{toggle:noop,add:c=>rec('body','class',c)},appendChild:noop}}};sb.window=sb;vm.createContext(sb);
@@ -52,6 +55,12 @@ const order=calls.filter(c=>c[0]==='AdMob').map(c=>c[1]);ok(order.indexOf('reque
 ok(of('AdMob','initialize').length===1,'the ad SDK was started more than once');
 N.meta().noAds=true;calls.length=0;N.Ads.chartsSince=0;for(let i=0;i<6;i++)await N.Ads.between();ok(of('AdMob','showInterstitial').length===0,'an interstitial showed after Remove Ads');
 N.meta().noAds=false;let won=0;for(let i=0;i<7;i++)if(await N.Ads.rewarded(noop))won++;ok(won===5,'rewarded ads in a day: '+won+' (want 5)');
+// 4b. an ad holds what follows until it has CLOSED: no dusk starts under an interstitial, no wheel spins under a rewarded ad's last card
+world.adHolds=true;N.setMeta(N.blank());N.meta().sessions=2;N.Ads.chartsSince=2;calls.length=0;let through=false;N.Ads.between().then(()=>{through=true;});await tick();
+ok(of('AdMob','showInterstitial').length===1&&!through,'the game went on while an interstitial was still up');fire('interstitialAdDismissed');await tick();ok(through,'the game did not go on after the interstitial closed');
+let paid=null;N.Ads.rewarded(noop).then(v=>{paid=v;});await tick();ok(of('AdMob','showRewardVideoAd').length===1&&paid===null,'the wheel was paid while the rewarded ad was still up');fire('onRewardedVideoAdDismissed');await tick();ok(paid===true&&N.meta().adDay.n===1,'the reward was not paid once the ad closed');
+world.adHolds=false;world.cancelAd=true;let said='';ok(await N.Ads.rewarded(t=>{said=t;})===false&&/whole ad/.test(said)&&N.meta().adDay.n===1,'a rewarded ad closed early paid out, or was not explained: '+said);world.cancelAd=false;
+await tick();ok(Object.values(ears).every(a=>a.length===0),'ad listeners were left attached: '+JSON.stringify(Object.fromEntries(Object.entries(ears).map(([k,v])=>[k,v.length]))));
 // 5. a night: strikes and lamps are felt, and so is the dawn
 N.setMeta(N.blank());calls.length=0;const res=N.playBay(false);await tick();const strikes=res.reduce((a,r)=>a+r.strikes,0),heavy=of('Haptics','impact').filter(c=>c[2].style==='HEAVY').length,note=of('Haptics','notification').length;
 ok(strikes>0&&heavy===strikes,'strikes '+strikes+' but heavy taps '+heavy);ok(note===3,'dawn was felt '+note+' times in three nights');ok(of('GC','submitScore').length===0,'a coast bay was posted to the leaderboard');
@@ -69,4 +78,4 @@ store.ibd_save=JSON.stringify({schema:1,nights:1,bays:1,stamp:100});world.vault=
 store.ibd_save=JSON.stringify({schema:1,nights:7,bays:2,stamp:300});N.setMeta(N.blank());await N.loadMeta();ok(N.meta().nights===7,'an older vault copy overwrote the web save');
 delete store.ibd_save;N.setMeta(N.blank());await N.loadMeta();ok(N.meta().nights===9,'a lost web save was not restored from the vault');
 world.vault='not json';N.setMeta(N.blank());await N.loadMeta();ok(N.meta().nights===0,'a damaged vault copy broke loading');
-console.log(fail.length?'NATIVE (mock plugins): FAIL\n  '+fail.join('\n  '):'NATIVE (mock plugins): PASS  store, ads cadence and consent order, haptics, Game Center, vault');process.exit(fail.length?1:0);
+console.log(fail.length?'NATIVE (mock plugins): FAIL\n  '+fail.join('\n  '):'NATIVE (mock plugins): PASS  store, ads cadence, consent order and ads holding the game until they close, haptics, Game Center, vault');process.exit(fail.length?1:0);

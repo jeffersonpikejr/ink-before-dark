@@ -44,7 +44,7 @@ button.pri{border-width:2px}
 #hint.up{bottom:calc(74px + env(safe-area-inset-bottom));opacity:.85;text-shadow:0 0 3px var(--bg),0 0 7px var(--bg),0 0 12px var(--bg),0 0 18px var(--bg)}
 #hint{position:fixed;left:0;right:0;bottom:calc(26px + env(safe-area-inset-bottom));text-align:center;font-size:12px;letter-spacing:.12em;
   text-transform:uppercase;opacity:.55;pointer-events:none;color:var(--fg);transition:opacity .6s}
-#title{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(24px + env(safe-area-inset-top)) calc(24px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left));gap:10px;overflow:auto;
+#title{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;justify-content:safe center;text-align:center;padding:calc(24px + env(safe-area-inset-top)) calc(24px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left));gap:10px;overflow:auto;
   background:radial-gradient(ellipse at 50% 38%,#151b24 0%,#0b0e13 62%);transition:opacity .7s}
 #title h1{margin:0;font-weight:400;font-style:italic;font-size:clamp(38px,8vw,76px);letter-spacing:.01em;color:#efe6d0}
 #title p{margin:0;color:#efe6d0}
@@ -56,11 +56,11 @@ button.pri{border-width:2px}
 #title .log b{letter-spacing:.3em;font-weight:normal}
 #title .fine{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.4;margin-top:20px}
 #rule{width:64px;height:2px;background:var(--red);margin:6px 0 4px}
-#coast{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 16px;gap:8px;
+#coast{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;justify-content:safe center;text-align:center;padding:calc(24px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));gap:8px;
   background:radial-gradient(ellipse at 50% 38%,#151b24 0%,#0b0e13 62%);color:#efe6d0;overflow:auto}
 #coast h2{margin:0;font-weight:400;font-style:italic;font-size:clamp(28px,5vw,44px)}
 #coast p{margin:0;opacity:.7;font-size:clamp(13px,2vw,15px);max-width:32em;line-height:1.5}
-#bays{width:min(96vw,820px);margin:14px 0 10px}
+#bays{width:min(96vw,820px);max-width:100%;flex:0 0 auto;margin:14px 0 10px}
 #bays svg{width:100%;height:auto;display:block;overflow:visible}
 #bays .node{cursor:pointer} #bays .node circle{fill:#0b0e13;stroke:#efe6d0;stroke-width:2}
 #bays .node.next circle{stroke-width:4;filter:drop-shadow(0 0 10px rgba(239,230,208,.5))}
@@ -74,7 +74,8 @@ button.pri{border-width:2px}
 .bay.locked{opacity:.28;border-style:dashed;cursor:default}
 .bay .dry{color:var(--red);font-size:10px;letter-spacing:.1em;font-style:normal}
 #coast .row,#wheel .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-#wheel{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 16px;gap:10px;background:rgba(11,14,19,.96);color:#efe6d0;z-index:5}
+#wheel{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;justify-content:safe center;text-align:center;padding:calc(24px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));gap:10px;overflow:auto;background:rgba(11,14,19,.96);color:#efe6d0;z-index:5}
+#wSide{display:contents} #wheel h2{order:1} #wMsg{order:2} #wWrap{order:3;flex:0 0 auto} #wheel .row{order:4} #wheel .fine2{order:5}
 #wheel h2{margin:0;font-weight:400;font-style:italic;font-size:clamp(26px,5vw,40px)}
 #wheel p{margin:0;min-height:1.5em;font-size:clamp(14px,2.2vw,17px)} #wheel .fine2{font-size:11px;opacity:.45;max-width:30em}
 #wheel button{color:#efe6d0;border-color:#efe6d0}
@@ -109,6 +110,12 @@ button.pri{border-width:2px}
 #title .links a{color:#efe6d0;opacity:.6;padding:15px 6px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .mini{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));font-size:12px;letter-spacing:.08em;padding:8px 12px;min-height:40px;opacity:.72;border-width:1px}
 #bLeave{left:calc(12px + env(safe-area-inset-left))} #bOver{right:calc(12px + env(safe-area-inset-right))}
+/* a phone on its side: the title fits one screen, and the wheel sits beside its words */
+@media (orientation:landscape) and (max-height:520px){
+  #title{gap:6px;padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+  #title h1{font-size:38px} #title .how{display:none} #title .row{margin-top:10px} #title .log{margin-top:6px} #title .links{margin-top:0} #title .fine{margin-top:4px}
+  #wheel{flex-direction:row;gap:28px} #wSide{display:flex;flex-direction:column;align-items:center;gap:10px;min-width:0;max-width:24em;order:4}
+  #wWrap{width:min(280px,calc(100vh - 76px));width:min(280px,calc(100dvh - 76px));margin:0}}
 </style>
 </head>
 <body>
@@ -130,10 +137,10 @@ button.pri{border-width:2px}
   <p class="log" id="logline"></p>
   <p class="links"><a id="bCards" href="#">Tutorial cards: on</a><a id="bReplay" href="#">Replay the tutorial</a><a id="bLog" href="#">Send play log</a></p>
   <p class="links" id="storeRow"><a id="bBoard" href="#">Tonight&rsquo;s leaderboard</a><a id="bNoAds" href="#">Remove ads between charts</a><a id="bRestore" href="#">Restore purchases</a></p>
-  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.17</p>
+  <p class="fine" id="fine">draw with a finger or the mouse &middot; M mutes &middot; prototype v0.18</p>
 </div>
 <div id="coast"><h2 id="cTitle">The Strait</h2><p id="cBlurb"></p><div id="bays"></div><div class="row"><button id="bBack">Back</button><button id="bPrev"></button><button id="bOther"></button><button id="bSpin">Spin for supplies</button><button id="bWipe">Reset coast</button></div><p id="invLine" style="margin-top:10px"></p></div>
-<div id="wheel"><h2>Supplies</h2><p id="wMsg"></p><div id="wWrap"><div id="wPtr"></div><div id="wDisc"></div></div><div class="row"><button class="pri" id="wGo">Watch an ad to spin</button><button id="wClose">Close</button></div><p class="fine2" id="wFine">Ads are a placeholder in this web build. Real rewarded ads arrive with the App Store version. <a href="privacy.html" style="color:inherit">Privacy</a></p><p class="fine2" id="wOpt" style="display:none"><a id="bAdOpt" href="#" style="color:inherit">Ad privacy choices</a></p></div>
+<div id="wheel"><div id="wWrap"><div id="wPtr"></div><div id="wDisc"></div></div><div id="wSide"><h2>Supplies</h2><p id="wMsg"></p><div class="row"><button class="pri" id="wGo">Watch an ad to spin</button><button id="wClose">Close</button></div><p class="fine2" id="wFine">Ads are a placeholder in this web build. Real rewarded ads arrive with the App Store version. <a href="privacy.html" style="color:inherit">Privacy</a></p><p class="fine2" id="wOpt" style="display:none"><a id="bAdOpt" href="#" style="color:inherit">Ad privacy choices</a></p></div></div>
 <div id="card" role="dialog" aria-modal="true" aria-labelledby="cardT" aria-describedby="cardL"><div id="cardP"><canvas id="cardC" width="800" height="500" aria-hidden="true"></canvas><div id="cardX"><div id="cardK"></div><div id="cardT"></div><div id="cardL"></div><div id="cardF"><button id="cardS">Skip</button><span id="cardD"></span><button class="pri" id="cardN">Next</button></div></div></div></div>
 <button class="mini hide" id="bLeave">&lsaquo; Leave</button><button class="mini hide" id="bOver">&#8634; Start over</button>
 <script>
@@ -144,7 +151,7 @@ button.pri{border-width:2px}
    Sections: config · rng · bay generator · chart · pilot · night sim
              · bots & bench · audio · store · game state · render · input · boot
    ============================================================ */
-const VERSION='0.17';
+const VERSION='0.18';
 const W=1000,H=640,CELL=8,GW=W/CELL|0,GH=H/CELL|0,NC=GW*GH;
 const CFG={
   DUSK:20,          // seconds of failing light
@@ -765,17 +772,30 @@ const Ads={
     try{await this.plugin.initialize({initializeForTesting:true});this.ready=true;}catch(e){}},
   // tracking consent is asked once, after the first finished chart, never at launch; nothing depends on the answer
   async askTracking(){if(!this.native||!this.plugin||META.askedATT)return;META.askedATT=true;saveMeta();try{await this.plugin.requestTrackingAuthorization();}catch(e){}},
-  // resolves true if the player earned the reward. Five a day, and always the player's choice.
+  // a load that is slow (no signal) is given up on: the game never waits long for an ad
+  within(p,ms){return Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error('slow')),ms))]);},
+  // An ad on screen covers the game. wait() resolves when the plugin says the ad closed, when the page is touched again
+  // (only possible once the ad is gone), or after ms: an ad can delay the game, never hold it.
+  closed(evs){let end;const p=new Promise(r=>{end=()=>r();}),hs=[];try{for(const ev of evs)hs.push(this.plugin.addListener(ev,end));}catch(e){}
+    return{wait(ms){const t=setTimeout(end,ms);try{addEventListener('pointerdown',end,true);}catch(e){}return p.then(()=>{clearTimeout(t);try{removeEventListener('pointerdown',end,true);}catch(e){}});},
+      off(){for(const h of hs)Promise.resolve(h).then(x=>{if(x&&x.remove)x.remove();}).catch(()=>{});}};},
+  // resolves true if the player earned the reward, and only once the ad has closed. Five a day, and always the player's choice.
   async rewarded(say){const day=dayKey();if(!META.adDay||META.adDay.k!==day)META.adDay={k:day,n:0};
     if(META.adDay.n>=5){say('That is all the supplies the chandler has today.');return false;}
     let ok=false;
-    if(this.native&&this.plugin){try{await this.init();say('Loading\u2026');await this.plugin.prepareRewardVideoAd({adId:this.ids.rewarded});const r=await this.plugin.showRewardVideoAd();ok=!!(r&&(r.amount!=null||r.type));}catch(e){say('No ad to show just now.');return false;}}
+    if(this.native&&this.plugin){const shut=this.closed(['onRewardedVideoAdDismissed','onRewardedVideoAdFailedToShow']);
+      try{await this.init();say('Loading\u2026');await this.within(this.plugin.prepareRewardVideoAd({adId:this.ids.rewarded}),9000);const r=await this.plugin.showRewardVideoAd();ok=!!(r&&(r.amount!=null||r.type));if(ok){say('');await shut.wait(90000);}}
+      catch(e){shut.off();say(e&&e.code==='REWARDED_AD_CANCELLED'?'Watch the whole ad to spin.':'No ad to show just now.');return false;}
+      shut.off();}
     else{for(let n=5;n>0;n--){say('Ad placeholder \u2014 '+n+'\u2026');await new Promise(r=>setTimeout(r,1000));}ok=true;}
     if(ok){META.adDay.n++;saveMeta();}return ok;},
   // between charts only, and only after a chart she got home from (the Next button): none in a player's first session,
-  // at most one for every three finished charts, none for anyone who bought ads off
+  // at most one for every three finished charts, none for anyone who bought ads off. It resolves when the ad has closed,
+  // so the next bay's dusk never starts underneath one.
   async between(){this.chartsSince++;if(!this.native||!this.plugin||this.off||(META.sessions||0)<2||this.chartsSince<3)return;
-    try{await this.init();await this.plugin.prepareInterstitial({adId:this.ids.interstitial});await this.plugin.showInterstitial();this.chartsSince=0;}catch(e){}}
+    const shut=this.closed(['interstitialAdDismissed','interstitialAdFailedToShow']);
+    try{await this.init();await this.within(this.plugin.prepareInterstitial({adId:this.ids.interstitial}),4000);await this.plugin.showInterstitial();this.chartsSince=0;await shut.wait(90000);}catch(e){}
+    shut.off();}
 };
 function spinWheel(){if(wSpinning)return;wSpinning=true;const go=$('wGo');go.disabled=true;
   Ads.rewarded(t=>{$('wMsg').textContent=t;}).then(ok=>{
@@ -859,7 +879,7 @@ function finish(){plog('F',S.results.filter(r=>r.made).length);Ads.askTracking()
   if(S.ci!=null){const r=bayRec(S.ci),was=r.lamps;r.tries++;r.lamps=Math.max(r.lamps,home);r.dry=r.dry||(home===3&&strikes===0);const gotSpare=home===3&&S.spareMin>=1/3,gotFirst=home===3&&r.tries===1;r.spare=r.spare||gotSpare;r.first=r.first||gotFirst;S.marks=[home===3&&strikes===0?'home dry':'',gotSpare?'ink to spare':'',gotFirst?'first light':''].filter(Boolean);CS().bays[S.ci]=r;
     for(let i=0;i<S.ci;i++)if(!CS().bays[i])CS().bays[i]={lamps:0,dry:false,tries:0};saveMeta();
     el.cap.lastElementChild.innerHTML+='<br><i>Lamps lit in this bay: '+'\u25cf'.repeat(r.lamps)+'\u25cb'.repeat(3-r.lamps)+(r.lamps>was?' (new best)':'')+(S.marks.length?' \u00b7 earned: '+S.marks.join(', '):'')+(S.ci<COAST_N-1&&r.lamps<2?' \u00b7 two open the next bay':'')+'</i>';
-    const list=[];if(S.ci<COAST_N-1&&r.lamps>=2)list.push(['Next bay',()=>{Ads.between().then(()=>startBay(false,null,S.ci+1));}]);list.push(['Again',()=>restartBay()],['Spin for supplies',()=>openWheel()],['Coast',()=>leave()]);buttons(list);
+    const list=[];if(S.ci<COAST_N-1&&r.lamps>=2)list.push(['Next bay',()=>{if(S.going)return;S.going=true;Ads.between().then(()=>{S.going=false;if(S.phase==='final')startBay(false,null,S.ci+1);});}]);list.push(['Again',()=>restartBay()],['Spin for supplies',()=>openWheel()],['Coast',()=>leave()]);buttons(list);
   }else buttons([['Another bay',()=>startBay(false)],['Spin for supplies',()=>openWheel()],copy]);
   S.phase='final';
   offerCards((S.dawnIds||[]).concat(S.ci!=null?['lamps']:[],S.ci!=null&&S.marks&&S.marks.length?['marks']:[],logMsg?['log']:[]),{max:2,go:'Go on'});}

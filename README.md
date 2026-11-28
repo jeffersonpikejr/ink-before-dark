@@ -6,7 +6,7 @@ A single-file browser game with one verb: **draw**. You get twenty seconds of fa
 
 Your chart doesn't have to be true. It has to bring her home.
 
-**Status:** v0.17 (2026-11-27): tutorial cards and a guided first night; the App Store wrapper builds and runs in the iOS Simulator on iPhone and iPad (not yet on a device). Otherwise frozen for a playtest. Ten coasts, 100 charts; App Store wrapper prepared, not yet built.
+**Status:** v0.18 (2026-11-28): tutorial cards and a guided first night; the App Store wrapper builds and runs in the iOS Simulator on iPhone and iPad, and has been played by hand there on the iPhone in both orientations, test ad included (not yet on a device). Otherwise frozen for a playtest. Ten coasts, 100 charts; App Store wrapper prepared, not yet built.
 
 **▶ Play in your browser: https://jeffersonpikejr.github.io/ink-before-dark/** — on an iPad or iPhone, Share → Add to Home Screen runs it full-screen.
 
@@ -53,6 +53,12 @@ One `index.html` (about 600 lines): canvas rendering, a Dijkstra pilot on an 8-u
 Debug API in the console: `IBD.start(seed)` · `IBD.step(seconds)` (drives time by hand when animation frames are asleep) · `IBD.pause()` · `IBD.still()` (no CSS transitions) · `IBD.pen([[x,y],…])` (draws through the real pointer handlers) · `IBD.castOff()` · `IBD.info()` · `IBD.bench(n)`.
 
 ## Changelog
+
+### v0.18 — Sideways (2026-11-28)
+Fixes only, from the first time the iOS app was driven by hand in the Simulator.
+- An ad now holds the game until it has **closed**. Before, the supply wheel spun and named its prize under the ad's last card, and the ad between charts would have let the next bay's dusk run underneath it.
+- An ad that is slow to load is given up on (9 s on the wheel, 4 s between charts), so no signal never leaves the wheel stuck on "Loading…".
+- A phone on its side: the supply wheel was cut off top and bottom and now sits beside its words; the title fits one screen; the title and the coast open at their top instead of their middle; the coast keeps clear of the notch.
 
 ### v0.17 — It builds (2026-11-27)
 - The iOS app compiles and runs in the Simulator on an iPhone 18 Pro and an iPad Pro 11-inch (Xcode 27.2). `store/APP_STORE.md` says what that proved and what it did not.
